@@ -43,7 +43,7 @@ class Vehicle: EntityComponent
     NewtonRigidBody chassisBody;
     Array!Wheel wheels;
     float torque = 0.0f;
-    float maxTorque = 4000.0f;
+    float maxTorque = 8000.0f;
     float torqueDecreaseStep = 10.0f;
     Matrix4x4f prevTransformation;
     
@@ -211,6 +211,11 @@ class Vehicle: EntityComponent
         {
             w.update(t.delta);
         }
+        
+        Vector3f dragDir = -chassisBody.velocity.normalized;
+        float spd = chassisBody.velocity.length;
+        float drag = 0.01f;
+        chassisBody.addForce(dragDir * spd * spd * drag);
         
         chassisBody.update(t.delta);
 
