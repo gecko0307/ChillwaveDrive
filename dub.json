@@ -1,0 +1,29 @@
+{
+    "name": "demo",
+    "description": "Dagon Vehicle Demo",
+    "license": "Boost",
+    "authors": [
+        "Timur Gafarov"
+    ],
+    
+    "targetType": "executable",
+    
+    "dependencies": {
+        "dagon": "~master",
+        "dagon:newton": "~master",
+        "dagon:ftfont": "~master",
+        "dagon:stbi": "~master"
+    },
+    
+    "importPaths": [
+        "src"
+    ],
+
+    "buildRequirements":[
+        "allowWarnings"
+    ],
+
+    "sourcePaths": ["src"],
+    
+    "mainSourceFile": "src/main.d"
+}
