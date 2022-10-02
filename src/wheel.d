@@ -56,13 +56,16 @@ class WheelConstraint: NewtonUserJointConstraint
     {
         if (wheel.normalForce > 0.0f)
         {
-            Vector3f forcePosition = wheel.getFrictionContactPoint();
+            Vector3f forcePosition = wheel.getContactPoint();
             Vector3f lateralAxis = wheel.getLateralAxis();
-            float maxFriction = wheel.getFrictionForce();
+            float frictionForce = wheel.getFrictionForce();
             
-            addLinearRow(forcePosition, forcePosition, lateralAxis);
-            setMaximumFriction(maxFriction);
-            setMinimumFriction(-maxFriction);
+            if (frictionForce > 0.0)
+            {
+                addLinearRow(forcePosition, forcePosition, lateralAxis);
+                setMaximumFriction(frictionForce);
+                setMinimumFriction(-frictionForce);
+            }
         }
     }
 }
@@ -221,14 +224,14 @@ class Wheel: Owner, NewtonRaycaster
             suspension.compression = suspension.maxLength - suspension.length;
             
             float wheelLoad = vehicle.chassisBody.mass / cast(float)vehicle.wheels.length;
-            float springForce = suspension.compression * suspension.stiffness * wheelLoad;
-            float dampingForce = ((suspension.lengthPrev - suspension.length) * suspension.damping * wheelLoad) / dt;
-            normalForce = springForce + dampingForce;
+            float springForce = suspension.compression * suspension.stiffness;
+            float compressionSpeed = suspension.lengthPrev - suspension.length;
+            float dampingForce = (compressionSpeed * suspension.damping) / dt;
+            normalForce = (springForce + dampingForce) * wheelLoad;
             
             vehicle.chassisBody.addForceAtPos(upVectorW * normalForce, suspPositionW);
             
-            Vector3f contactPoint = suspension.position - Vector3f(0.0f, radius, 0.0f);
-            Vector3f forcePosition = contactPoint * vehicle.chassisBody.transformation;
+            Vector3f forcePosition = getContactPoint();
             
             if (isPowered)
             {
@@ -277,7 +280,7 @@ class Wheel: Owner, NewtonRaycaster
         return steering.rotate(vehicle.chassisBody.transformation.forward);
     }
     
-    Vector3f getFrictionContactPoint()
+    Vector3f getContactPoint()
     {
         Vector3f contactPoint = (suspension.position + tyreOffset) - Vector3f(0.0f, radius, 0.0f);
         Vector3f forcePosition = contactPoint * vehicle.chassisBody.transformation;
@@ -289,11 +292,10 @@ class Wheel: Owner, NewtonRaycaster
         float lateralFriction = tyreModel.lateralForce(normalForce, abs(slipAngle), 0.0f);
         float longitudinalFriction = tyreModel.longitudinalForce(normalForce, slipRatio);
         
-        float frictionCircleMag = normalForce * grip;
-        float invMag2 = frictionCircleMag / sqrt(lateralFriction * lateralFriction + longitudinalFriction * longitudinalFriction);
-        float maxFriction = lateralFriction * invMag2;
-        
-        return maxFriction;
+        float maxFrictionForce = normalForce * grip;
+        float invMag2 = maxFrictionForce / sqrt(lateralFriction * lateralFriction + longitudinalFriction * longitudinalFriction);
+        float frictionForce = lateralFriction * invMag2;
+        return frictionForce;
     }
     
     Quaternionf rotation()

@@ -186,10 +186,25 @@ class VehicleScene: Scene
         eCar.position = Vector3f(-125, 2, -142);
         eCar.turn(90.0f);
         
-        Vector3f chassisBottomSize = Vector3f(1.7f, 0.6f, 4.2f);
-        Vector3f chassisBottomPos = Vector3f(0.0f, 0.4f, 0.0f);
-        Vector3f chassisTopSize = Vector3f(1.3f, 0.3f, 1.5f);
-        Vector3f chassisTopPos = Vector3f(0.0f, 0.85f, -0.5f);
+        Vector3f chassisBottomSize = Vector3f(1.65f, 0.6f, 4.3f);
+        Vector3f chassisBottomPos = Vector3f(0.0f, 0.55f, 0.0f); //0.55
+        
+        Vector3f chassisTopSize = Vector3f(1.3f, 0.6f, 1.6f);
+        Vector3f chassisTopPos = Vector3f(0.0f, 1.0f, -0.3f); //1.0
+        
+        /*
+        auto mTrans = addMaterial();
+        mTrans.blendMode = Transparent;
+        mTrans.opacity = 0.5f;
+        auto eChassisBottom = addEntity(eCar);
+        eChassisBottom.drawable = New!ShapeBox(chassisBottomSize * 0.5f, assetManager);
+        eChassisBottom.material = mTrans;
+        eChassisBottom.position = chassisBottomPos;
+        auto eChassisTop = addEntity(eCar);
+        eChassisTop.drawable = New!ShapeBox(chassisTopSize * 0.5f, assetManager);
+        eChassisTop.material = mTrans;
+        eChassisTop.position = chassisTopPos;
+        */
         
         auto chassisBottom = New!NewtonBoxShape(chassisBottomSize, world);
         chassisBottom.setTransformation(translationMatrix(chassisBottomPos));
@@ -197,8 +212,8 @@ class VehicleScene: Scene
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1600.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f);
-        vehicle.maxTorque = 3000.0f;
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.4f, 0.0f);
+        vehicle.maxTorque = 4000.0f;
         auto fw1 = vehicle.addWheel(Vector3f(-0.56f, 0.75f,  1.35f), 0.341f, -1.0f, true, true);
         auto fw2 = vehicle.addWheel(Vector3f( 0.56f, 0.75f,  1.35f), 0.341f,  1.0f, true, true);
         auto bw1 = vehicle.addWheel(Vector3f(-0.56f, 0.75f, -1.2f), 0.341f, -1.0f, false, false);
@@ -209,35 +224,34 @@ class VehicleScene: Scene
         bw1.tyreOffset = Vector3f(-0.15f, 0, 0);
         bw2.tyreOffset = Vector3f( 0.15f, 0, 0);
         
-        float grip = 1.7f;
-        float frontLength = 0.55f;
-        float rearLength = 0.55f;
-        float frontStiffness = 130.0f;
-        float rearStiffness = 130.0f;
-        float damping = 12.0f;
+        float grip = 2.0f;
+        float frontLength = 0.5f;
+        float rearLength = 0.5f;
+        float stiffness = 200.0f;
+        float damping = 20.0f;
         
         fw1.grip = grip;
         fw1.suspension.minLength = 0.4f;
         fw1.suspension.maxLength = frontLength;
-        fw1.suspension.stiffness = frontStiffness;
+        fw1.suspension.stiffness = stiffness;
         fw1.suspension.damping = damping;
         
         fw2.grip = grip;
         fw2.suspension.minLength = 0.4f;
         fw2.suspension.maxLength = frontLength;
-        fw2.suspension.stiffness = frontStiffness;
+        fw2.suspension.stiffness = stiffness;
         fw2.suspension.damping = damping;
         
         bw1.grip = grip;
         bw1.suspension.minLength = 0.4f;
         bw1.suspension.maxLength = rearLength;
-        bw1.suspension.stiffness = rearStiffness;
+        bw1.suspension.stiffness = stiffness;
         bw1.suspension.damping = damping;
         
         bw2.grip = grip;
         bw2.suspension.minLength = 0.4f;
         bw2.suspension.maxLength = rearLength;
-        bw2.suspension.stiffness = rearStiffness;
+        bw2.suspension.stiffness = stiffness;
         bw2.suspension.damping = damping;
         
         foreach(i, ref w; eWheels)
