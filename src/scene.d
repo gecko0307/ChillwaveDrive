@@ -212,7 +212,7 @@ class VehicleScene: Scene
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1600.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.4f, 0.0f);
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.55f, 0.0f);
         vehicle.maxTorque = 4000.0f;
         auto fw1 = vehicle.addWheel(Vector3f(-0.56f, 0.75f,  1.35f), 0.341f, -1.0f, true, true);
         auto fw2 = vehicle.addWheel(Vector3f( 0.56f, 0.75f,  1.35f), 0.341f,  1.0f, true, true);
@@ -224,7 +224,7 @@ class VehicleScene: Scene
         bw1.tyreOffset = Vector3f(-0.15f, 0, 0);
         bw2.tyreOffset = Vector3f( 0.15f, 0, 0);
         
-        float grip = 2.0f;
+        float grip = 1.7f;
         float frontLength = 0.5f;
         float rearLength = 0.5f;
         float stiffness = 200.0f;
