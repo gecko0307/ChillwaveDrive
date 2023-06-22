@@ -140,6 +140,7 @@ class Wheel: Owner, NewtonRaycaster
         rollSpeed = 0.0f;
         normalForce = 0.0f;
         facing = 1.0f;
+        grip = 1.0f;
         rollingFriction = 0.01f;
         brakeFriction = 0.4f;
         maxRayDistance = 10000.0f;
@@ -200,7 +201,7 @@ class Wheel: Owner, NewtonRaycaster
         float longitudinalSpeed = dot(wheelVelocity, forwardAxis) - rollSpeed * radius;
         
         slipAngle = atan2(lateralSpeed, longitudinalSpeed);
-        slipRatio = abs(rollSpeed) / max2(abs(longitudinalSpeed), 0.00001f);
+        slipRatio = abs(rollSpeed * radius) / max2(abs(longitudinalSpeed), 0.00001f);
         
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
         {

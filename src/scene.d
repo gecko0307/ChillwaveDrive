@@ -107,7 +107,7 @@ class VehicleScene: Scene
         environment.backgroundColor = Color4f(0.4f, 0.3f, 0.5f, 1.0f);
         environment.ambientMap = aEnvmap.texture;
         aEnvmap.texture.enableRepeat = false;
-        environment.ambientEnergy = 2.0f;
+        environment.ambientEnergy = 1.0f;
         environment.ambientBRDF = aBRDF.texture;
         aBRDF.texture.useMipmapFiltering = false;
         aBRDF.texture.enableRepeat = false;
@@ -116,20 +116,22 @@ class VehicleScene: Scene
         environment.fogEnd = 1000.0f;
         
         game.deferredRenderer.ssaoEnabled = true;
+        game.deferredRenderer.ssaoRadius = 1.0f;
+        game.deferredRenderer.ssaoPower = 12.0f;
         game.postProcessingRenderer.fxaaEnabled = true;
-        game.postProcessingRenderer.depthOfFieldEnabled = false;
+        game.postProcessingRenderer.depthOfFieldEnabled = true;
         game.postProcessingRenderer.fStop = 2.0f;
         game.postProcessingRenderer.motionBlurEnabled = true;
         game.postProcessingRenderer.motionBlurFramerate = 45;
         game.postProcessingRenderer.glowEnabled = true;
         game.postProcessingRenderer.glowThreshold = 1.0f;
-        game.postProcessingRenderer.glowIntensity = 0.1f;
+        game.postProcessingRenderer.glowIntensity = 0.5f;
         game.postProcessingRenderer.glowRadius = 7;
         game.postProcessingRenderer.lensDistortionEnabled = true;
-        game.postProcessingRenderer.tonemapper = Tonemapper.Filmic;
-        game.postProcessingRenderer.exposure = 1.0f;
-        game.postProc.lutEnabled = true;
-        game.postProc.colorLookupTable = aTexColorTable.texture;
+        game.postProcessingRenderer.tonemapper = Tonemapper.Unreal;
+        game.postProcessingRenderer.exposure = 0.75f;
+        game.postProcessingRenderer.lutEnabled = true;
+        game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
         
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
@@ -138,7 +140,7 @@ class VehicleScene: Scene
         sm.projectionSize[0] = 5;
         sm.projectionSize[1] = 25;
         sm.projectionSize[2] = 40;
-        sun.energy = 8.0f;
+        sun.energy = 20.0f;
         sun.scatteringEnabled = true;
         sun.scattering = 0.35f;
         sun.mediumDensity = 0.075f;
@@ -224,7 +226,7 @@ class VehicleScene: Scene
         bw1.tyreOffset = Vector3f(-0.15f, 0, 0);
         bw2.tyreOffset = Vector3f( 0.15f, 0, 0);
         
-        float grip = 1.7f;
+        float grip = 1.2f; // 1.7f
         float frontLength = 0.5f;
         float rearLength = 0.5f;
         float stiffness = 200.0f;
