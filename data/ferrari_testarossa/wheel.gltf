@@ -1,0 +1,216 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.7.33",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0,
+                1
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "FL.001",
+            "rotation" : [
+                0,
+                -0.7071067094802856,
+                0.7071068286895752,
+                5.338507236274381e-08
+            ]
+        },
+        {
+            "mesh" : 1,
+            "name" : "FL.002",
+            "rotation" : [
+                0,
+                -0.7071067094802856,
+                0.7071068286895752,
+                5.338507236274381e-08
+            ]
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "Material.008",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    1,
+                    1,
+                    1,
+                    1
+                ],
+                "metallicFactor" : 1,
+                "roughnessFactor" : 0.05
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "testarossawheel.002",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.008383583277463913,
+                    0.008383583277463913,
+                    0.008383583277463913,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.690034806728363
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Circle.001",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3,
+                    "material" : 0
+                }
+            ]
+        },
+        {
+            "name" : "Circle.002",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 4,
+                        "NORMAL" : 5,
+                        "TEXCOORD_0" : 6
+                    },
+                    "indices" : 7,
+                    "material" : 1
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 6972,
+            "max" : [
+                0.15662556886672974,
+                0.20926618576049805,
+                0.21211768686771393
+            ],
+            "min" : [
+                -0.12340784072875977,
+                -0.21063101291656494,
+                -0.21037672460079193
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 6972,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 6972,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 18222,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 2201,
+            "max" : [
+                0.16071605682373047,
+                0.3272075653076172,
+                0.3289405107498169
+            ],
+            "min" : [
+                -0.12445253133773804,
+                -0.32949304580688477,
+                -0.32901251316070557
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 2201,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 6,
+            "componentType" : 5126,
+            "count" : 2201,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 7,
+            "componentType" : 5123,
+            "count" : 11346,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 83664,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 83664,
+            "byteOffset" : 83664
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 55776,
+            "byteOffset" : 167328
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 36444,
+            "byteOffset" : 223104
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 26412,
+            "byteOffset" : 259548
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 26412,
+            "byteOffset" : 285960
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 17608,
+            "byteOffset" : 312372
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 22692,
+            "byteOffset" : 329980
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 352672,
+            "uri" : "wheel.bin"
+        }
+    ]
+}

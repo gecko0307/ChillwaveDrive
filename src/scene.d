@@ -59,9 +59,11 @@ class VehicleScene: Scene
     
     Wav sfxEngine;
     Wav sfxSquealLoop;
+    WavStream music;
     
     int engineVoice;
     int squealVoice;
+    int musicVoice;
 
     Camera camera;
     VehicleViewComponent vehicleView;
@@ -97,8 +99,8 @@ class VehicleScene: Scene
     {
         aFontDroidSans14 = this.addFontAsset("data/font/DroidSans.ttf", 14);
         aTrack = addGLTFAsset("data/track/track.gltf");
-        aCar = addGLTFAsset("data/car/porsche_911.gltf");
-        aWheel = addGLTFAsset("data/car/wheel.gltf");
+        aCar = addGLTFAsset("data/ferrari_testarossa/ferrari.gltf");
+        aWheel = addGLTFAsset("data/ferrari_testarossa/wheel.gltf");
         
         aEnvmap = addTextureAsset("data/envmap.dds");
         aBRDF = addTextureAsset("data/brdf.dds");
@@ -109,10 +111,16 @@ class VehicleScene: Scene
         sfxEngine = Wav.create();
         sfxEngine.load("data/sounds/engine.wav");
         sfxEngine.setVolume(0.2f);
+        sfxEngine.set3dDistanceDelay(true);
         
         sfxSquealLoop = Wav.create();
         sfxSquealLoop.load("data/sounds/squeal.wav");
         sfxSquealLoop.setVolume(0.5f);
+        sfxSquealLoop.set3dDistanceDelay(true);
+        
+        music = WavStream.create();
+        music.load("data/sounds/music.flac");
+        music.setVolume(0.2f);
     }
 
     override void afterLoad()
@@ -127,7 +135,7 @@ class VehicleScene: Scene
         environment.backgroundColor = Color4f(0.4f, 0.3f, 0.5f, 1.0f);
         environment.ambientMap = aEnvmap.texture;
         aEnvmap.texture.enableRepeat = false;
-        environment.ambientEnergy = 1.0f;
+        environment.ambientEnergy = 1.5f;
         environment.ambientBRDF = aBRDF.texture;
         aBRDF.texture.useMipmapFiltering = false;
         aBRDF.texture.enableRepeat = false;
@@ -145,7 +153,7 @@ class VehicleScene: Scene
         game.postProcessingRenderer.motionBlurFramerate = 45;
         game.postProcessingRenderer.glowEnabled = true;
         game.postProcessingRenderer.glowThreshold = 1.0f;
-        game.postProcessingRenderer.glowIntensity = 0.5f;
+        game.postProcessingRenderer.glowIntensity = 0.25f;
         game.postProcessingRenderer.glowRadius = 7;
         game.postProcessingRenderer.lensDistortionEnabled = true;
         game.postProcessingRenderer.tonemapper = Tonemapper.Unreal;
@@ -198,6 +206,7 @@ class VehicleScene: Scene
         foreach(node; aCar.nodes)
         {
             useEntity(node.entity);
+            node.entity.blurMask = 0.0f;
         }
         
         foreach(mat; aCar.materials)
@@ -208,55 +217,53 @@ class VehicleScene: Scene
         eCar.position = Vector3f(-125, 2, -142);
         eCar.turn(90.0f);
         
-        Vector3f chassisBottomSize = Vector3f(1.65f, 0.6f, 4.3f);
-        Vector3f chassisBottomPos = Vector3f(0.0f, 0.55f, 0.0f); //0.55
-        
-        Vector3f chassisTopSize = Vector3f(1.3f, 0.6f, 1.6f);
-        Vector3f chassisTopPos = Vector3f(0.0f, 1.0f, -0.3f); //1.0
+        Vector3f chassisBottomSize = Vector3f(1.9f, 0.6f, 4.4f);
+        Vector3f chassisBottomPos = Vector3f(0.0f, 0.4f, 0.0f);
+        Vector3f chassisTopSize = Vector3f(1.3f, 0.3f, 1.5f);
+        Vector3f chassisTopPos = Vector3f(0.0f, 0.85f, -0.5f);
         
         auto chassisBottom = New!NewtonBoxShape(chassisBottomSize, world);
         chassisBottom.setTransformation(translationMatrix(chassisBottomPos));
         auto chassisTop = New!NewtonBoxShape(chassisTopSize, world);
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
-        vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1600.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f); //0.55f
-        vehicle.maxTorque = 4000.0f;
-        auto fw1 = vehicle.addWheel(Vector3f(-0.56f, 0.75f,  1.35f), 0.341f, -1.0f, true, true);
-        auto fw2 = vehicle.addWheel(Vector3f( 0.56f, 0.75f,  1.35f), 0.341f,  1.0f, true, true);
-        auto bw1 = vehicle.addWheel(Vector3f(-0.56f, 0.75f, -1.2f), 0.341f, -1.0f, false, false);
-        auto bw2 = vehicle.addWheel(Vector3f( 0.56f, 0.75f, -1.2f), 0.341f,  1.0f, false, false);
+        vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1700.0f, 1);
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f);
+        vehicle.maxTorque = 7000.0f;
+        auto fw1 = vehicle.addWheel(Vector3f(-0.8f, 0.65f,  1.12f), 0.32f, -1.0f, true, true);
+        auto fw2 = vehicle.addWheel(Vector3f( 0.8f, 0.65f,  1.12f), 0.32f,  1.0f, true, true);
+        auto bw1 = vehicle.addWheel(Vector3f(-0.9f, 0.65f, -1.4f), 0.32f, -1.0f, false, false);
+        auto bw2 = vehicle.addWheel(Vector3f( 0.9f, 0.65f, -1.4f), 0.32f,  1.0f, false, false);
         
-        fw1.tyreOffset = Vector3f(-0.15f, 0, 0);
-        fw2.tyreOffset = Vector3f( 0.15f, 0, 0);
-        bw1.tyreOffset = Vector3f(-0.15f, 0, 0);
-        bw2.tyreOffset = Vector3f( 0.15f, 0, 0);
-        
-        float grip = 1.0f; // 1.7f
+        float grip = 1.0f;
         float frontLength = 0.5f;
         float rearLength = 0.5f;
-        float stiffness = 200.0f;
+        float stiffness = 250.0f;
         float damping = 20.0f;
         
         fw1.grip = grip;
+        fw1.tyreOffset = Vector3f(-0.0f, 0, 0);
         fw1.suspension.minLength = 0.4f;
         fw1.suspension.maxLength = frontLength;
         fw1.suspension.stiffness = stiffness;
         fw1.suspension.damping = damping;
         
         fw2.grip = grip;
+        fw2.tyreOffset = Vector3f( 0.0f, 0, 0);
         fw2.suspension.minLength = 0.4f;
         fw2.suspension.maxLength = frontLength;
         fw2.suspension.stiffness = stiffness;
         fw2.suspension.damping = damping;
         
         bw1.grip = grip;
+        bw1.tyreOffset = Vector3f(-0.0f, 0, 0);
         bw1.suspension.minLength = 0.4f;
         bw1.suspension.maxLength = rearLength;
         bw1.suspension.stiffness = stiffness;
         bw1.suspension.damping = damping;
         
         bw2.grip = grip;
+        bw2.tyreOffset = Vector3f( 0.0f, 0, 0);
         bw2.suspension.minLength = 0.4f;
         bw2.suspension.maxLength = rearLength;
         bw2.suspension.stiffness = stiffness;
@@ -293,6 +300,9 @@ class VehicleScene: Scene
         squealVoice = audio.play3d(sfxSquealLoop, vehicle.position.x, vehicle.position.y, vehicle.position.z);
         audio.setVolume(squealVoice, 0.0f);
         audio.setLooping(squealVoice, true);
+        
+        musicVoice = audio.play(music);
+        audio.setLooping(musicVoice, true);
     }
 
     override void onKeyDown(int key)
@@ -312,8 +322,8 @@ class VehicleScene: Scene
     override void onUpdate(Time t)
     {
         bool brake = false;
-        if (inputManager.getButton("forward")) vehicle.accelerate(20);
-        if (inputManager.getButton("back")) vehicle.accelerate(-20);
+        if (inputManager.getButton("forward")) vehicle.accelerate(40);
+        if (inputManager.getButton("back")) vehicle.accelerate(-40);
         if (inputManager.getButton("brake")) { vehicle.stop(); brake = true; }
         float axis = inputManager.getAxis("horizontal");
         vehicle.steer(-axis * 3);
@@ -338,15 +348,15 @@ class VehicleScene: Scene
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
-        float speedFactor = clamp(speedKMH / 60.0f, 0.0f, 1.0f);
-        float engineSpeed = lerp(1.0f, 1.5f, speedFactor);
+        // TODO: use RPM instead of actual speed
+        float speedFactor = clamp(speedKMH / 100.0f, 0.0f, 1.0f);
+        float engineSpeed = lerp(1.0f, 1.75f, speedFactor);
         audio.setRelativePlaySpeed(engineVoice, engineSpeed);
         
-        // Tire squeal
+        // Tire squeal sound
         float slip = vehicle.slip;
         float squealVolume = clamp((slip - 0.2f) / 0.2f, 0.0f, 1.0f);
         squealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
-        
         audio.setVolume(squealVoice, squealVolume);
         audio.set3dSourcePosition(squealVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
         
