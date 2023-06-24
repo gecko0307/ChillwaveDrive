@@ -162,10 +162,10 @@ class VehicleScene: Scene
         game.postProcessingRenderer.motionBlurEnabled = true;
         game.postProcessingRenderer.motionBlurFramerate = 45;
         game.postProcessingRenderer.glowEnabled = true;
-        game.postProcessingRenderer.glowThreshold = 1.0f;
+        game.postProcessingRenderer.glowThreshold = 1.5f;
         game.postProcessingRenderer.glowIntensity = 0.25f;
         game.postProcessingRenderer.glowRadius = 7;
-        game.postProcessingRenderer.lensDistortionEnabled = true;
+        game.postProcessingRenderer.lensDistortionEnabled = false;
         game.postProcessingRenderer.tonemapper = Tonemapper.Unreal;
         game.postProcessingRenderer.exposure = 0.75f;
         game.postProcessingRenderer.lutEnabled = true;
