@@ -57,6 +57,9 @@ class VehicleScene: Scene
     TextureAsset aGroundNormal;
     TextureAsset aRoadAlbedo;
     
+    TextureAsset aTexParticleDust;
+    TextureAsset aTexParticleDustNormal;
+    
     Wav sfxEngine;
     Wav sfxSquealLoop;
     WavStream music;
@@ -82,6 +85,10 @@ class VehicleScene: Scene
     Entity eCar;
     Entity[4] eWheels;
     Vehicle vehicle;
+    
+    ParticleSystem particleSystem;
+    Emitter emitterLeft;
+    Emitter emitterRight;
 
     float speedKMH = 0.0f;
     
@@ -106,6 +113,9 @@ class VehicleScene: Scene
         aBRDF = addTextureAsset("data/brdf.dds");
         
         aTexColorTable = addTextureAsset("data/lut.png");
+        
+        aTexParticleDust = addTextureAsset("data/particles/dust.png");
+        aTexParticleDustNormal = addTextureAsset("data/particles/dust-normal.png");
         
         // Sounds
         sfxEngine = Wav.create();
@@ -228,17 +238,17 @@ class VehicleScene: Scene
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1700.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f);
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.55f, 0.0f);
         vehicle.maxTorque = 7000.0f;
         auto fw1 = vehicle.addWheel(Vector3f(-0.8f, 0.65f,  1.12f), 0.32f, -1.0f, true, true);
         auto fw2 = vehicle.addWheel(Vector3f( 0.8f, 0.65f,  1.12f), 0.32f,  1.0f, true, true);
         auto bw1 = vehicle.addWheel(Vector3f(-0.9f, 0.65f, -1.4f), 0.32f, -1.0f, false, false);
         auto bw2 = vehicle.addWheel(Vector3f( 0.9f, 0.65f, -1.4f), 0.32f,  1.0f, false, false);
         
-        float grip = 1.0f;
+        float grip = 0.99f;
         float frontLength = 0.5f;
         float rearLength = 0.5f;
-        float stiffness = 250.0f;
+        float stiffness = 200.0f;
         float damping = 20.0f;
         
         fw1.grip = grip;
@@ -281,6 +291,46 @@ class VehicleScene: Scene
         }
         
         vehicleView = New!VehicleViewComponent(eventManager, camera, vehicle);
+        
+        auto eParticles = addEntity();
+        particleSystem = New!ParticleSystem(eventManager, eParticles);
+        
+        // Dust particle systems
+        auto mParticlesDust = addMaterial();
+        mParticlesDust.baseColorTexture = aTexParticleDust.texture;
+        mParticlesDust.normalTexture = aTexParticleDustNormal.texture;
+        mParticlesDust.blendMode = Transparent;
+        mParticlesDust.depthWrite = false;
+        mParticlesDust.emissionEnergy = 0.5f;
+        mParticlesDust.sun = sun;
+
+        auto eParticlesRight = addEntity(eCar);
+        emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
+        eParticlesRight.position = Vector3f(-0.9f, 0.0f, -1.4f);
+        emitterRight.minLifetime = 0.1f;
+        emitterRight.maxLifetime = 2.0f;
+        emitterRight.minSize = 0.5f;
+        emitterRight.maxSize = 1.0f;
+        emitterRight.minInitialSpeed = 0.2f;
+        emitterRight.maxInitialSpeed = 0.2f;
+        emitterRight.scaleStep = Vector2f(2, 2);
+        emitterRight.material = mParticlesDust;
+        eParticlesRight.castShadow = false;
+        eParticlesRight.visible = true;
+
+        auto eParticlesLeft = addEntity(eCar);
+        emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
+        eParticlesLeft.position = Vector3f(0.9f, 0.0f, -1.4f);
+        emitterLeft.minLifetime = 0.1f;
+        emitterLeft.maxLifetime = 2.0f;
+        emitterLeft.minSize = 0.5f;
+        emitterLeft.maxSize = 1.0f;
+        emitterLeft.minInitialSpeed = 0.2f;
+        emitterLeft.maxInitialSpeed = 0.2f;
+        emitterLeft.scaleStep = Vector2f(2, 2);
+        emitterLeft.material = mParticlesDust;
+        eParticlesLeft.castShadow = false;
+        eParticlesLeft.visible = true;
 
         text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
         text.color = Color4f(1.0f, 1.0f, 1.0f, 0.7f);
@@ -359,6 +409,12 @@ class VehicleScene: Scene
         squealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
         audio.setVolume(squealVoice, squealVolume);
         audio.set3dSourcePosition(squealVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+        
+        // Dust particles
+        if (squealVolume > 0.0f) emitterLeft.emitting = true;
+        else emitterLeft.emitting = false;
+        if (squealVolume > 0.0f) emitterRight.emitting = true;
+        else emitterRight.emitting = false;
         
         world.update(t.delta);
         camera.fov = lerp(50.0f, 100.0f, vehicleView.boostFactor);
