@@ -31,14 +31,19 @@ import std.stdio;
 import std.conv;
 import dagon;
 import dagon.ext.newton;
+import soloud;
 import scene;
 
 class VehicleDemoGame: Game
 {
+    Soloud audio;
+    
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
-        currentScene = New!VehicleScene(this);
+        audio = Soloud.create();
+        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
+        currentScene = New!VehicleScene(this, audio);
     }
 }
 
@@ -58,6 +63,7 @@ void loadNewtonLibrary()
 void main(string[] args)
 {
     loadNewtonLibrary();
+    loadSoloud();
     VehicleDemoGame game = New!VehicleDemoGame(1280, 720, false, "Dagon vehicle demo", args);
     game.run();
     Delete(game);

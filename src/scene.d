@@ -35,6 +35,7 @@ import dagon;
 import dagon.ext.ftfont;
 import dagon.ext.newton;
 import dagon.ext.stbi;
+import soloud;
 
 import vehicle;
 import view;
@@ -42,6 +43,7 @@ import view;
 class VehicleScene: Scene
 {
     Game game;
+    Soloud audio;
     
     FontAsset aFontDroidSans14;
     
@@ -54,6 +56,12 @@ class VehicleScene: Scene
     TextureAsset aGroundAlbedo;
     TextureAsset aGroundNormal;
     TextureAsset aRoadAlbedo;
+    
+    Wav sfxEngine;
+    Wav sfxSquealLoop;
+    
+    int engineVoice;
+    int squealVoice;
 
     Camera camera;
     VehicleViewComponent vehicleView;
@@ -73,12 +81,15 @@ class VehicleScene: Scene
     Entity[4] eWheels;
     Vehicle vehicle;
 
+    float speedKMH = 0.0f;
+    
     TextLine text;
 
-    this(Game game)
+    this(Game game, Soloud audio)
     {
         super(game);
         this.game = game;
+        this.audio = audio;
         stbiRegister(assetManager);
     }
 
@@ -93,6 +104,15 @@ class VehicleScene: Scene
         aBRDF = addTextureAsset("data/brdf.dds");
         
         aTexColorTable = addTextureAsset("data/lut.png");
+        
+        // Sounds
+        sfxEngine = Wav.create();
+        sfxEngine.load("data/sounds/engine.wav");
+        sfxEngine.setVolume(0.2f);
+        
+        sfxSquealLoop = Wav.create();
+        sfxSquealLoop.load("data/sounds/squeal.wav");
+        sfxSquealLoop.setVolume(0.5f);
     }
 
     override void afterLoad()
@@ -194,27 +214,13 @@ class VehicleScene: Scene
         Vector3f chassisTopSize = Vector3f(1.3f, 0.6f, 1.6f);
         Vector3f chassisTopPos = Vector3f(0.0f, 1.0f, -0.3f); //1.0
         
-        /*
-        auto mTrans = addMaterial();
-        mTrans.blendMode = Transparent;
-        mTrans.opacity = 0.5f;
-        auto eChassisBottom = addEntity(eCar);
-        eChassisBottom.drawable = New!ShapeBox(chassisBottomSize * 0.5f, assetManager);
-        eChassisBottom.material = mTrans;
-        eChassisBottom.position = chassisBottomPos;
-        auto eChassisTop = addEntity(eCar);
-        eChassisTop.drawable = New!ShapeBox(chassisTopSize * 0.5f, assetManager);
-        eChassisTop.material = mTrans;
-        eChassisTop.position = chassisTopPos;
-        */
-        
         auto chassisBottom = New!NewtonBoxShape(chassisBottomSize, world);
         chassisBottom.setTransformation(translationMatrix(chassisBottomPos));
         auto chassisTop = New!NewtonBoxShape(chassisTopSize, world);
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1600.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.55f, 0.0f);
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f); //0.55f
         vehicle.maxTorque = 4000.0f;
         auto fw1 = vehicle.addWheel(Vector3f(-0.56f, 0.75f,  1.35f), 0.341f, -1.0f, true, true);
         auto fw2 = vehicle.addWheel(Vector3f( 0.56f, 0.75f,  1.35f), 0.341f,  1.0f, true, true);
@@ -226,7 +232,7 @@ class VehicleScene: Scene
         bw1.tyreOffset = Vector3f(-0.15f, 0, 0);
         bw2.tyreOffset = Vector3f( 0.15f, 0, 0);
         
-        float grip = 1.2f; // 1.7f
+        float grip = 1.0f; // 1.7f
         float frontLength = 0.5f;
         float rearLength = 0.5f;
         float stiffness = 200.0f;
@@ -277,6 +283,16 @@ class VehicleScene: Scene
         
         eventManager.showCursor(true);
         vehicleView.active = false;
+        
+        engineVoice = audio.play3d(sfxEngine, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+        audio.setLooping(engineVoice, true);
+        audio.set3dSourceMinMaxDistance(engineVoice, 1.0f, 50.0f);
+        audio.setVolume(engineVoice, 0.5f);
+        audio.update3dAudio();
+        
+        squealVoice = audio.play3d(sfxSquealLoop, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+        audio.setVolume(squealVoice, 0.0f);
+        audio.setLooping(squealVoice, true);
     }
 
     override void onKeyDown(int key)
@@ -295,9 +311,10 @@ class VehicleScene: Scene
 
     override void onUpdate(Time t)
     {
+        bool brake = false;
         if (inputManager.getButton("forward")) vehicle.accelerate(20);
         if (inputManager.getButton("back")) vehicle.accelerate(-20);
-        if (inputManager.getButton("brake")) vehicle.stop();
+        if (inputManager.getButton("brake")) { vehicle.stop(); brake = true; }
         float axis = inputManager.getAxis("horizontal");
         vehicle.steer(-axis * 3);
         
@@ -316,19 +333,42 @@ class VehicleScene: Scene
             w.rotation = wheel.rotation;
         }
         
+        speedKMH = vehicle.longitudinalSpeedKMH;
+        float lateralSpeedKMH = vehicle.lateralSpeedKMH;
+        
+        // Engine sound
+        audio.set3dSourcePosition(engineVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+        float speedFactor = clamp(speedKMH / 60.0f, 0.0f, 1.0f);
+        float engineSpeed = lerp(1.0f, 1.5f, speedFactor);
+        audio.setRelativePlaySpeed(engineVoice, engineSpeed);
+        
+        // Tire squeal
+        float slip = vehicle.slip;
+        float squealVolume = clamp((slip - 0.2f) / 0.2f, 0.0f, 1.0f);
+        squealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
+        
+        audio.setVolume(squealVoice, squealVolume);
+        audio.set3dSourcePosition(squealVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+        
         world.update(t.delta);
         camera.fov = lerp(50.0f, 100.0f, vehicleView.boostFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, vehicleView.boostFactor);
         game.postProcessingRenderer.lensDistortionScale = lerp(1.0f, 0.7f, vehicleView.boostFactor);
         game.postProcessingRenderer.lensDistortionDispersion = lerp(0.0f, 0.5f, vehicleView.boostFactor);
         updateText();
+        
+        // Feed camera data to 3D listener
+        audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);
+        audio.set3dListenerAt(camera.directionAbsolute.x, camera.directionAbsolute.y, camera.directionAbsolute.z);
+        audio.set3dListenerUp(camera.upAbsolute.x, camera.upAbsolute.y, camera.upAbsolute.z);
+        audio.update3dAudio();
     }
     
     char[100] txt;
     void updateText()
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);
-        uint speed = cast(int)vehicle.speedKMH;
+        uint speed = cast(int)speedKMH;
         uint n = sprintf(txt.ptr, "Speed: %u km/h", speed);
         string s = cast(string)txt[0..n];
         text.setText(s);

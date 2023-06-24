@@ -12,7 +12,8 @@
         "dagon": "~master",
         "dagon:newton": "~master",
         "dagon:ftfont": "~master",
-        "dagon:stbi": "~master"
+        "dagon:stbi": "~master",
+        "bindbc-soloud": "~>0.1.1"
     },
     
     "importPaths": [

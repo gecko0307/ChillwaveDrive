@@ -36,6 +36,36 @@ import dagon;
 import dagon.ext.newton;
 import wheel;
 
+extern(C)
+{
+    void chassisContactsProcess(
+        const NewtonJoint* contactJoint,
+        dFloat timestep,
+        int threadIndex)
+    {
+        void* nextContact;
+        uint numContacts = 0;
+        for (void* contact = NewtonContactJointGetFirstContact(contactJoint); contact; contact = nextContact)
+        {
+            nextContact = NewtonContactJointGetNextContact(contactJoint, contact);
+            numContacts++;
+        }
+        
+        if (numContacts)
+        {
+            NewtonBody* b0 = NewtonJointGetBody0(contactJoint);
+            NewtonBody* b1 = NewtonJointGetBody1(contactJoint);
+            NewtonRigidBody body0 = cast(NewtonRigidBody)NewtonBodyGetUserData(b0);
+            NewtonRigidBody body1 = cast(NewtonRigidBody)NewtonBodyGetUserData(b1);
+            
+            if (body0)
+            {
+                body0.onCollision(body1);
+            }
+        }
+    }
+}
+
 class Vehicle: EntityComponent
 {
     NewtonPhysicsWorld world;
@@ -62,11 +92,14 @@ class Vehicle: EntityComponent
             entity.rotation.toMatrix4x4;
         chassisBody.raycastable = false;
         chassisBody.groupId = materialID;
+        chassisBody.collisionCallback = &onCollision;
+        //chassisBody.groupId = world.sensorGroupId;
         
         NewtonBodySetContinuousCollisionMode(chassisBody.newtonBody, 1);
         NewtonBodySetMatrix(chassisBody.newtonBody, chassisBody.transformation.arrayof.ptr);
         NewtonMaterialSetDefaultFriction(world.newtonWorld, 0, materialID, 0.2f, 0.2f);
         NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
+        NewtonMaterialSetCollisionCallback(world.newtonWorld, materialID, world.defaultGroupId, null, &chassisContactsProcess);
         
         prevTransformation = Matrix4x4f.identity;
     }
@@ -167,6 +200,29 @@ class Vehicle: EntityComponent
         return chassisBody.velocity.length * 3.6;
     }
     
+    float lateralSpeedKMH() @property
+    {
+        Vector3f rightVector = chassisBody.transformation.right;
+        return abs(dot(chassisBody.velocity, rightVector)) * 3.6;
+    }
+    
+    float longitudinalSpeedKMH() @property
+    {
+        Vector3f forwardVector = chassisBody.transformation.forward;
+        return abs(dot(chassisBody.velocity, forwardVector)) * 3.6;
+    }
+    
+    float slip() @property
+    {
+        float res = 0.0f;
+        foreach(wheel; wheels)
+        {
+            if (wheel.onGround)
+                res += clamp(radtodeg(abs(wheel.slipAngle)) / 90.0f, 0.0f, 1.0f);
+        }
+        return res / wheels.length;
+    }
+    
     void reset()
     {
         Vector3f pos = position;
@@ -212,10 +268,12 @@ class Vehicle: EntityComponent
             w.update(t.delta);
         }
         
+        /*
         Vector3f dragDir = -chassisBody.velocity.normalized;
         float spd = chassisBody.velocity.length;
         float drag = 0.05f;
         chassisBody.addForce(dragDir * spd * spd * drag);
+        */
         
         chassisBody.update(t.delta);
 
@@ -231,5 +289,10 @@ class Vehicle: EntityComponent
         entity.prevAbsoluteTransformation = entity.prevTransformation;
 
         prevTransformation = entity.transformation;
+    }
+    
+    void onCollision(NewtonRigidBody, NewtonRigidBody)
+    {
+        
     }
 }
