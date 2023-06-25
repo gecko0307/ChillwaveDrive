@@ -165,10 +165,10 @@ class Vehicle: EntityComponent
         }
     }
     
-    void stop()
+    void setBrake(bool mode)
     {
-        torque = 0.0f;
-        brake = true;
+        brake = mode;
+        //if (brake) torque = 0.0f;
     }
     
     Vector3f position() @property

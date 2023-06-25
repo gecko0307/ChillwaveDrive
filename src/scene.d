@@ -62,7 +62,7 @@ class VehicleScene: Scene
     
     Wav sfxEngine;
     Wav sfxSquealLoop;
-    Wav sfxHit1;
+    Wav[2] sfxHit;
     WavStream music;
     
     int engineVoice;
@@ -129,14 +129,19 @@ class VehicleScene: Scene
         sfxSquealLoop.setVolume(0.5f);
         sfxSquealLoop.set3dDistanceDelay(true);
         
-        sfxHit1 = Wav.create();
-        sfxHit1.load("data/sounds/hit1.wav");
-        sfxHit1.setVolume(0.5f);
-        sfxHit1.set3dDistanceDelay(true);
+        sfxHit[0] = Wav.create();
+        sfxHit[0].load("data/sounds/hit1.wav");
+        sfxHit[0].setVolume(0.5f);
+        sfxHit[0].set3dDistanceDelay(true);
+        
+        sfxHit[1] = Wav.create();
+        sfxHit[1].load("data/sounds/hit2.wav");
+        sfxHit[1].setVolume(0.5f);
+        sfxHit[1].set3dDistanceDelay(true);
         
         music = WavStream.create();
         music.load("data/sounds/music.flac");
-        music.setVolume(0.5f);
+        music.setVolume(0.0f);
     }
 
     override void afterLoad()
@@ -163,7 +168,7 @@ class VehicleScene: Scene
         game.deferredRenderer.ssaoRadius = 1.0f;
         game.deferredRenderer.ssaoPower = 12.0f;
         game.postProcessingRenderer.fxaaEnabled = true;
-        game.postProcessingRenderer.depthOfFieldEnabled = true;
+        game.postProcessingRenderer.depthOfFieldEnabled = false;
         game.postProcessingRenderer.fStop = 2.0f;
         game.postProcessingRenderer.motionBlurEnabled = true;
         game.postProcessingRenderer.motionBlurFramerate = 45;
@@ -244,8 +249,8 @@ class VehicleScene: Scene
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1700.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.55f, 0.0f);
-        vehicle.maxTorque = 7000.0f;
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f);
+        vehicle.maxTorque = 10000.0f;
         
         vehicle.onHit = &onVehicleHit;
         
@@ -257,36 +262,40 @@ class VehicleScene: Scene
         float grip = 1.5f;
         float frontLength = 0.5f;
         float rearLength = 0.5f;
-        float stiffness = 200.0f;
+        float stiffness = 250.0f;
         float damping = 20.0f;
         
         fw1.grip = grip;
         fw1.tyreOffset = Vector3f(-0.0f, 0, 0);
-        fw1.suspension.minLength = 0.4f;
+        fw1.suspension.minLength = 0.3f;
         fw1.suspension.maxLength = frontLength;
         fw1.suspension.stiffness = stiffness;
         fw1.suspension.damping = damping;
+        fw1.camberAngle = -10.0f;
         
         fw2.grip = grip;
         fw2.tyreOffset = Vector3f( 0.0f, 0, 0);
-        fw2.suspension.minLength = 0.4f;
+        fw2.suspension.minLength = 0.3f;
         fw2.suspension.maxLength = frontLength;
         fw2.suspension.stiffness = stiffness;
         fw2.suspension.damping = damping;
+        fw2.camberAngle = 10.0f;
         
         bw1.grip = grip;
         bw1.tyreOffset = Vector3f(-0.0f, 0, 0);
-        bw1.suspension.minLength = 0.4f;
+        bw1.suspension.minLength = 0.3f;
         bw1.suspension.maxLength = rearLength;
         bw1.suspension.stiffness = stiffness;
         bw1.suspension.damping = damping;
+        bw1.camberAngle = -10.0f;
         
         bw2.grip = grip;
         bw2.tyreOffset = Vector3f( 0.0f, 0, 0);
-        bw2.suspension.minLength = 0.4f;
+        bw2.suspension.minLength = 0.3f;
         bw2.suspension.maxLength = rearLength;
         bw2.suspension.stiffness = stiffness;
         bw2.suspension.damping = damping;
+        bw2.camberAngle = 10.0f;
         
         foreach(i, ref w; eWheels)
         {
@@ -369,9 +378,12 @@ class VehicleScene: Scene
         {
             float forceFactor = clamp(force / 2000.0f, 0.0f, 1.0f);
             float randomFactor = uniform(0.0f, 1.0f);
-            hitVoice = audio.play3d(sfxHit1, vehicle.position.x, vehicle.position.y, vehicle.position.z);
-            audio.setVolume(hitVoice, lerp(0.5f, 1.0f, forceFactor));
-            audio.setRelativePlaySpeed(hitVoice, lerp(1.0f, 2.0f, randomFactor));
+            auto hitSound = sfxHit[uniform(0, $)];
+            float speedFactor = clamp(vehicle.speedKMH / 20.0f, 0.0f, 1.0f);
+            hitVoice = audio.play3d(hitSound, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+            audio.setInaudibleBehavior(hitVoice, false, true);
+            audio.setVolume(hitVoice, lerp(0.5f, 1.0f, forceFactor) * speedFactor);
+            audio.setRelativePlaySpeed(hitVoice, lerp(0.5f, 1.0f, speedFactor));
         }
     }
 
@@ -391,10 +403,13 @@ class VehicleScene: Scene
 
     override void onUpdate(Time t)
     {
-        bool brake = false;
-        if (inputManager.getButton("forward")) vehicle.accelerate(40);
-        if (inputManager.getButton("back")) vehicle.accelerate(-40);
-        if (inputManager.getButton("brake")) { vehicle.stop(); brake = true; }
+        if (inputManager.getButton("brake")) { vehicle.setBrake(true); }
+        else
+        {
+            if (inputManager.getButton("forward")) vehicle.accelerate(100);
+            else if (inputManager.getButton("back")) vehicle.accelerate(-100);
+            else vehicle.setBrake(false);
+        }
         float axis = inputManager.getAxis("horizontal");
         vehicle.steer(-axis * 3);
         
@@ -441,7 +456,7 @@ class VehicleScene: Scene
         else emitterRight.emitting = false;
         
         world.update(t.delta);
-        camera.fov = lerp(50.0f, 80.0f, vehicleView.boostFactor);
+        camera.fov = lerp(50.0f, 70.0f, vehicleView.boostFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, vehicleView.boostFactor);
         game.postProcessingRenderer.lensDistortionScale = lerp(1.0f, 0.7f, vehicleView.boostFactor);
         game.postProcessingRenderer.lensDistortionDispersion = lerp(0.0f, 0.5f, vehicleView.boostFactor);
