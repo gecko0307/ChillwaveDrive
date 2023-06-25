@@ -213,13 +213,28 @@ class Vehicle: EntityComponent
         return abs(dot(chassisBody.velocity, forwardVector)) * 3.6;
     }
     
-    float slip() @property
+    float lateralSlip() @property
     {
         float res = 0.0f;
         foreach(wheel; wheels)
         {
             if (wheel.onGround)
+            {
                 res += clamp(radtodeg(abs(wheel.slipAngle)) / 90.0f, 0.0f, 1.0f);
+            }
+        }
+        return res / wheels.length;
+    }
+    
+    float longitudinalSlip() @property
+    {
+        float res = 0.0f;
+        foreach(wheel; wheels)
+        {
+            if (wheel.onGround)
+            {
+                res += clamp(wheel.slipRatio, 0.0f, 1.0f);
+            }
         }
         return res / wheels.length;
     }

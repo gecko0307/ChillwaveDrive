@@ -81,7 +81,7 @@ class VehicleViewComponent: EntityComponent
         float speedFactor = clamp((vehicle.speed - minSpeed) / (maxSpeed - minSpeed), 0.0f, 1.0f);
         boostFactor = clamp((vehicle.speed - 30.0f) / (50.0f - 30.0f), 0.0f, 1.0f);
         
-        float faceDistance = lerp(4.5f, lerp(3.5f, 0.0f, boostFactor), speedFactor);
+        float faceDistance = lerp(4.5f, lerp(3.5f, -1.0f, boostFactor), speedFactor);
         Vector3f facePosition = (offset.normalized * -faceDistance) * vehicle.transformation;
         
         targetPosition = facePosition;

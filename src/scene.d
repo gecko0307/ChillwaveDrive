@@ -59,7 +59,6 @@ class VehicleScene: Scene
     TextureAsset aRoadAlbedo;
     
     TextureAsset aTexParticleDust;
-    TextureAsset aTexParticleDustNormal;
     
     Wav sfxEngine;
     Wav sfxSquealLoop;
@@ -118,7 +117,6 @@ class VehicleScene: Scene
         aTexColorTable = addTextureAsset("data/lut.png");
         
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
-        aTexParticleDustNormal = addTextureAsset("data/particles/dust-normal.png");
         
         // Sounds
         sfxEngine = Wav.create();
@@ -309,7 +307,6 @@ class VehicleScene: Scene
         // Dust particle systems
         auto mParticlesDust = addMaterial();
         mParticlesDust.baseColorTexture = aTexParticleDust.texture;
-        mParticlesDust.normalTexture = aTexParticleDustNormal.texture;
         mParticlesDust.blendMode = Transparent;
         mParticlesDust.depthWrite = false;
         mParticlesDust.emissionEnergy = 0.5f;
@@ -427,9 +424,13 @@ class VehicleScene: Scene
         audio.setRelativePlaySpeed(engineVoice, engineSpeed);
         
         // Tire squeal sound
-        float slip = vehicle.slip;
-        float squealVolume = clamp((slip - 0.2f) / 0.2f, 0.0f, 1.0f);
-        squealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
+        float lateralSlip = vehicle.lateralSlip;
+        float longitudinalSlip = vehicle.longitudinalSlip;
+        float lateralSquealVolume = clamp((lateralSlip - 0.2f) / 0.2f, 0.0f, 1.0f);
+        lateralSquealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
+        float longitudinalSquealVolume = clamp((longitudinalSlip - 0.2f) / 0.2f, 0.0f, 1.0f);
+        longitudinalSquealVolume *= clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
+        float squealVolume = clamp(lateralSquealVolume + longitudinalSquealVolume, 0.0f, 1.0f);
         audio.setVolume(squealVoice, squealVolume * 0.8f);
         audio.set3dSourcePosition(squealVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
         
@@ -440,7 +441,7 @@ class VehicleScene: Scene
         else emitterRight.emitting = false;
         
         world.update(t.delta);
-        camera.fov = lerp(50.0f, 100.0f, vehicleView.boostFactor);
+        camera.fov = lerp(50.0f, 80.0f, vehicleView.boostFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, vehicleView.boostFactor);
         game.postProcessingRenderer.lensDistortionScale = lerp(1.0f, 0.7f, vehicleView.boostFactor);
         game.postProcessingRenderer.lensDistortionDispersion = lerp(0.0f, 0.5f, vehicleView.boostFactor);
