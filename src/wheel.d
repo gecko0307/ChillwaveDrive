@@ -59,24 +59,18 @@ class WheelConstraint: NewtonUserJointConstraint
             Vector3f forcePosition = wheel.getContactPoint();
             Vector3f lateralAxis = wheel.getLateralAxis();
             Vector3f longitudinalAxis = wheel.getLongitudinalAxis();
-            //float frictionForce = wheel.getFrictionForce();
             
             float lateralFriction = wheel.getLateralFrictionForce();
             float longitudinalFriction = wheel.getLongitudinalFrictionForce();
             
-           // float maxFrictionForce = wheel.normalForce * wheel.grip;
-            //float invMag2 = maxFrictionForce / sqrt(lateralFriction * lateralFriction + longitudinalFriction * longitudinalFriction);
-            //lateralFriction = lateralFriction * invMag2;
-            //longitudinalFriction = longitudinalFriction * invMag2 * wheel.longitudinalGrip;
-            
-            if (lateralFriction > 0.0f) //if (frictionForce > 0.0)
+            if (lateralFriction > 0.0f)
             {
                 addLinearRow(forcePosition, forcePosition, lateralAxis);
                 setMaximumFriction(lateralFriction);
                 setMinimumFriction(-lateralFriction);
             }
             
-            if (longitudinalFriction > 0.0f) //if (frictionForce > 0.0)
+            if (longitudinalFriction > 0.0f)
             {
                 addLinearRow(forcePosition, forcePosition, longitudinalAxis);
                 setMaximumFriction(longitudinalFriction);
@@ -317,12 +311,12 @@ class Wheel: Owner, NewtonRaycaster
     
     float getLateralFrictionForce()
     {
-        return tyreModel.lateralForce(normalForce, abs(slipAngle), 0.0f);
+        return tyreModel.lateralForce(normalForce, abs(slipAngle), 0.0f) * grip;
     }
     
     float getLongitudinalFrictionForce()
     {
-        return tyreModel.longitudinalForce(normalForce, slipRatio * 100.0f);
+        return tyreModel.longitudinalForce(normalForce, slipRatio * 100.0f) * grip;
     }
     
     float getFrictionForce()

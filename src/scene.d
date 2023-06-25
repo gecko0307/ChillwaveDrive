@@ -259,10 +259,10 @@ class VehicleScene: Scene
         auto bw1 = vehicle.addWheel(Vector3f(-0.9f, 0.65f, -1.4f), 0.32f, -1.0f, false, false);
         auto bw2 = vehicle.addWheel(Vector3f( 0.9f, 0.65f, -1.4f), 0.32f,  1.0f, false, false);
         
-        float grip = 1.5f;
+        float grip = 1.0f;
         float frontLength = 0.5f;
         float rearLength = 0.5f;
-        float stiffness = 250.0f;
+        float stiffness = 150.0f;
         float damping = 20.0f;
         
         fw1.grip = grip;
@@ -271,7 +271,7 @@ class VehicleScene: Scene
         fw1.suspension.maxLength = frontLength;
         fw1.suspension.stiffness = stiffness;
         fw1.suspension.damping = damping;
-        fw1.camberAngle = -10.0f;
+        fw1.camberAngle = -8.0f;
         
         fw2.grip = grip;
         fw2.tyreOffset = Vector3f( 0.0f, 0, 0);
@@ -279,7 +279,7 @@ class VehicleScene: Scene
         fw2.suspension.maxLength = frontLength;
         fw2.suspension.stiffness = stiffness;
         fw2.suspension.damping = damping;
-        fw2.camberAngle = 10.0f;
+        fw2.camberAngle = 8.0f;
         
         bw1.grip = grip;
         bw1.tyreOffset = Vector3f(-0.0f, 0, 0);
@@ -287,7 +287,7 @@ class VehicleScene: Scene
         bw1.suspension.maxLength = rearLength;
         bw1.suspension.stiffness = stiffness;
         bw1.suspension.damping = damping;
-        bw1.camberAngle = -10.0f;
+        bw1.camberAngle = -8.0f;
         
         bw2.grip = grip;
         bw2.tyreOffset = Vector3f( 0.0f, 0, 0);
@@ -295,7 +295,7 @@ class VehicleScene: Scene
         bw2.suspension.maxLength = rearLength;
         bw2.suspension.stiffness = stiffness;
         bw2.suspension.damping = damping;
-        bw2.camberAngle = 10.0f;
+        bw2.camberAngle = 8.0f;
         
         foreach(i, ref w; eWheels)
         {
@@ -441,9 +441,9 @@ class VehicleScene: Scene
         // Tire squeal sound
         float lateralSlip = vehicle.lateralSlip;
         float longitudinalSlip = vehicle.longitudinalSlip;
-        float lateralSquealVolume = clamp((lateralSlip - 0.2f) / 0.2f, 0.0f, 1.0f);
+        float lateralSquealVolume = clamp((lateralSlip - 0.3f) / 0.3f, 0.0f, 1.0f);
         lateralSquealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
-        float longitudinalSquealVolume = clamp((longitudinalSlip - 0.2f) / 0.2f, 0.0f, 1.0f);
+        float longitudinalSquealVolume = clamp((longitudinalSlip - 0.3f) / 0.3f, 0.0f, 1.0f);
         longitudinalSquealVolume *= clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
         float squealVolume = clamp(lateralSquealVolume + longitudinalSquealVolume, 0.0f, 1.0f);
         audio.setVolume(squealVoice, squealVolume * 0.8f);
