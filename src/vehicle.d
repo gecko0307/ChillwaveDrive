@@ -284,12 +284,10 @@ class Vehicle: EntityComponent
             w.update(t.delta);
         }
         
-        /*
         Vector3f dragDir = -chassisBody.velocity.normalized;
         float spd = chassisBody.velocity.length;
         float drag = 0.05f;
         chassisBody.addForce(dragDir * spd * spd * drag);
-        */
         
         chassisBody.update(t.delta);
 

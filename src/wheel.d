@@ -68,6 +68,7 @@ class WheelConstraint: NewtonUserJointConstraint
                 addLinearRow(forcePosition, forcePosition, lateralAxis);
                 setMaximumFriction(lateralFriction);
                 setMinimumFriction(-lateralFriction);
+                NewtonUserJointSetRowStiffness(joint, 1.0f);
             }
             
             if (longitudinalFriction > 0.0f)
@@ -75,6 +76,7 @@ class WheelConstraint: NewtonUserJointConstraint
                 addLinearRow(forcePosition, forcePosition, longitudinalAxis);
                 setMaximumFriction(longitudinalFriction);
                 setMinimumFriction(-longitudinalFriction);
+                NewtonUserJointSetRowStiffness(joint, 1.0f);
             }
         }
     }
@@ -304,7 +306,8 @@ class Wheel: Owner, NewtonRaycaster
     
     Vector3f getContactPoint()
     {
-        Vector3f contactPoint = (suspension.position + tyreOffset) - Vector3f(0.0f, radius, 0.0f);
+        auto wheelOrientation = rotationQuaternion(Axis.z, degtorad(camberAngle));
+        Vector3f contactPoint = (suspension.position + tyreOffset) - wheelOrientation.rotate(Vector3f(0.0f, radius, 0.0f));
         Vector3f forcePosition = contactPoint * vehicle.chassisBody.transformation;
         return forcePosition;
     }

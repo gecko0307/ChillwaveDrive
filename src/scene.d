@@ -261,8 +261,8 @@ class VehicleScene: Scene
         
         float grip = 1.0f;
         float frontLength = 0.5f;
-        float rearLength = 0.5f;
-        float stiffness = 150.0f;
+        float rearLength = 0.7f;
+        float stiffness = 250.0f;
         float damping = 20.0f;
         
         fw1.grip = grip;
@@ -281,19 +281,19 @@ class VehicleScene: Scene
         fw2.suspension.damping = damping;
         fw2.camberAngle = 8.0f;
         
-        bw1.grip = grip;
+        bw1.grip = grip * 0.9f;
         bw1.tyreOffset = Vector3f(-0.0f, 0, 0);
         bw1.suspension.minLength = 0.3f;
         bw1.suspension.maxLength = rearLength;
-        bw1.suspension.stiffness = stiffness;
+        bw1.suspension.stiffness = stiffness * 0.2f;
         bw1.suspension.damping = damping;
         bw1.camberAngle = -8.0f;
         
-        bw2.grip = grip;
+        bw2.grip = grip * 0.9f;
         bw2.tyreOffset = Vector3f( 0.0f, 0, 0);
         bw2.suspension.minLength = 0.3f;
         bw2.suspension.maxLength = rearLength;
-        bw2.suspension.stiffness = stiffness;
+        bw2.suspension.stiffness = stiffness * 0.2f;
         bw2.suspension.damping = damping;
         bw2.camberAngle = 8.0f;
         
@@ -406,8 +406,8 @@ class VehicleScene: Scene
         if (inputManager.getButton("brake")) { vehicle.setBrake(true); }
         else
         {
-            if (inputManager.getButton("forward")) vehicle.accelerate(100);
-            else if (inputManager.getButton("back")) vehicle.accelerate(-100);
+            if (inputManager.getButton("forward")) vehicle.accelerate(50);
+            else if (inputManager.getButton("back")) vehicle.accelerate(-50);
             else vehicle.setBrake(false);
         }
         float axis = inputManager.getAxis("horizontal");
