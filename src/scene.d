@@ -138,7 +138,7 @@ class VehicleScene: Scene
         
         music = WavStream.create();
         music.load("data/sounds/music.flac");
-        music.setVolume(0.2f);
+        music.setVolume(0.5f);
     }
 
     override void afterLoad()
@@ -256,7 +256,7 @@ class VehicleScene: Scene
         auto bw1 = vehicle.addWheel(Vector3f(-0.9f, 0.65f, -1.4f), 0.32f, -1.0f, false, false);
         auto bw2 = vehicle.addWheel(Vector3f( 0.9f, 0.65f, -1.4f), 0.32f,  1.0f, false, false);
         
-        float grip = 0.99f;
+        float grip = 1.5f;
         float frontLength = 0.5f;
         float rearLength = 0.5f;
         float stiffness = 200.0f;
@@ -430,7 +430,7 @@ class VehicleScene: Scene
         float slip = vehicle.slip;
         float squealVolume = clamp((slip - 0.2f) / 0.2f, 0.0f, 1.0f);
         squealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
-        audio.setVolume(squealVoice, squealVolume);
+        audio.setVolume(squealVoice, squealVolume * 0.8f);
         audio.set3dSourcePosition(squealVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);
         
         // Dust particles
