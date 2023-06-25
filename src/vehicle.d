@@ -43,6 +43,9 @@ extern(C)
         dFloat timestep,
         int threadIndex)
     {
+        NewtonBody* b0 = NewtonJointGetBody0(contactJoint);
+        NewtonBody* b1 = NewtonJointGetBody1(contactJoint);
+        
         void* nextContact;
         uint numContacts = 0;
         for (void* contact = NewtonContactJointGetFirstContact(contactJoint); contact; contact = nextContact)
@@ -53,8 +56,6 @@ extern(C)
         
         if (numContacts)
         {
-            NewtonBody* b0 = NewtonJointGetBody0(contactJoint);
-            NewtonBody* b1 = NewtonJointGetBody1(contactJoint);
             NewtonRigidBody body0 = cast(NewtonRigidBody)NewtonBodyGetUserData(b0);
             NewtonRigidBody body1 = cast(NewtonRigidBody)NewtonBodyGetUserData(b1);
             
@@ -76,6 +77,7 @@ class Vehicle: EntityComponent
     float maxTorque = 8000.0f;
     float torqueDecreaseStep = 10.0f;
     Matrix4x4f prevTransformation;
+    void delegate(float force) onHit;
     
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
@@ -93,7 +95,6 @@ class Vehicle: EntityComponent
         chassisBody.raycastable = false;
         chassisBody.groupId = materialID;
         chassisBody.collisionCallback = &onCollision;
-        //chassisBody.groupId = world.sensorGroupId;
         
         NewtonBodySetContinuousCollisionMode(chassisBody.newtonBody, 1);
         NewtonBodySetMatrix(chassisBody.newtonBody, chassisBody.transformation.arrayof.ptr);
@@ -291,8 +292,22 @@ class Vehicle: EntityComponent
         prevTransformation = entity.transformation;
     }
     
-    void onCollision(NewtonRigidBody, NewtonRigidBody)
+    void onCollision(NewtonRigidBody b1, NewtonRigidBody b2)
     {
+        float maxContactForce = 0.0f;
         
+        for (NewtonJoint* contactJoint = NewtonBodyGetFirstContactJoint(b1.newtonBody); contactJoint; contactJoint = NewtonBodyGetNextContactJoint(b1.newtonBody, contactJoint))
+        {
+            for (void* contact = NewtonContactJointGetFirstContact(contactJoint); contact; contact = NewtonContactJointGetNextContact(contactJoint, contact))
+            {
+                NewtonMaterial* material = NewtonContactGetMaterial(contact);
+                float forceMag;
+                NewtonMaterialGetContactForce(material, b1.newtonBody, &forceMag);
+                if (abs(forceMag) > maxContactForce)
+                    maxContactForce = abs(forceMag);
+            }
+        }
+        
+        if (onHit) onHit(maxContactForce);
     }
 }

@@ -30,6 +30,7 @@ module scene;
 import std.stdio;
 import std.conv;
 import std.math;
+import std.random;
 
 import dagon;
 import dagon.ext.ftfont;
@@ -62,10 +63,12 @@ class VehicleScene: Scene
     
     Wav sfxEngine;
     Wav sfxSquealLoop;
+    Wav sfxHit1;
     WavStream music;
     
     int engineVoice;
     int squealVoice;
+    int hitVoice;
     int musicVoice;
 
     Camera camera;
@@ -127,6 +130,11 @@ class VehicleScene: Scene
         sfxSquealLoop.load("data/sounds/squeal.wav");
         sfxSquealLoop.setVolume(0.5f);
         sfxSquealLoop.set3dDistanceDelay(true);
+        
+        sfxHit1 = Wav.create();
+        sfxHit1.load("data/sounds/hit1.wav");
+        sfxHit1.setVolume(0.5f);
+        sfxHit1.set3dDistanceDelay(true);
         
         music = WavStream.create();
         music.load("data/sounds/music.flac");
@@ -240,6 +248,9 @@ class VehicleScene: Scene
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1700.0f, 1);
         vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.55f, 0.0f);
         vehicle.maxTorque = 7000.0f;
+        
+        vehicle.onHit = &onVehicleHit;
+        
         auto fw1 = vehicle.addWheel(Vector3f(-0.8f, 0.65f,  1.12f), 0.32f, -1.0f, true, true);
         auto fw2 = vehicle.addWheel(Vector3f( 0.8f, 0.65f,  1.12f), 0.32f,  1.0f, true, true);
         auto bw1 = vehicle.addWheel(Vector3f(-0.9f, 0.65f, -1.4f), 0.32f, -1.0f, false, false);
@@ -353,6 +364,18 @@ class VehicleScene: Scene
         
         musicVoice = audio.play(music);
         audio.setLooping(musicVoice, true);
+    }
+    
+    void onVehicleHit(float force)
+    {
+        if (!audio.isValidVoiceHandle(hitVoice))
+        {
+            float forceFactor = clamp(force / 2000.0f, 0.0f, 1.0f);
+            float randomFactor = uniform(0.0f, 1.0f);
+            hitVoice = audio.play3d(sfxHit1, vehicle.position.x, vehicle.position.y, vehicle.position.z);
+            audio.setVolume(hitVoice, lerp(0.5f, 1.0f, forceFactor));
+            audio.setRelativePlaySpeed(hitVoice, lerp(1.0f, 2.0f, randomFactor));
+        }
     }
 
     override void onKeyDown(int key)
