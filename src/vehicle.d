@@ -126,10 +126,13 @@ class Vehicle: EntityComponent
         torque += t;
         
         float forwardSpeed = dot(chassisBody.velocity, chassisBody.transformation.forward);
-        if (sign(t) != sign(forwardSpeed))
-            brake = true;
-        else
-            brake = false;
+        if (abs(forwardSpeed) > 0.0f)
+        {
+            if (sign(t) != sign(forwardSpeed))
+                brake = true;
+            else
+                brake = false;
+        }
     }
     
     void steer(float angle)
@@ -284,10 +287,12 @@ class Vehicle: EntityComponent
             w.update(t.delta);
         }
         
+        /*
         Vector3f dragDir = -chassisBody.velocity.normalized;
         float spd = chassisBody.velocity.length;
         float drag = 0.05f;
         chassisBody.addForce(dragDir * spd * spd * drag);
+        */
         
         chassisBody.update(t.delta);
 

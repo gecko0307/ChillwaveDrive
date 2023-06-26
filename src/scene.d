@@ -249,8 +249,8 @@ class VehicleScene: Scene
         chassisTop.setTransformation(translationMatrix(chassisTopPos));
         auto newtonChassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisBottom, chassisTop], world);
         vehicle = New!Vehicle(world, eCar, newtonChassisShape, 1700.0f, 1);
-        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.5f, 0.0f);
-        vehicle.maxTorque = 10000.0f;
+        vehicle.chassisBody.centerOfMass = Vector3f(0.0f, 0.55f, 0.1f);
+        vehicle.maxTorque = 8000.0f;
         
         vehicle.onHit = &onVehicleHit;
         
@@ -259,11 +259,11 @@ class VehicleScene: Scene
         auto bw1 = vehicle.addWheel(Vector3f(-0.9f, 0.65f, -1.4f), 0.32f, -1.0f, false, false);
         auto bw2 = vehicle.addWheel(Vector3f( 0.9f, 0.65f, -1.4f), 0.32f,  1.0f, false, false);
         
-        float grip = 1.0f;
+        float grip = 0.99f;
         float frontLength = 0.5f;
-        float rearLength = 0.7f;
+        float rearLength = 0.5f;
         float stiffness = 250.0f;
-        float damping = 20.0f;
+        float damping = 25.0f;
         
         fw1.grip = grip;
         fw1.tyreOffset = Vector3f(-0.0f, 0, 0);
@@ -271,7 +271,8 @@ class VehicleScene: Scene
         fw1.suspension.maxLength = frontLength;
         fw1.suspension.stiffness = stiffness;
         fw1.suspension.damping = damping;
-        fw1.camberAngle = -8.0f;
+        fw1.load = 0.3f;
+        //fw1.camberAngle = -5.0f;
         
         fw2.grip = grip;
         fw2.tyreOffset = Vector3f( 0.0f, 0, 0);
@@ -279,23 +280,26 @@ class VehicleScene: Scene
         fw2.suspension.maxLength = frontLength;
         fw2.suspension.stiffness = stiffness;
         fw2.suspension.damping = damping;
-        fw2.camberAngle = 8.0f;
+        fw1.load = 0.3f;
+        //fw2.camberAngle = 5.0f;
         
-        bw1.grip = grip * 0.9f;
+        bw1.grip = grip;
         bw1.tyreOffset = Vector3f(-0.0f, 0, 0);
         bw1.suspension.minLength = 0.3f;
         bw1.suspension.maxLength = rearLength;
-        bw1.suspension.stiffness = stiffness * 0.2f;
+        bw1.suspension.stiffness = stiffness;
         bw1.suspension.damping = damping;
-        bw1.camberAngle = -8.0f;
+        bw1.load = 0.2f;
+        //bw1.camberAngle = -5.0f;
         
-        bw2.grip = grip * 0.9f;
+        bw2.grip = grip;
         bw2.tyreOffset = Vector3f( 0.0f, 0, 0);
         bw2.suspension.minLength = 0.3f;
         bw2.suspension.maxLength = rearLength;
-        bw2.suspension.stiffness = stiffness * 0.2f;
+        bw2.suspension.stiffness = stiffness;
         bw2.suspension.damping = damping;
-        bw2.camberAngle = 8.0f;
+        bw2.load = 0.2f;
+        //bw2.camberAngle = 5.0f;
         
         foreach(i, ref w; eWheels)
         {
@@ -406,12 +410,15 @@ class VehicleScene: Scene
         if (inputManager.getButton("brake")) { vehicle.setBrake(true); }
         else
         {
-            if (inputManager.getButton("forward")) vehicle.accelerate(50);
-            else if (inputManager.getButton("back")) vehicle.accelerate(-50);
+            if (inputManager.getButton("forward")) vehicle.accelerate(100);
+            else if (inputManager.getButton("back")) vehicle.accelerate(-100);
             else vehicle.setBrake(false);
         }
         float axis = inputManager.getAxis("horizontal");
         vehicle.steer(-axis * 3);
+        
+        speedKMH = vehicle.longitudinalSpeedKMH;
+        float lateralSpeedKMH = vehicle.lateralSpeedKMH;
         
         /*
         // Steering wheel controls (WIP)
@@ -427,9 +434,6 @@ class VehicleScene: Scene
             w.position = wheel.position;
             w.rotation = wheel.rotation;
         }
-        
-        speedKMH = vehicle.longitudinalSpeedKMH;
-        float lateralSpeedKMH = vehicle.lateralSpeedKMH;
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, vehicle.position.x, vehicle.position.y, vehicle.position.z);

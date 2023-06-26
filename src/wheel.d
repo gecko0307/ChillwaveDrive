@@ -63,20 +63,13 @@ class WheelConstraint: NewtonUserJointConstraint
             float lateralFriction = wheel.getLateralFrictionForce();
             float longitudinalFriction = wheel.getLongitudinalFrictionForce();
             
-            if (lateralFriction > 0.0f)
+            if ((lateralFriction + longitudinalFriction) > 0.0f)
             {
-                addLinearRow(forcePosition, forcePosition, lateralAxis);
-                setMaximumFriction(lateralFriction);
-                setMinimumFriction(-lateralFriction);
-                NewtonUserJointSetRowStiffness(joint, 1.0f);
-            }
-            
-            if (longitudinalFriction > 0.0f)
-            {
-                addLinearRow(forcePosition, forcePosition, longitudinalAxis);
-                setMaximumFriction(longitudinalFriction);
-                setMinimumFriction(-longitudinalFriction);
-                NewtonUserJointSetRowStiffness(joint, 1.0f);
+                Vector3f friction = lateralAxis * lateralFriction + longitudinalAxis * longitudinalFriction;
+                float maxFrictionForce = wheel.normalForce * wheel.grip;
+                addLinearRow(forcePosition, forcePosition, friction.normalized);
+                setMaximumFriction(maxFrictionForce);
+                setMinimumFriction(-maxFrictionForce);
             }
         }
     }
@@ -111,9 +104,10 @@ class Wheel: Owner, NewtonRaycaster
     float slipRatio;
     float torque;
     float roll;
-    float rollSpeed;
+    float angularVelocity;
     float normalForce;
     float facing; // 1 or -1
+    float load;
     float grip;
     float longitudinalGrip;
     float rollingFriction;
@@ -123,7 +117,6 @@ class Wheel: Owner, NewtonRaycaster
     bool isPowered;
     bool isSteered;
     bool brake;
-    bool isDrifting;
     WheelConstraint joint;
     PacejkaModel tyreModel;
     
@@ -154,9 +147,10 @@ class Wheel: Owner, NewtonRaycaster
         slipRatio = 0.0f;
         torque = 0.0f;
         roll = 0.0f;
-        rollSpeed = 0.0f;
+        angularVelocity = 0.0f;
         normalForce = 0.0f;
         facing = 1.0f;
+        load = 0.25f;
         grip = 1.0f;
         longitudinalGrip = 0.9f;
         rollingFriction = 0.01f;
@@ -164,7 +158,6 @@ class Wheel: Owner, NewtonRaycaster
         positionSmoothFactor = 0.4f;
         isPowered = false;
         brake = false;
-        isDrifting = false;
         joint = New!WheelConstraint(this);
     }
     
@@ -198,7 +191,6 @@ class Wheel: Owner, NewtonRaycaster
         Vector3f upVectorW = getVerticalAxis(); //vehicle.chassisBody.transformation.up;
         Vector3f downVectorW = -upVectorW;
         Vector3f forwardVectorW = vehicle.chassisBody.transformation.forward;
-        //Vector3f rightVectorW = vehicle.chassisBody.transformation.right;
         
         Vector3f suspPositionW = suspension.position * vehicle.chassisBody.transformation;
         
@@ -231,16 +223,16 @@ class Wheel: Owner, NewtonRaycaster
             normalForce = 0.0f;
             
             if (isPowered && abs(torque))
-                rollSpeed = torque * dt;
+                angularVelocity = torque * dt;
             else
-                rollSpeed = 0.0f;
+                angularVelocity = 0.0f;
         }
         else // suspension is compressed
         {
             onGround = true;
             
             slipAngle = atan2(lateralSpeed, longitudinalSpeed);
-            slipRatio = 1.0f - clamp(abs(rollSpeed * radius) / max2(abs(longitudinalSpeed), 0.00001f), 0.0f, 1.0f);
+            slipRatio = 1.0f - clamp((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f), 0.0f, 1.0f);
             
             suspension.lengthPrev = suspension.length;
             suspension.length = suspToGround - radius;
@@ -248,7 +240,7 @@ class Wheel: Owner, NewtonRaycaster
                 suspension.length = suspension.minLength;
             suspension.compression = suspension.maxLength - suspension.length;
             
-            float wheelLoad = vehicle.chassisBody.mass / cast(float)vehicle.wheels.length;
+            float wheelLoad = vehicle.chassisBody.mass * load; // / cast(float)vehicle.wheels.length;
             float springForce = suspension.compression * suspension.stiffness;
             float compressionSpeed = suspension.lengthPrev - suspension.length;
             float dampingForce = (compressionSpeed * suspension.damping) / dt;
@@ -262,14 +254,14 @@ class Wheel: Owner, NewtonRaycaster
                 vehicle.chassisBody.addForceAtPos(forwardAxis * forwardForce, forcePosition);
             }
             
-            if (brake) rollSpeed = 0.0f;
-            else rollSpeed = forwardSpeed / radius;
+            if (brake) angularVelocity = 0.0f;
+            else angularVelocity = forwardSpeed / radius;
         }
         
         Vector3f newWheelPos = (suspension.position + tyreOffset) - Vector3f(0.0f, suspension.length, 0.0f);
         position += (newWheelPos - position) * positionSmoothFactor;
         
-        roll += radtodeg(rollSpeed) * dt;
+        roll += radtodeg(angularVelocity) * dt;
         if (roll > 360.0f)
             roll -= 360.0f;
         
@@ -319,7 +311,7 @@ class Wheel: Owner, NewtonRaycaster
     
     float getLongitudinalFrictionForce()
     {
-        return tyreModel.longitudinalForce(normalForce, slipRatio * 100.0f) * grip;
+        return tyreModel.longitudinalForce(normalForce, slipRatio) * grip;
     }
     
     float getFrictionForce()
