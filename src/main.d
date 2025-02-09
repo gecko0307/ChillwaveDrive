@@ -41,6 +41,8 @@ class GameScene: Scene
     int engineVoice;
     int squealVoice;
     int hitVoice;
+    
+    float volume = 0.0f;
 
     this(VehicleDemoGame game)
     {
@@ -59,22 +61,22 @@ class GameScene: Scene
         // Sounds
         sfxEngine = Wav.create();
         sfxEngine.load("data/sounds/engine.wav");
-        sfxEngine.setVolume(0.2f);
+        sfxEngine.setVolume(volume * 0.2f);
         sfxEngine.set3dDistanceDelay(true);
         
         sfxSquealLoop = Wav.create();
         sfxSquealLoop.load("data/sounds/squeal.wav");
-        sfxSquealLoop.setVolume(0.5f);
+        sfxSquealLoop.setVolume(volume * 0.5f);
         sfxSquealLoop.set3dDistanceDelay(true);
         
         sfxHit[0] = Wav.create();
         sfxHit[0].load("data/sounds/hit1.wav");
-        sfxHit[0].setVolume(0.5f);
+        sfxHit[0].setVolume(volume * 0.5f);
         sfxHit[0].set3dDistanceDelay(true);
         
         sfxHit[1] = Wav.create();
         sfxHit[1].load("data/sounds/hit2.wav");
-        sfxHit[1].setVolume(0.5f);
+        sfxHit[1].setVolume(volume * 0.5f);
         sfxHit[1].set3dDistanceDelay(true);
     }
 
@@ -98,7 +100,7 @@ class GameScene: Scene
         environment.fogStart = 10.0f;
         environment.fogEnd = 100.0f;
         
-        environment.ambientColor = Color4f(0.7f, 0.8f, 1.0f, 1.0f);
+        environment.ambientColor = Color4f(0.7f, 0.7f, 0.9f, 1.0f);
         environment.ambientEnergy = 0.5f;
         
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
@@ -168,7 +170,7 @@ class GameScene: Scene
         auto chassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisShapeBottom, chassisShapeTop], physicsWorld);
         float carMass = 2000.0f;
         car = New!Vehicle(physicsWorld, eCar, chassisShape, carMass, 1);
-        car.chassisBody.centerOfMass = Vector3f(0.0f, -0.5f, 0.0f); // -0.5f
+        car.chassisBody.centerOfMass = Vector3f(0.0f, -0.5f, 0.0f);
         car.setInertia(carMass, boxInertia(chassisSizeBottom * Vector3f(1.0f, 0.0f, 1.0f), carMass));
         
         auto wheelMaterial = addMaterial();
@@ -250,11 +252,11 @@ class GameScene: Scene
         engineVoice = audio.play3d(sfxEngine, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engineVoice, true);
         audio.set3dSourceMinMaxDistance(engineVoice, 1.0f, 50.0f);
-        audio.setVolume(engineVoice, 0.5f);
+        audio.setVolume(engineVoice, volume * 0.5f);
         audio.update3dAudio();
         
         squealVoice = audio.play3d(sfxSquealLoop, car.position.x, car.position.y, car.position.z);
-        audio.setVolume(squealVoice, 0.0f);
+        audio.setVolume(squealVoice, volume * 0.0f);
         audio.setLooping(squealVoice, true);
     }
     
@@ -307,7 +309,7 @@ class GameScene: Scene
         float longitudinalSquealVolume = clamp((longitudinalSlip - 0.3f) / 0.3f, 0.0f, 1.0f);
         longitudinalSquealVolume *= clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
         float squealVolume = clamp(lateralSquealVolume + longitudinalSquealVolume, 0.0f, 1.0f);
-        audio.setVolume(squealVoice, squealVolume * 0.8f);
+        audio.setVolume(squealVoice, volume * squealVolume * 0.8f);
         audio.setRelativePlaySpeed(squealVoice, lateralSlip);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
         

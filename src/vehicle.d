@@ -27,6 +27,9 @@ class Wheel: Owner, NewtonRaycaster
     float angle = 0.0f;
     float facing = 0.0f;
     float normalForce = 0.0f;
+    float tractionForce = 0.0f;
+    float lateralFrictionForce = 0.0f;
+    float longitudinalFrictionForce = 0.0f;
     float load = 0.25f;
     float grip = 1.0f;
     float slipAngle = 0.0f;
@@ -52,9 +55,9 @@ class Wheel: Owner, NewtonRaycaster
         this.facing = facing;
         
         suspension.minLength = 0.1f;
-        suspension.maxLength = 0.25f;
-        suspension.stiffness = 100.0f;
-        suspension.damping = 10.0f;
+        suspension.maxLength = 0.3f;
+        suspension.stiffness = 50.0f;
+        suspension.damping = 5.0f;
         suspension.compression = 0.0f;
         suspension.length = 0.0f;
         suspension.lengthPrev = 0.0f;
@@ -88,12 +91,16 @@ class Wheel: Owner, NewtonRaycaster
         Vector3f upVectorWorld = vehicle.verticalAxis();
         Vector3f downVectorWorld = -upVectorWorld;
         
-        Vector3f positionWorld = position * vehicle.chassisBody.transformation;
+        Vector3f suspPosition = position * vehicle.chassisBody.transformation;
         
         steering = rotationQuaternion!float(Axis.y, degtorad(angle));
         
-        bool hitGround = raycast(positionWorld, positionWorld + downVectorWorld * maxRayDistance);
-        float suspToGround = distance(positionWorld, groundPosition);
+        Vector3f forwardAxis = longitudinalAxis();
+        Vector3f sideAxis = lateralAxis();
+        Vector3f forcePosition = tyreContactPoint();
+        
+        bool hitGround = raycast(suspPosition, suspPosition + downVectorWorld * maxRayDistance);
+        float suspToGround = distance(suspPosition, groundPosition);
         
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
         {
@@ -104,6 +111,9 @@ class Wheel: Owner, NewtonRaycaster
             suspension.compression = 0.0f;
             
             normalForce = 0.0f;
+            tractionForce = 0.0f;
+            lateralFrictionForce = 0.0f;
+            longitudinalFrictionForce = 0.0f;
             
             slipAngle = 0.0f;
             slipRatio = 0.0f;
@@ -120,35 +130,33 @@ class Wheel: Owner, NewtonRaycaster
                 suspension.length = suspension.minLength;
             suspension.compression = suspension.maxLength - suspension.length;
             
+            // Normal force
             float wheelLoad = vehicle.chassisBody.mass * load;
             float springForce = suspension.compression * suspension.stiffness;
             float compressionSpeed = suspension.lengthPrev - suspension.length;
             float dampingForce = (compressionSpeed * suspension.damping) / dt;
             normalForce = (springForce + dampingForce) * wheelLoad;
-            vehicle.chassisBody.addForceAtPos(upVectorWorld * normalForce, positionWorld);
+            vehicle.chassisBody.addForceAtPos(upVectorWorld * normalForce, forcePosition);
             
-            Vector3f forwardAxis = longitudinalAxis();
-            Vector3f sideAxis = lateralAxis();
-            Vector3f forcePosition = tyreContactPoint();
-            
+            // Forward force
             if (abs(torque) > 0.0f)
             {
-                float tractionForce = torque / radius;
+                tractionForce = torque / radius;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
             }
             
-            // Friction
+            // Friction force
             Vector3f tyreVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float lateralSpeed = dot(tyreVelocity, sideAxis);
-            float longitudinalSpeed = dot(tyreVelocity, forwardAxis);
+            float sign = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? -1.0f : 1.0f;
+            float longitudinalSpeed = dot(tyreVelocity, forwardAxis) * sign;
+            angularVelocity = longitudinalSpeed / radius;
             slipAngle = atan2(lateralSpeed, abs(longitudinalSpeed));
             slipRatio = 1.0f - clamp((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f), 0.0f, 1.0f);
-            float latFForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f);
-            float longFForce = tyreModel.longitudinalForce(normalForce, slipRatio);
-            vehicle.chassisBody.addForceAtPos(sideAxis * -latFForce, forcePosition);
-            vehicle.chassisBody.addForceAtPos(forwardAxis * longFForce, forcePosition);
-            
-            angularVelocity = longitudinalSpeed / radius;
+            lateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f);
+            longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * 0.1f;
+            vehicle.chassisBody.addForceAtPos(sideAxis * -lateralFrictionForce, forcePosition);
+            vehicle.chassisBody.addForceAtPos(forwardAxis * sign * longitudinalFrictionForce, forcePosition);
         }
         
         roll += radtodeg(angularVelocity) * dt;
@@ -216,10 +224,10 @@ class Vehicle: EntityComponent
     Wheel[4] wheels;
     
     float torque = 0.0f;
-    float maxTorque = 5000.0f;
+    float maxTorque = 3000.0f;
     
     float steeringAngle = 0.0f;
-    float maxSteeringAngle = 40.0f;
+    float maxSteeringAngle = 45.0f;
     
     Matrix4x4f prevTransformation;
     
