@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2022 Timur Gafarov
+Copyright (c) 2021-2025 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -25,7 +25,6 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
 module view;
 
 import std.math;
@@ -81,7 +80,7 @@ class VehicleViewComponent: EntityComponent
         float speedFactor = clamp((vehicle.speed - minSpeed) / (maxSpeed - minSpeed), 0.0f, 1.0f);
         boostFactor = clamp((vehicle.speed - 30.0f) / (50.0f - 30.0f), 0.0f, 1.0f);
         
-        float faceDistance = lerp(4.5f, lerp(3.5f, -1.0f, boostFactor), speedFactor);
+        float faceDistance = lerp(4.0f, lerp(3.0f, -1.0f, boostFactor), speedFactor);
         Vector3f facePosition = (offset.normalized * -faceDistance) * vehicle.transformation;
         
         targetPosition = facePosition;

@@ -37,7 +37,7 @@ struct PacejkaModel
 {
     float a0 = 1.5f;    // Shape factor (1.4..1.8)
     float a1 = -22.0f;  // Load influence on lateral friction coefficient, 1/kN (-80..+80)
-    float a2 = 1011.0f; // Lateral friction coefficient (900..1700)
+    float a2 = 1600.0f; //1011.0f; // Lateral friction coefficient (900..1700)
     float a3 = 1078.0f; // Change of stiffness with slip, N/deg (500..2000)
     float a4 = 1.82f;   // Change of progressivity of stiffness / load, 1/kN (0..50)
     float a5 = 0.208f;  // Camber influence on stiffness, %/deg/100 (-0.1..+0.1)

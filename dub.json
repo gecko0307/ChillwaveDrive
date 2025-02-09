@@ -12,8 +12,8 @@
         "dagon": "~master",
         "dagon:newton": "~master",
         "dagon:ftfont": "~master",
-        "dagon:stbi": "~master",
-        "bindbc-soloud": "~>0.1.1"
+        "bindbc-soloud": "~>0.1.1",
+        "bindbc-loader": "1.1.4"
     },
     
     "importPaths": [
