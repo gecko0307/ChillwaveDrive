@@ -171,7 +171,7 @@ class GameScene: Scene
         float carMass = 2000.0f;
         car = New!Vehicle(physicsWorld, eCar, chassisShape, carMass, 1);
         car.chassisBody.centerOfMass = Vector3f(0.0f, -0.5f, 0.0f);
-        car.setInertia(carMass, boxInertia(chassisSizeBottom * Vector3f(1.0f, 0.0f, 1.0f), carMass));
+        car.setInertia(carMass, boxInertia(chassisSizeBottom * Vector3f(1.0f, 1.0f, 1.0f), carMass));
         
         auto wheelMaterial = addMaterial();
         wheelMaterial.baseColorFactor = Color4f(0.4f, 0.4f, 0.4f, 1.0f);

@@ -29,6 +29,7 @@ class Wheel: Owner, NewtonRaycaster
     float normalForce = 0.0f;
     float tractionForce = 0.0f;
     float lateralFrictionForce = 0.0f;
+    float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
     float load = 0.25f;
     float grip = 1.0f;
@@ -37,8 +38,9 @@ class Wheel: Owner, NewtonRaycaster
     float torque = 0.0f;
     float angularVelocity = 0.0f;
     float roll = 0.0f;
-    float lateralFrictionCoefficient = 0.9f;
-    float longitudinalFrictionCoefficient = 0.1f;
+    float staticFrictionCoefficient = 0.95f;
+    float lateralDynamicFrictionCoefficient = 0.9f;
+    float longitudinalDynamicFrictionCoefficient = 0.2f;
     Quaternionf steering = Quaternionf.identity;
     
     float maxRayDistance = 1000.0f;
@@ -58,8 +60,8 @@ class Wheel: Owner, NewtonRaycaster
         
         suspension.minLength = 0.1f;
         suspension.maxLength = 0.3f;
-        suspension.stiffness = 80.0f;
-        suspension.damping = 6.0f;
+        suspension.stiffness = 90.0f;
+        suspension.damping = 8.0f;
         suspension.compression = 0.0f;
         suspension.length = 0.0f;
         suspension.lengthPrev = 0.0f;
@@ -154,12 +156,19 @@ class Wheel: Owner, NewtonRaycaster
             float longitudinalSpeed = dot(tyreVelocity, forwardAxis);
             angularVelocity = longitudinalSpeed / radius;
             slipAngle = atan2(lateralSpeed, abs(longitudinalSpeed));
+            
             slipRatio = clamp((abs(angularVelocity) * radius) / max2(abs(longitudinalSpeed), 0.00001f), 0.0f, 1.0f);
-            lateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralFrictionCoefficient;
-            longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalFrictionCoefficient;
-            if (lateralFrictionForce > 0.05f)
-                vehicle.chassisBody.addForceAtPos(sideAxis * -lateralFrictionForce, forcePosition);
-            vehicle.chassisBody.addForceAtPos(forwardAxis * longitudinalDir * -longitudinalFrictionForce, forcePosition);
+            
+            float threshold = 0.5f;
+            float tyreResistanceFactor = clamp(abs(lateralSpeed) / threshold, 0.0f, 1.0f);
+            float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
+            float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralDynamicFrictionCoefficient;
+            lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, tyreResistanceFactor);
+            
+            longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
+            
+            vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
+            vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
         }
         
         roll += radtodeg(angularVelocity) * dt;
@@ -227,7 +236,7 @@ class Vehicle: EntityComponent
     Wheel[4] wheels;
     
     float torque = 0.0f;
-    float maxTorque = 3000.0f;
+    float maxTorque = 4000.0f;
     
     float steeringAngle = 0.0f;
     float maxSteeringAngle = 45.0f;
