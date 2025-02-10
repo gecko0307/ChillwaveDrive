@@ -39,7 +39,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float staticFrictionCoefficient = 0.95f;
-    float lateralDynamicFrictionCoefficient = 0.9f;
+    float lateralDynamicFrictionCoefficient = 0.7f;
     float longitudinalDynamicFrictionCoefficient = 0.2f;
     Quaternionf steering = Quaternionf.identity;
     
