@@ -235,8 +235,20 @@ class Vehicle: EntityComponent
     NewtonRigidBody chassisBody;
     Wheel[4] wheels;
     
-    float torque = 0.0f;
-    float maxTorque = 4000.0f;
+    float engineHPower = 110.0f;
+    float engineTorque = 0.0f;
+    float maxRPM = 6000.0f;
+    // 1st gear: 3.5-4.5
+    // 2nd gear: 2.0-2.5
+    // 3rd gear: 1.5-1.8
+    // 4th gear: 1.0-1.3
+    // 5th gear: 0.8-1.0
+    float[5] gearRatio = [3.5, 2.0, 1.5, 1.0, 0.8];
+    uint gear = 0;
+    float torquePerWheel = 0.0f;
+    
+    float throttle = 0.0f;
+    float direction = 1.0f;
     
     float steeringAngle = 0.0f;
     float maxSteeringAngle = 45.0f;
@@ -321,12 +333,25 @@ class Vehicle: EntityComponent
         return chassisBody.velocity.length * 3.6;
     }
     
-    bool gas = false;
-    
-    void accelerate(float t)
+    void setDirection(float dir)
     {
-        torque += t;
-        gas = true;
+        direction = dir;
+    }
+    
+    void pullAccelerator(float delta)
+    {
+        if (throttle < 1.0f)
+            throttle += delta;
+        else
+            throttle = 1.0f;
+    }
+    
+    void releaseAccelerator(float delta)
+    {
+        if (throttle > 0.0f)
+            throttle -= delta;
+        else
+            throttle = 0.0f;
     }
     
     void steer(float angle)
@@ -372,24 +397,6 @@ class Vehicle: EntityComponent
     
     override void update(Time t)
     {
-        float torqueSign = sign(torque);
-        float absTorque = abs(torque);
-        if (absTorque > maxTorque)
-            absTorque = maxTorque;
-        torque = absTorque * torqueSign;
-        
-        if (!gas)
-        {
-            float torqueDecreaseStep = 5000.0f * t.delta;
-            if (absTorque > 0.0f)
-                absTorque -= torqueDecreaseStep;
-            else
-                absTorque = 0.0f;
-            torque = absTorque * torqueSign;
-        }
-        
-        gas = false;
-        
         float steeringDecreaseStep = 80.0f * t.delta;
         if (steeringAngle > steeringDecreaseStep)
             steeringAngle -= steeringDecreaseStep;
@@ -398,10 +405,32 @@ class Vehicle: EntityComponent
         else
             steeringAngle = 0.0f;
         
-        wheels[0].torque = torque * 0.5f;
-        wheels[1].torque = torque * 0.5f;
         wheels[0].angle = steeringAngle;
         wheels[1].angle = steeringAngle;
+        
+        float diffGearRatio = 3.91f;
+        float transmissionEfficiency = 0.9f;
+        float differentialEfficiency = 0.9f;
+        float torqueLoss = transmissionEfficiency * differentialEfficiency;
+        
+        // TODO:
+        //float wheelRPM = (abs(wheel.angularVelocity) * 60.0f) / (2.0f * M_PI);
+        //float rpm = wheelRPM * gearRatio[gear] * diffGearRatio;
+        
+        float rpm = 2000.0f;
+        
+        if (rpm > maxRPM)
+            rpm = maxRPM;
+        
+        // TODO:
+        //float engineTorque = getTorqueFromRPM(rpm);
+        
+        engineTorque = (engineHPower * 5252.0f) / rpm;
+        
+        torquePerWheel = engineTorque * throttle * direction * gearRatio[gear] * diffGearRatio * 0.5f * torqueLoss;
+        
+        wheels[0].torque = torquePerWheel;
+        wheels[1].torque = torquePerWheel;
         
         foreach(w; wheels)
         {

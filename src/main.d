@@ -274,9 +274,18 @@ class GameScene: Scene
     
     override void onUpdate(Time t)
     {
-        float speed = 5.0f * t.delta;
-        if (inputManager.getButton("forward")) car.accelerate(200);
-        else if (inputManager.getButton("back")) car.accelerate(-200);
+        if (inputManager.getButton("forward")) 
+        {
+            car.setDirection(1.0f);
+            car.pullAccelerator(2.0f * t.delta);
+        }
+        else if (inputManager.getButton("back"))
+        {
+            car.setDirection(-1.0f);
+            car.pullAccelerator(2.0f * t.delta);
+        }
+        else car.releaseAccelerator(2.0f * t.delta);
+        
         float axis = inputManager.getAxis("horizontal");
         car.steer(-axis * 8.0f);
         
@@ -298,8 +307,8 @@ class GameScene: Scene
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
         // TODO: use RPM instead of actual speed
-        float engineSoundSpeed = lerp(1.0f, 1.75f, clamp(abs(car.torque) / 5000.0f, 0.0f, 1.0f));
-        audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
+        //float engineSoundSpeed = lerp(1.0f, 1.75f, clamp(abs(car.torque) / 5000.0f, 0.0f, 1.0f));
+        //audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
