@@ -39,7 +39,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float staticFrictionCoefficient = 0.95f;
-    float lateralDynamicFrictionCoefficient = 0.7f;
+    float lateralDynamicFrictionCoefficient = 0.75f;
     float longitudinalDynamicFrictionCoefficient = 0.2f;
     Quaternionf steering = Quaternionf.identity;
     
@@ -150,6 +150,7 @@ class Wheel: Owner, NewtonRaycaster
             }
             
             // Friction force
+            float chassisSpeed = vehicle.speed;
             Vector3f tyreVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float lateralSpeed = dot(tyreVelocity, sideAxis);
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
@@ -159,11 +160,11 @@ class Wheel: Owner, NewtonRaycaster
             
             slipRatio = clamp((abs(angularVelocity) * radius) / max2(abs(longitudinalSpeed), 0.00001f), 0.0f, 1.0f);
             
-            float threshold = 0.5f;
-            float tyreResistanceFactor = clamp(abs(lateralSpeed) / threshold, 0.0f, 1.0f);
+            float threshold = 1.0f;
+            float speedFactor = clamp(chassisSpeed / threshold, 0.0f, 1.0f);
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralDynamicFrictionCoefficient;
-            lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, tyreResistanceFactor);
+            lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
             
             longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
             
