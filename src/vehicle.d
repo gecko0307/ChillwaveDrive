@@ -38,6 +38,7 @@ class Wheel: Owner, NewtonRaycaster
     float torque = 0.0f;
     float angularVelocity = 0.0f;
     float roll = 0.0f;
+    float invInertia = 0.8f;
     float staticFrictionCoefficient = 0.95f;
     float lateralDynamicFrictionCoefficient = 0.75f;
     float longitudinalDynamicFrictionCoefficient = 0.75f;
@@ -122,8 +123,7 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = 0.0f;
             slipRatio = 0.0f;
             
-            float wheelInvInertia = 0.6f;
-            angularVelocity = torque / radius * wheelInvInertia * dt;
+            angularVelocity = torque / radius * invInertia * dt;
         }
         else // suspension is compressed
         {
@@ -150,19 +150,17 @@ class Wheel: Owner, NewtonRaycaster
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
             float longitudinalSpeed = dot(chassisVelocity, forwardAxis);
             
-            float wheelInvInertia = 0.8f;
-            
             // Forward force
             if (abs(torque) > 0.0f)
             {
-                tractionForce = torque / radius * grip * wheelInvInertia;
+                tractionForce = torque / radius * grip * invInertia;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
                 angularVelocity = tractionForce * dt;
                 slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
             }
             else
             {
-                angularVelocity = longitudinalSpeed / radius * wheelInvInertia;
+                angularVelocity = longitudinalSpeed / radius * invInertia;
                 slipRatio = 0.0f;
             }
             
