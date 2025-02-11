@@ -32,7 +32,7 @@ class Wheel: Owner, NewtonRaycaster
     float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
     float load = 0.25f;
-    float grip = 0.5f;
+    float grip = 0.6f;
     float slipAngle = 0.0f;
     float slipRatio = 0.0f;
     float torque = 0.0f;
@@ -58,7 +58,7 @@ class Wheel: Owner, NewtonRaycaster
         this.position = position;
         this.facing = facing;
         
-        suspension.minLength = 0.1f;
+        suspension.minLength = 0.2f;
         suspension.maxLength = 0.3f;
         suspension.stiffness = 100.0f;
         suspension.damping = 8.0f;
@@ -122,7 +122,8 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = 0.0f;
             slipRatio = 0.0f;
             
-            angularVelocity = torque / radius * dt;
+            float wheelInvInertia = 0.6f;
+            angularVelocity = torque / radius * wheelInvInertia * dt;
         }
         else // suspension is compressed
         {
@@ -149,25 +150,27 @@ class Wheel: Owner, NewtonRaycaster
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
             float longitudinalSpeed = dot(chassisVelocity, forwardAxis);
             
+            float wheelInvInertia = 0.8f;
+            
             // Forward force
             if (abs(torque) > 0.0f)
             {
-                tractionForce = torque / radius * grip;
+                tractionForce = torque / radius * grip * wheelInvInertia;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
                 angularVelocity = tractionForce * dt;
                 slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
             }
             else
             {
-                angularVelocity = longitudinalSpeed / radius;
+                angularVelocity = longitudinalSpeed / radius * wheelInvInertia;
                 slipRatio = 0.0f;
             }
             
             slipAngle = atan2(lateralSpeed, abs(longitudinalSpeed));
             
             // Friction force
-            float threshold = 0.1f;
-            float speedFactor = clamp(chassisSpeed / threshold, 0.0f, 1.0f);
+            float idleThreshold = 0.5f;
+            float speedFactor = clamp(chassisSpeed / idleThreshold, 0.0f, 1.0f);
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
@@ -241,7 +244,7 @@ class Vehicle: EntityComponent
     NewtonRigidBody chassisBody;
     Wheel[4] wheels;
     
-    float engineHPower = 130.0f;
+    float engineHPower = 150.0f;
     float engineTorque = 0.0f;
     float maxRPM = 6000.0f;
     // 1st gear: 3.5-4.5
