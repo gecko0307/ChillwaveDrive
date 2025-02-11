@@ -1,7 +1,7 @@
 module vehicle;
 
 import std.stdio;
-
+import std.algorithm;
 import std.math;
 import dagon;
 import dagon.ext.newton;
@@ -32,7 +32,7 @@ class Wheel: Owner, NewtonRaycaster
     float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
     float load = 0.25f;
-    float grip = 1.0f;
+    float grip = 0.5f;
     float slipAngle = 0.0f;
     float slipRatio = 0.0f;
     float torque = 0.0f;
@@ -40,7 +40,7 @@ class Wheel: Owner, NewtonRaycaster
     float roll = 0.0f;
     float staticFrictionCoefficient = 0.95f;
     float lateralDynamicFrictionCoefficient = 0.75f;
-    float longitudinalDynamicFrictionCoefficient = 0.2f;
+    float longitudinalDynamicFrictionCoefficient = 0.75f;
     Quaternionf steering = Quaternionf.identity;
     
     float maxRayDistance = 1000.0f;
@@ -60,7 +60,7 @@ class Wheel: Owner, NewtonRaycaster
         
         suspension.minLength = 0.1f;
         suspension.maxLength = 0.3f;
-        suspension.stiffness = 90.0f;
+        suspension.stiffness = 100.0f;
         suspension.damping = 8.0f;
         suspension.compression = 0.0f;
         suspension.length = 0.0f;
@@ -122,7 +122,7 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = 0.0f;
             slipRatio = 0.0f;
             
-            angularVelocity = torque * dt;
+            angularVelocity = torque / radius * dt;
         }
         else // suspension is compressed
         {
@@ -142,39 +142,43 @@ class Wheel: Owner, NewtonRaycaster
             normalForce = (springForce + dampingForce) * wheelLoad;
             vehicle.chassisBody.addForceAtPos(upVectorWorld * normalForce, forcePosition);
             
-            // Forward force
-            if (abs(torque) > 0.0f)
-            {
-                tractionForce = torque / radius;
-                vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
-            }
-            
-            // Friction force
             float chassisSpeed = vehicle.speed;
+            Vector3f chassisVelocity = vehicle.velocity;
             Vector3f tyreVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float lateralSpeed = dot(tyreVelocity, sideAxis);
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
-            float longitudinalSpeed = dot(tyreVelocity, forwardAxis);
-            angularVelocity = longitudinalSpeed / radius;
+            float longitudinalSpeed = dot(chassisVelocity, forwardAxis);
+            
+            // Forward force
+            if (abs(torque) > 0.0f)
+            {
+                tractionForce = torque / radius * grip;
+                vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
+                angularVelocity = tractionForce * dt;
+                slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
+            }
+            else
+            {
+                angularVelocity = longitudinalSpeed / radius;
+                slipRatio = 0.0f;
+            }
+            
             slipAngle = atan2(lateralSpeed, abs(longitudinalSpeed));
             
-            slipRatio = clamp((abs(angularVelocity) * radius) / max2(abs(longitudinalSpeed), 0.00001f), 0.0f, 1.0f);
-            
-            float threshold = 1.0f;
+            // Friction force
+            float threshold = 0.1f;
             float speedFactor = clamp(chassisSpeed / threshold, 0.0f, 1.0f);
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
-            
             longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
-            
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
         }
         
-        roll += radtodeg(angularVelocity) * dt;
-        if (roll > 360.0f)
-            roll -= 360.0f;
+        float angularVelocityVisual = clamp(angularVelocity, -15.0f, 15.0f);
+        roll += angularVelocityVisual * dt;
+        roll = fmod(roll, 2.0f * PI);
     }
     
     Vector3f tyreContactPoint() const
@@ -212,9 +216,10 @@ class Wheel: Owner, NewtonRaycaster
     
     Quaternionf localRotation()
     {
+        float facingAngle = 90.0f - 90.0f * facing;
         return
-            rotationQuaternion!float(Axis.y, degtorad(angle * 0.5f)) *
-            rotationQuaternion!float(Axis.x, degtorad(roll));
+            rotationQuaternion!float(Axis.y, degtorad(facingAngle + angle * 0.5f)) *
+            rotationQuaternion!float(Axis.x, roll * facing);
     }
 }
 
@@ -236,7 +241,7 @@ class Vehicle: EntityComponent
     NewtonRigidBody chassisBody;
     Wheel[4] wheels;
     
-    float engineHPower = 110.0f;
+    float engineHPower = 130.0f;
     float engineTorque = 0.0f;
     float maxRPM = 6000.0f;
     // 1st gear: 3.5-4.5
@@ -280,11 +285,11 @@ class Vehicle: EntityComponent
         NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
         //NewtonMaterialSetCollisionCallback(world.newtonWorld, materialID, world.defaultGroupId, null, &chassisContactsProcess);
         
-        float suspensionPos = -0.1f;
-        wheels[0] = New!Wheel(Vector3f(-0.8f, suspensionPos, +1.0f), -1.0f, this);
-        wheels[1] = New!Wheel(Vector3f(+0.8f, suspensionPos, +1.0f), +1.0f, this);
-        wheels[2] = New!Wheel(Vector3f(-0.8f, suspensionPos, -1.0f), -1.0f, this);
-        wheels[3] = New!Wheel(Vector3f(+0.8f, suspensionPos, -1.0f), +1.0f, this);
+        float suspensionPos = 0.2f;
+        wheels[0] = New!Wheel(Vector3f(-0.75f, suspensionPos, +1.35f), -1.0f, this);
+        wheels[1] = New!Wheel(Vector3f(+0.75f, suspensionPos, +1.35f), +1.0f, this);
+        wheels[2] = New!Wheel(Vector3f(-0.75f, suspensionPos, -1.35f), -1.0f, this);
+        wheels[3] = New!Wheel(Vector3f(+0.75f, suspensionPos, -1.35f), +1.0f, this);
         
         prevTransformation = Matrix4x4f.identity;
     }

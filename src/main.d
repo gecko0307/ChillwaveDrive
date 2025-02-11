@@ -22,8 +22,11 @@ class GameScene: Scene
     
     NewtonPhysicsWorld physicsWorld;
     
-    OBJAsset aChassis;
-    OBJAsset aWheel;
+    TextureAsset aTexEnvmap;
+    
+    GLTFAsset aChassis;
+    GLTFAsset aWheel;
+    
     TextureAsset aTexParticleDust;
     
     Entity eCar;
@@ -42,7 +45,7 @@ class GameScene: Scene
     int squealVoice;
     int hitVoice;
     
-    float volume = 0.0f;
+    float volume = 0.25f;
 
     this(VehicleDemoGame game)
     {
@@ -54,9 +57,11 @@ class GameScene: Scene
     override void beforeLoad()
     {
         aTrack = addGLTFAsset("data/track/track.gltf");
-        aChassis = addOBJAsset("data/car/chassis.obj");
-        aWheel = addOBJAsset("data/car/wheel.obj");
+        aChassis = addGLTFAsset("data/cars/coupe.gltf");
+        aWheel = addGLTFAsset("data/cars/wheel1.gltf");
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
+        
+        aTexEnvmap = addTextureAsset("data/envmaps/envmap.hdr");
         
         // Sounds
         sfxEngine = Wav.create();
@@ -100,8 +105,8 @@ class GameScene: Scene
         environment.fogStart = 10.0f;
         environment.fogEnd = 100.0f;
         
-        environment.ambientColor = Color4f(0.7f, 0.7f, 0.9f, 1.0f);
-        environment.ambientEnergy = 0.5f;
+        environment.ambientEnergy = 1.5f;
+        environment.ambientMap = aTexEnvmap.texture;
         
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
         
@@ -114,7 +119,7 @@ class GameScene: Scene
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
         sun.turn(220.0f);
-        sun.pitch(-20.0f);
+        sun.pitch(-30.0f);
         sun.scatteringEnabled = false;
         sun.scattering = 0.2f;
         sun.mediumDensity = 0.1f;
@@ -153,59 +158,46 @@ class GameScene: Scene
         
         // Car
         eCar = addEntity();
-        eCar.blurMask = 0.0f;
         eCar.position = Vector3f(0.0f, 26.0f, 210.0f);
-        Vector3f chassisSizeBottom = Vector3f(1.75f, 0.5f, 3.0f);
-        Vector3f chassisSizeTop = Vector3f(1.5f, 0.5f, 1.5f);
-        Vector3f chassisTopPosition = Vector3f(0.0f, 0.5f, -0.25f);
-        eCar.drawable = aChassis.mesh;
-        eCar.material = addMaterial();
-        eCar.material.baseColorFactor = Color4f(1.0f, 0.4f, 0.3f, 1.0f);
-        eCar.material.roughnessFactor = 0.01f;
+        Vector3f chassisSizeBottom = Vector3f(1.76917f, 0.777934f, 4.77418f);
+        Vector3f chassisSizeTop = Vector3f(1.54f, 0.492f, 2.39f);
+        Vector3f chassisBottomPosition = Vector3f(0.0f, 0.22f, 0.0f);
+        Vector3f chassisTopPosition = Vector3f(0.0f, 0.479246f, -0.839547f);
+        eCar.drawable = aChassis.meshes[0];
         eCar.blurMask = 0.0f;
         
         auto chassisShapeBottom = New!NewtonBoxShape(chassisSizeBottom, physicsWorld);
+        chassisShapeBottom.setTransformation(translationMatrix(chassisBottomPosition));
         auto chassisShapeTop = New!NewtonBoxShape(chassisSizeTop, physicsWorld);
         chassisShapeTop.setTransformation(translationMatrix(chassisTopPosition));
         auto chassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisShapeBottom, chassisShapeTop], physicsWorld);
-        float carMass = 2000.0f;
+        float carMass = 1500.0f;
         car = New!Vehicle(physicsWorld, eCar, chassisShape, carMass, 1);
-        car.chassisBody.centerOfMass = Vector3f(0.0f, -0.5f, 0.0f);
+        car.chassisBody.centerOfMass = Vector3f(0.0f, -0.3f, 0.0f);
         car.setInertia(carMass, boxInertia(chassisSizeBottom * Vector3f(1.0f, 1.0f, 1.0f), carMass));
         
-        auto wheelMaterial = addMaterial();
-        wheelMaterial.baseColorFactor = Color4f(0.4f, 0.4f, 0.4f, 1.0f);
-        
-        float wheelScale = 0.35f / 0.4f;
-        Vector3f wheelScaleV = Vector3f(wheelScale, wheelScale, wheelScale);
+        foreach(ref w; car.wheels)
+            w.radius = 0.337f;
         
         eWheel1 = addEntity(eCar);
-        eWheel1.drawable = aWheel.mesh;
+        eWheel1.drawable = aWheel.meshes[0];
         eWheel1.position = car.wheels[0].localWheelPosition;
-        eWheel1.material = wheelMaterial;
         eWheel1.blurMask = 0.0f;
-        eWheel1.scaling = wheelScaleV;
         
         eWheel2 = addEntity(eCar);
-        eWheel2.drawable = aWheel.mesh;
+        eWheel2.drawable = aWheel.meshes[0];
         eWheel2.position = car.wheels[1].localWheelPosition;
-        eWheel2.material = wheelMaterial;
         eWheel2.blurMask = 0.0f;
-        eWheel2.scaling = wheelScaleV;
         
         eWheel3 = addEntity(eCar);
-        eWheel3.drawable = aWheel.mesh;
+        eWheel3.drawable = aWheel.meshes[0];
         eWheel3.position = car.wheels[2].localWheelPosition;
-        eWheel3.material = wheelMaterial;
         eWheel3.blurMask = 0.0f;
-        eWheel3.scaling = wheelScaleV;
         
         eWheel4 = addEntity(eCar);
-        eWheel4.drawable = aWheel.mesh;
+        eWheel4.drawable = aWheel.meshes[0];
         eWheel4.position = car.wheels[3].localWheelPosition;
-        eWheel4.material = wheelMaterial;
         eWheel4.blurMask = 0.0f;
-        eWheel4.scaling = wheelScaleV;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -220,11 +212,11 @@ class GameScene: Scene
 
         auto eParticlesRight = addEntity(eCar);
         emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
-        eParticlesRight.position = Vector3f(-0.9f, -0.5f, -1.4f);
-        emitterRight.minLifetime = 0.1f;
-        emitterRight.maxLifetime = 2.0f;
-        emitterRight.minSize = 0.25f;
-        emitterRight.maxSize = 0.5f;
+        eParticlesRight.position = Vector3f(-0.9f, -1.0f, 1.4f);
+        emitterRight.minLifetime = 1.0f;
+        emitterRight.maxLifetime = 3.0f;
+        emitterRight.minSize = 1.0f;
+        emitterRight.maxSize = 2.0f;
         emitterRight.minInitialSpeed = 0.2f;
         emitterRight.maxInitialSpeed = 0.2f;
         emitterRight.scaleStep = Vector2f(2, 2);
@@ -234,11 +226,11 @@ class GameScene: Scene
 
         auto eParticlesLeft = addEntity(eCar);
         emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
-        eParticlesLeft.position = Vector3f(0.9f, -0.5f, -1.4f);
-        emitterLeft.minLifetime = 0.1f;
-        emitterLeft.maxLifetime = 2.0f;
-        emitterLeft.minSize = 0.25f;
-        emitterLeft.maxSize = 0.5f;
+        eParticlesLeft.position = Vector3f(0.9f, -1.0f, 1.4f);
+        emitterLeft.minLifetime = 1.0f;
+        emitterLeft.maxLifetime = 3.0f;
+        emitterLeft.minSize = 1.0f;
+        emitterLeft.maxSize = 2.0f;
         emitterLeft.minInitialSpeed = 0.2f;
         emitterLeft.maxInitialSpeed = 0.2f;
         emitterLeft.scaleStep = Vector2f(2, 2);
@@ -306,26 +298,21 @@ class GameScene: Scene
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
-        // TODO: use RPM instead of actual speed
-        //float engineSoundSpeed = lerp(1.0f, 1.75f, clamp(abs(car.torque) / 5000.0f, 0.0f, 1.0f));
-        //audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
+        float engineSoundSpeed = lerp(1.0f, 1.5f, car.throttle);
+        audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
-        float longitudinalSlip = 0.0f; //car.longitudinalSlip;
-        float lateralSquealVolume = clamp((lateralSlip - 0.5f) / 0.5f, 0.0f, 1.0f);
-        lateralSquealVolume *= clamp((lateralSpeedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
-        float longitudinalSquealVolume = clamp((longitudinalSlip - 0.3f) / 0.3f, 0.0f, 1.0f);
-        longitudinalSquealVolume *= clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
-        float squealVolume = clamp(lateralSquealVolume + longitudinalSquealVolume, 0.0f, 1.0f);
+        float longitudinalSlip = car.longitudinalSlip;
+        float squealVolume = clamp(lateralSlip, 0.0f, 1.0f);
         audio.setVolume(squealVoice, volume * squealVolume * 0.8f);
-        audio.setRelativePlaySpeed(squealVoice, lateralSlip);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
         
         // Dust particles
-        if (squealVolume > 0.0f) emitterLeft.emitting = true;
+        bool makingDust = lateralSlip > 0.0f || longitudinalSlip > 0.4f;
+        if (makingDust && car.wheels[2].onGround) emitterLeft.emitting = true;
         else emitterLeft.emitting = false;
-        if (squealVolume > 0.0f) emitterRight.emitting = true;
+        if (makingDust && car.wheels[3].onGround) emitterRight.emitting = true;
         else emitterRight.emitting = false;
         
         physicsWorld.update(t.delta);
