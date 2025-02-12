@@ -107,6 +107,8 @@ class Wheel: Owner, NewtonRaycaster
         bool hitGround = raycast(suspPosition, suspPosition + downVectorWorld * maxRayDistance);
         float suspToGround = distance(suspPosition, groundPosition);
         
+        float angularAcceleration = 0.0f;
+        
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
         {
             onGround = false;
@@ -148,19 +150,23 @@ class Wheel: Owner, NewtonRaycaster
             Vector3f tyreVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float lateralSpeed = dot(tyreVelocity, sideAxis);
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
-            float longitudinalSpeed = dot(chassisVelocity, forwardAxis);
+            
+            float longitudinalSpeed;
             
             // Forward force
             if (abs(torque) > 0.0f)
             {
                 tractionForce = torque / radius * grip * invInertia;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
-                angularVelocity = tractionForce * dt;
+                angularAcceleration = tractionForce * 0.2f * dt;
+                longitudinalSpeed = dot(tyreVelocity, forwardAxis) - angularVelocity * radius;
                 slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
             }
             else
             {
+                longitudinalSpeed = dot(chassisVelocity, forwardAxis);
                 angularVelocity = longitudinalSpeed / radius * invInertia;
+                angularAcceleration = 0.0f;
                 slipRatio = 0.0f;
             }
             
@@ -176,6 +182,8 @@ class Wheel: Owner, NewtonRaycaster
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
         }
+        
+        angularVelocity += angularAcceleration * dt;
         
         float angularVelocityVisual = clamp(angularVelocity, -15.0f, 15.0f);
         roll += angularVelocityVisual * dt;
