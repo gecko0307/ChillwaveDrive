@@ -268,26 +268,12 @@ class GameScene: Scene
     
     override void onUpdate(Time t)
     {
-        float carDir = car.movingDirection;
         if (inputManager.getButton("forward")) 
-        {
-            if (carDir < 0.0f) car.setBreak(true);
-            else car.setBreak(false);
-            car.direction = 1.0f;
-            car.pullAccelerator(2.0f * t.delta);
-        }
+            car.accelerate(1.0f, 2.0f * t.delta);
         else if (inputManager.getButton("back"))
-        {
-            if (carDir > 0.0f) car.setBreak(true);
-            else car.setBreak(false);
-            car.direction = -1.0f;
-            car.pullAccelerator(2.0f * t.delta);
-        }
-        else 
-        {
-            car.setBreak(false);
-            car.releaseAccelerator(2.0f * t.delta);
-        }
+            car.accelerate(-1.0f, 2.0f * t.delta);
+        else
+            car.idle();
         
         float axis = inputManager.getAxis("horizontal");
         car.steer(-axis * 8.0f * t.delta);
@@ -316,12 +302,12 @@ class GameScene: Scene
         float lateralSlip = car.lateralSlip;
         float longitudinalSlip = car.longitudinalSlip;
         float squealVolume = clamp(lateralSlip, 0.0f, 1.0f);
-        if (car.breaking) squealVolume = clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
+        if (car.brake) squealVolume = clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
         audio.setVolume(squealVoice, volume * squealVolume * 0.8f);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
         
         // Dust particles
-        bool makingDust = lateralSlip > 0.0f || car.breaking;
+        bool makingDust = lateralSlip > 0.0f || car.brake;
         if (makingDust && car.wheels[2].onGround) emitterLeft.emitting = true;
         else emitterLeft.emitting = false;
         if (makingDust && car.wheels[3].onGround) emitterRight.emitting = true;

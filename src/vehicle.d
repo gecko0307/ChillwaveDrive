@@ -43,7 +43,7 @@ class Wheel: Owner, NewtonRaycaster
     float lateralDynamicFrictionCoefficient = 0.75f;
     float longitudinalDynamicFrictionCoefficient = 0.75f;
     Quaternionf steering = Quaternionf.identity;
-    bool breaking = false;
+    bool brake = false;
     
     float maxRayDistance = 1000.0f;
     protected float closestHitRayParam = 1.0f;
@@ -154,7 +154,7 @@ class Wheel: Owner, NewtonRaycaster
             
             float longitudinalSpeed = dot(tyreVelocity, forwardAxis);
             
-            if (breaking)
+            if (brake)
             {
                 // Block the wheel
                 angularAcceleration = 0.0f;
@@ -258,11 +258,15 @@ class Vehicle: EntityComponent
     NewtonRigidBody chassisBody;
     Wheel[4] wheels;
     
-    float direction = 1.0f;
+    float torqueDirection = 1.0f; // -1.0f or 1.0f
     float throttle = 0.0f; // 0.0f..1.0f
     float steeringInput = 0.0f; // -1.0f..1.0f
     float maxSteeringAngle = 45.0f;
-    bool breaking = false;
+    
+    bool accelerating = false;
+    bool brake = false;
+    
+    float movementDirection = 0.0f;
     
     Matrix4x4f prevTransformation;
     
@@ -344,30 +348,25 @@ class Vehicle: EntityComponent
         return chassisBody.velocity.length * 3.6;
     }
     
-    float movingDirection() @property
+    void accelerate(float direction, float delta)
     {
-        return (dot(velocity.normalized, forwardAxis) < 0.0f)? -1.0f : 1.0f;
-    }
-    
-    void setBreak(bool mode)
-    {
-        breaking = mode;
-    }
-    
-    void pullAccelerator(float delta)
-    {
+        brake = (movementDirection < 0.0f && direction > 0.0f) ||
+                (movementDirection > 0.0f && direction < 0.0f);
+        
+        torqueDirection = direction;
+        
         if (throttle < 1.0f)
             throttle += delta;
         else
             throttle = 1.0f;
+        
+        accelerating = true;
     }
     
-    void releaseAccelerator(float delta)
+    void idle()
     {
-        if (throttle > 0.0f)
-            throttle -= delta;
-        else
-            throttle = 0.0f;
+        accelerating = false;
+        brake = false;
     }
     
     void steer(float input)
@@ -400,7 +399,7 @@ class Vehicle: EntityComponent
     
     float longitudinalSlip() @property
     {
-        if (breaking) return 1.0f;
+        if (brake) return 1.0f;
         
         float res = 0.0f;
         foreach(wheel; wheels)
@@ -430,18 +429,22 @@ class Vehicle: EntityComponent
             wheels[1].steeringAngle = steeringAngleInner;
         }
         
-        float spd = speedKMH;
-        float maxTorque = 4000.0f;
-        float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
-        float torquePerWheel = maxTorque * decreaseFactor * throttle * direction * 0.5f;
+        float torquePerWheel = 0.0f;
+        if (accelerating)
+        {
+            float spd = speedKMH;
+            float maxTorque = 4000.0f;
+            float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
+            torquePerWheel = maxTorque * decreaseFactor * throttle * torqueDirection * 0.5f;
+        }
         
         wheels[0].torque = torquePerWheel;
         wheels[1].torque = torquePerWheel;
         
-        wheels[0].breaking = breaking;
-        wheels[1].breaking = breaking;
-        wheels[2].breaking = breaking;
-        wheels[3].breaking = breaking;
+        wheels[0].brake = brake;
+        wheels[1].brake = brake;
+        wheels[2].brake = brake;
+        wheels[3].brake = brake;
         
         foreach(w; wheels)
         {
@@ -470,5 +473,15 @@ class Vehicle: EntityComponent
             steeringInput += steeringDecreaseStep;
         else
             steeringInput = 0.0f;
+        
+        movementDirection = (dot(velocity.normalized, forwardAxis) < 0.0f)? -1.0f : 1.0f;
+        
+        if (!accelerating)
+        {
+            if (throttle > 0.0f)
+                throttle -= t.delta;
+            else
+                throttle = 0.0f;
+        }
     }
 }
