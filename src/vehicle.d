@@ -24,7 +24,7 @@ class Wheel: Owner, NewtonRaycaster
     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
     Suspension suspension;
     float radius = 0.35f;
-    float angle = 0.0f;
+    float steeringAngle = 0.0f;
     float facing = 0.0f;
     float normalForce = 0.0f;
     float tractionForce = 0.0f;
@@ -43,6 +43,7 @@ class Wheel: Owner, NewtonRaycaster
     float lateralDynamicFrictionCoefficient = 0.75f;
     float longitudinalDynamicFrictionCoefficient = 0.75f;
     Quaternionf steering = Quaternionf.identity;
+    bool breaking = false;
     
     float maxRayDistance = 1000.0f;
     protected float closestHitRayParam = 1.0f;
@@ -94,17 +95,16 @@ class Wheel: Owner, NewtonRaycaster
     void update(double dt)
     {
         Vector3f upVectorWorld = vehicle.verticalAxis();
-        Vector3f downVectorWorld = -upVectorWorld;
-        
+        Vector3f rayDir = -upVectorWorld;
         Vector3f suspPosition = position * vehicle.chassisBody.transformation;
         
-        steering = rotationQuaternion!float(Axis.y, degtorad(angle));
+        steering = rotationQuaternion!float(Axis.y, degtorad(steeringAngle));
         
         Vector3f forwardAxis = longitudinalAxis();
         Vector3f sideAxis = lateralAxis();
         Vector3f forcePosition = tyreContactPoint();
         
-        bool hitGround = raycast(suspPosition, suspPosition + downVectorWorld * maxRayDistance);
+        bool hitGround = raycast(suspPosition, suspPosition + rayDir * maxRayDistance);
         float suspToGround = distance(suspPosition, groundPosition);
         
         float angularAcceleration = 0.0f;
@@ -143,7 +143,8 @@ class Wheel: Owner, NewtonRaycaster
             float compressionSpeed = suspension.lengthPrev - suspension.length;
             float dampingForce = (compressionSpeed * suspension.damping) / dt;
             normalForce = (springForce + dampingForce) * wheelLoad;
-            vehicle.chassisBody.addForceAtPos(upVectorWorld * normalForce, forcePosition);
+            
+            vehicle.chassisBody.addForceAtPos(groundNormal * normalForce, forcePosition);
             
             float chassisSpeed = vehicle.speed;
             Vector3f chassisVelocity = vehicle.velocity;
@@ -151,20 +152,27 @@ class Wheel: Owner, NewtonRaycaster
             float lateralSpeed = dot(tyreVelocity, sideAxis);
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
             
-            float longitudinalSpeed;
+            float longitudinalSpeed = dot(tyreVelocity, forwardAxis);
             
-            // Forward force
-            if (abs(torque) > 0.0f)
+            if (breaking)
             {
+                // Block the wheel
+                angularAcceleration = 0.0f;
+                angularVelocity = 0.0f;
+                slipRatio = 1.0f;
+            }
+            else if (abs(torque) > 0.0f)
+            {
+                // Apply torque
                 tractionForce = torque / radius * grip * invInertia;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
                 angularAcceleration = tractionForce * 0.2f * dt;
-                longitudinalSpeed = dot(tyreVelocity, forwardAxis) - angularVelocity * radius;
+                longitudinalSpeed -= angularVelocity * radius;
                 slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
             }
             else
             {
-                longitudinalSpeed = dot(chassisVelocity, forwardAxis);
+                // Free spin
                 angularVelocity = longitudinalSpeed / radius * invInertia;
                 angularAcceleration = 0.0f;
                 slipRatio = 0.0f;
@@ -227,7 +235,7 @@ class Wheel: Owner, NewtonRaycaster
     {
         float facingAngle = 90.0f - 90.0f * facing;
         return
-            rotationQuaternion!float(Axis.y, degtorad(facingAngle + angle * 0.5f)) *
+            rotationQuaternion!float(Axis.y, degtorad(facingAngle + steeringAngle)) *
             rotationQuaternion!float(Axis.x, roll * facing);
     }
 }
@@ -250,23 +258,11 @@ class Vehicle: EntityComponent
     NewtonRigidBody chassisBody;
     Wheel[4] wheels;
     
-    float engineHPower = 150.0f;
-    float engineTorque = 0.0f;
-    float maxRPM = 6000.0f;
-    // 1st gear: 3.5-4.5
-    // 2nd gear: 2.0-2.5
-    // 3rd gear: 1.5-1.8
-    // 4th gear: 1.0-1.3
-    // 5th gear: 0.8-1.0
-    float[5] gearRatio = [3.5, 2.0, 1.5, 1.0, 0.8];
-    uint gear = 0;
-    float torquePerWheel = 0.0f;
-    
-    float throttle = 0.0f;
     float direction = 1.0f;
-    
-    float steeringAngle = 0.0f;
+    float throttle = 0.0f; // 0.0f..1.0f
+    float steeringInput = 0.0f; // -1.0f..1.0f
     float maxSteeringAngle = 45.0f;
+    bool breaking = false;
     
     Matrix4x4f prevTransformation;
     
@@ -348,9 +344,14 @@ class Vehicle: EntityComponent
         return chassisBody.velocity.length * 3.6;
     }
     
-    void setDirection(float dir)
+    float movingDirection() @property
     {
-        direction = dir;
+        return (dot(velocity.normalized, forwardAxis) < 0.0f)? -1.0f : 1.0f;
+    }
+    
+    void setBreak(bool mode)
+    {
+        breaking = mode;
     }
     
     void pullAccelerator(float delta)
@@ -369,14 +370,14 @@ class Vehicle: EntityComponent
             throttle = 0.0f;
     }
     
-    void steer(float angle)
+    void steer(float input)
     {
-        steeringAngle += angle;
+        steeringInput += input;
         
-        if (steeringAngle > maxSteeringAngle)
-            steeringAngle = maxSteeringAngle;
-        if (steeringAngle < -maxSteeringAngle)
-            steeringAngle = -maxSteeringAngle;
+        if (steeringInput > 1.0f)
+            steeringInput = 1.0f;
+        if (steeringInput < -1.0f)
+            steeringInput = -1.0f;
     }
     
     float lateralSpeedKMH() @property
@@ -399,6 +400,8 @@ class Vehicle: EntityComponent
     
     float longitudinalSlip() @property
     {
+        if (breaking) return 1.0f;
+        
         float res = 0.0f;
         foreach(wheel; wheels)
         {
@@ -412,40 +415,33 @@ class Vehicle: EntityComponent
     
     override void update(Time t)
     {
-        float steeringDecreaseStep = 80.0f * t.delta;
-        if (steeringAngle > steeringDecreaseStep)
-            steeringAngle -= steeringDecreaseStep;
-        else if (steeringAngle < -steeringDecreaseStep)
-            steeringAngle += steeringDecreaseStep;
+        float ackermann = 5.0f;
+        float steeringAngleInner = maxSteeringAngle * steeringInput;
+        float steeringAngleOuter = (maxSteeringAngle - ackermann) * steeringInput;
+        
+        if (steeringInput < 0.0f)
+        {
+            wheels[0].steeringAngle = steeringAngleInner;
+            wheels[1].steeringAngle = steeringAngleOuter;
+        }
         else
-            steeringAngle = 0.0f;
+        {
+            wheels[0].steeringAngle = steeringAngleOuter;
+            wheels[1].steeringAngle = steeringAngleInner;
+        }
         
-        wheels[0].angle = steeringAngle;
-        wheels[1].angle = steeringAngle;
-        
-        float diffGearRatio = 3.91f;
-        float transmissionEfficiency = 0.9f;
-        float differentialEfficiency = 0.9f;
-        float torqueLoss = transmissionEfficiency * differentialEfficiency;
-        
-        // TODO:
-        //float wheelRPM = (abs(wheel.angularVelocity) * 60.0f) / (2.0f * M_PI);
-        //float rpm = wheelRPM * gearRatio[gear] * diffGearRatio;
-        
-        float rpm = 2000.0f;
-        
-        if (rpm > maxRPM)
-            rpm = maxRPM;
-        
-        // TODO:
-        //float engineTorque = getTorqueFromRPM(rpm);
-        
-        engineTorque = (engineHPower * 5252.0f) / rpm;
-        
-        torquePerWheel = engineTorque * throttle * direction * gearRatio[gear] * diffGearRatio * 0.5f * torqueLoss;
+        float spd = speedKMH;
+        float maxTorque = 4000.0f;
+        float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
+        float torquePerWheel = maxTorque * decreaseFactor * throttle * direction * 0.5f;
         
         wheels[0].torque = torquePerWheel;
         wheels[1].torque = torquePerWheel;
+        
+        wheels[0].breaking = breaking;
+        wheels[1].breaking = breaking;
+        wheels[2].breaking = breaking;
+        wheels[3].breaking = breaking;
         
         foreach(w; wheels)
         {
@@ -466,5 +462,13 @@ class Vehicle: EntityComponent
         entity.prevAbsoluteTransformation = entity.prevTransformation;
 
         prevTransformation = entity.transformation;
+        
+        float steeringDecreaseStep = 2.0f * t.delta;
+        if (steeringInput > steeringDecreaseStep)
+            steeringInput -= steeringDecreaseStep;
+        else if (steeringInput < -steeringDecreaseStep)
+            steeringInput += steeringDecreaseStep;
+        else
+            steeringInput = 0.0f;
     }
 }

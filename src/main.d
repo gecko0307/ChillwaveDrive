@@ -264,22 +264,33 @@ class GameScene: Scene
         eventManager.showCursor(!vehicleView.active);
     }
     
+    float lastDirection = 0.0f;
+    
     override void onUpdate(Time t)
     {
+        float carDir = car.movingDirection;
         if (inputManager.getButton("forward")) 
         {
-            car.setDirection(1.0f);
+            if (carDir < 0.0f) car.setBreak(true);
+            else car.setBreak(false);
+            car.direction = 1.0f;
             car.pullAccelerator(2.0f * t.delta);
         }
         else if (inputManager.getButton("back"))
         {
-            car.setDirection(-1.0f);
+            if (carDir > 0.0f) car.setBreak(true);
+            else car.setBreak(false);
+            car.direction = -1.0f;
             car.pullAccelerator(2.0f * t.delta);
         }
-        else car.releaseAccelerator(2.0f * t.delta);
+        else 
+        {
+            car.setBreak(false);
+            car.releaseAccelerator(2.0f * t.delta);
+        }
         
         float axis = inputManager.getAxis("horizontal");
-        car.steer(-axis * 8.0f);
+        car.steer(-axis * 8.0f * t.delta);
         
         eWheel1.position = car.wheels[0].localWheelPosition;
         eWheel2.position = car.wheels[1].localWheelPosition;
@@ -305,11 +316,12 @@ class GameScene: Scene
         float lateralSlip = car.lateralSlip;
         float longitudinalSlip = car.longitudinalSlip;
         float squealVolume = clamp(lateralSlip, 0.0f, 1.0f);
+        if (car.breaking) squealVolume = clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
         audio.setVolume(squealVoice, volume * squealVolume * 0.8f);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
         
         // Dust particles
-        bool makingDust = lateralSlip > 0.0f || longitudinalSlip > 0.4f;
+        bool makingDust = lateralSlip > 0.0f || car.breaking;
         if (makingDust && car.wheels[2].onGround) emitterLeft.emitting = true;
         else emitterLeft.emitting = false;
         if (makingDust && car.wheels[3].onGround) emitterRight.emitting = true;
