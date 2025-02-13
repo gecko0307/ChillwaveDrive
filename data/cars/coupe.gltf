@@ -8,7 +8,8 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0
+				0,
+				1
 			]
 		}
 	],
@@ -16,6 +17,10 @@
 		{
 			"mesh":0,
 			"name":"body"
+		},
+		{
+			"mesh":1,
+			"name":"windows"
 		}
 	],
 	"materials":[
@@ -39,7 +44,7 @@
 					"index":2
 				},
 				"metallicFactor":0,
-				"roughnessFactor":0.10000000149011612
+				"roughnessFactor":0.1
 			}
 		},
 		{
@@ -48,12 +53,13 @@
 			"name":"Glass",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					0,
-					0,
-					0,
-					0.30000001192092896
+					1,
+					1,
+					1,
+					0.0
 				],
-				"roughnessFactor":0.10000000149011612
+				"metallicFactor": 0.5,
+				"roughnessFactor":0.2
 			}
 		}
 	],
@@ -82,7 +88,12 @@
 					},
 					"indices":11,
 					"material":1
-				},
+				}
+			]
+		},
+		{
+			"name":"Mesh.001",
+			"primitives":[
 				{
 					"attributes":{
 						"POSITION":12,

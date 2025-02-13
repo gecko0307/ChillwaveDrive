@@ -105,7 +105,7 @@ class GameScene: Scene
         environment.fogStart = 10.0f;
         environment.fogEnd = 100.0f;
         
-        environment.ambientEnergy = 1.5f;
+        environment.ambientEnergy = 0.4f;
         environment.ambientMap = aTexEnvmap.texture;
         
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
@@ -165,6 +165,11 @@ class GameScene: Scene
         Vector3f chassisTopPosition = Vector3f(0.0f, 0.479246f, -0.839547f);
         eCar.drawable = aChassis.meshes[0];
         eCar.blurMask = 0.0f;
+        
+        auto eCarWindows = addEntity(eCar);
+        eCarWindows.drawable = aChassis.meshes[1];
+        eCarWindows.transparent = true;
+        eCarWindows.castShadow = false;
         
         auto chassisShapeBottom = New!NewtonBoxShape(chassisSizeBottom, physicsWorld);
         chassisShapeBottom.setTransformation(translationMatrix(chassisBottomPosition));
