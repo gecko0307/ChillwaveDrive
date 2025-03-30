@@ -39,9 +39,9 @@ class Wheel: Owner, NewtonRaycaster
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float invInertia = 0.8f;
-    float staticFrictionCoefficient = 0.95f;
+    float staticFrictionCoefficient = 0.99f;
     float lateralDynamicFrictionCoefficient = 0.75f;
-    float longitudinalDynamicFrictionCoefficient = 0.75f;
+    float longitudinalDynamicFrictionCoefficient = 1.0f;
     Quaternionf steering = Quaternionf.identity;
     bool brake = false;
     
@@ -62,8 +62,8 @@ class Wheel: Owner, NewtonRaycaster
         
         suspension.minLength = 0.2f;
         suspension.maxLength = 0.3f;
-        suspension.stiffness = 100.0f;
-        suspension.damping = 8.0f;
+        suspension.stiffness = 110.0f;
+        suspension.damping = 12.0f;
         suspension.compression = 0.0f;
         suspension.length = 0.0f;
         suspension.lengthPrev = 0.0f;
@@ -433,7 +433,7 @@ class Vehicle: EntityComponent
         if (accelerating)
         {
             float spd = speedKMH;
-            float maxTorque = 4000.0f;
+            float maxTorque = 5000.0f;
             float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
             torquePerWheel = maxTorque * decreaseFactor * throttle * torqueDirection * 0.5f;
         }

@@ -45,6 +45,9 @@
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.1
+			},
+			"emissiveTexture": {
+				"index":3
 			}
 		},
 		{
@@ -59,7 +62,7 @@
 					0.0
 				],
 				"metallicFactor": 0.5,
-				"roughnessFactor":0.2
+				"roughnessFactor":0.1
 			}
 		}
 	],
@@ -120,6 +123,10 @@
 		{
 			"sampler":0,
 			"source":2
+		},
+		{
+			"sampler":0,
+			"source":3
 		}
 	],
 	"images":[
@@ -137,6 +144,11 @@
 			"mimeType":"image/jpeg",
 			"name":"Lights",
 			"uri":"textures/Lights.jpg"
+		},
+		{
+			"mimeType":"image/jpeg",
+			"name":"LightsEmission",
+			"uri":"textures/LightsEmission.png"
 		}
 	],
 	"accessors":[

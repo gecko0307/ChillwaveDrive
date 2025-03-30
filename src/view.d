@@ -80,7 +80,7 @@ class VehicleViewComponent: EntityComponent
         float speedFactor = clamp((vehicle.speed - minSpeed) / (maxSpeed - minSpeed), 0.0f, 1.0f);
         boostFactor = clamp((vehicle.speed - 30.0f) / (50.0f - 30.0f), 0.0f, 1.0f);
         
-        float faceDistance = lerp(4.0f, lerp(3.0f, -1.0f, boostFactor), speedFactor);
+        float faceDistance = lerp(5.0f, 4.0f, speedFactor);
         Vector3f facePosition = (offset.normalized * -faceDistance) * vehicle.transformation;
         
         targetPosition = facePosition;
@@ -88,21 +88,13 @@ class VehicleViewComponent: EntityComponent
         Vector3f tp = targetPosition;
         tp.y = vehicle.position.y + 1.5f;
         Vector3f d = tp - position;
-        position += d * 0.2f;
+        position += d * 10.0f * time.delta;
         
         Vector3f viewFrom = position;
         Vector3f viewTo = vehicle.position + Vector3f(0, 1.0f, 0);
         Vector3f viewDir = (viewTo - viewFrom).normalized;
         Vector3f viewUp = Vector3f(0, 1, 0);
         Vector3f viewRight = cross(viewDir, viewUp);
-        
-        float shakeAmplitude = uniform(0.01f, 0.05f);
-        float shakeFreq = uniform(6.0f, 10.0f);
-        double t = time.elapsed * shakeFreq;
-        Vector2f shakeVec = Vector2f(sin(t) * shakeAmplitude, cos(t) * shakeAmplitude);
-        Vector3f noShake = Vector3f(0.0f, 0.0f, 0.0f);
-        Vector3f shake = viewRight * shakeVec.x + viewUp * shakeVec.y;
-        shake = lerp(noShake, shake, boostFactor);
         
         Matrix4x4f trans = lookAtMatrix(viewFrom, viewTo, Vector3f(0, 1, 0));
         

@@ -24,6 +24,8 @@ class GameScene: Scene
     
     TextureAsset aTexEnvmap;
     
+    TextureAsset aTexColorTable;
+    
     GLTFAsset aChassis;
     GLTFAsset aWheel;
     
@@ -37,15 +39,26 @@ class GameScene: Scene
     Emitter emitterLeft;
     Emitter emitterRight;
     
+    WavStream music;
     Wav sfxEngine;
+    Wav sfxEngine2;
     Wav sfxSquealLoop;
     Wav[2] sfxHit;
     
+    int musicVoice;
     int engineVoice;
+    int engine2Voice;
     int squealVoice;
     int hitVoice;
     
-    float volume = 0.25f;
+    float musicVolume = 0.25f;
+    float sfxVolume = 0.25f;
+    
+    bool headlightsPressed = false;
+    bool headlightsOn = true;
+    float headlightsEnergy = 4.0f;
+    Material headlightsMaterial;
+    Light light1, light2, light3, light4;
 
     this(VehicleDemoGame game)
     {
@@ -56,74 +69,77 @@ class GameScene: Scene
 
     override void beforeLoad()
     {
-        aTrack = addGLTFAsset("data/track/track.gltf");
+        aTrack = addGLTFAsset("data/city/city.gltf");
         aChassis = addGLTFAsset("data/cars/coupe.gltf");
         aWheel = addGLTFAsset("data/cars/wheel1.gltf");
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
-        
         aTexEnvmap = addTextureAsset("data/envmaps/envmap.hdr");
+        aTexColorTable = addTextureAsset("data/lut.png");
         
         // Sounds
         sfxEngine = Wav.create();
         sfxEngine.load("data/sounds/engine.wav");
-        sfxEngine.setVolume(volume * 0.2f);
         sfxEngine.set3dDistanceDelay(true);
         
         sfxSquealLoop = Wav.create();
         sfxSquealLoop.load("data/sounds/squeal.wav");
-        sfxSquealLoop.setVolume(volume * 0.5f);
         sfxSquealLoop.set3dDistanceDelay(true);
         
         sfxHit[0] = Wav.create();
         sfxHit[0].load("data/sounds/hit1.wav");
-        sfxHit[0].setVolume(volume * 0.5f);
         sfxHit[0].set3dDistanceDelay(true);
         
         sfxHit[1] = Wav.create();
         sfxHit[1].load("data/sounds/hit2.wav");
-        sfxHit[1].setVolume(volume * 0.5f);
         sfxHit[1].set3dDistanceDelay(true);
+        
+        music = WavStream.create();
+        music.load("data/music/stellar_escape.mp3");
     }
 
     override void afterLoad()
     {
         game.deferredRenderer.ssaoEnabled = true;
-        game.deferredRenderer.ssaoPower = 6.0f;
-        game.postProcessingRenderer.fStop = 1.0;
+        game.deferredRenderer.ssaoRadius = 0.5f;
+        game.deferredRenderer.ssaoPower = 16.0f;
         game.postProcessingRenderer.glowEnabled = true;
-        game.postProcessingRenderer.glowThreshold = 1.0f;
-        game.postProcessingRenderer.glowIntensity = 0.25f;
+        game.postProcessingRenderer.glowThreshold = 3.0f;
+        game.postProcessingRenderer.glowIntensity = 1.0f;
         game.postProcessingRenderer.glowRadius = 7;
         game.postProcessingRenderer.exposure = 1.0f;
         game.postProcessingRenderer.tonemapper = Tonemapper.AgX_Punchy;
         game.postProcessingRenderer.fxaaEnabled = true;
         game.postProcessingRenderer.motionBlurEnabled = true;
-        game.postProcessingRenderer.motionBlurFramerate = 60;
+        game.postProcessingRenderer.motionBlurFramerate = 30;
+        game.postProcessingRenderer.lensDistortionEnabled = true;
+        game.postProcessingRenderer.lensDistortionDispersion = 0.05f;
+        game.postProcessingRenderer.lutEnabled = true;
+        game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
         
         environment.backgroundColor = Color4f(0.7f, 0.8f, 1.0f, 1.0f);
         environment.fogColor = environment.backgroundColor;
-        environment.fogStart = 10.0f;
-        environment.fogEnd = 100.0f;
+        environment.fogStart = 0.0f;
+        environment.fogEnd = 200.0f;
         
-        environment.ambientEnergy = 0.4f;
+        environment.ambientEnergy = 0.25f;
         environment.ambientMap = aTexEnvmap.texture;
         
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
         
         camera = addCamera();
-        camera.fov = 80.0f;
+        camera.fov = 60.0f;
         game.renderer.activeCamera = camera;
         
         auto sun = addLight(LightType.Sun);
-        sun.color = Color4f(1.0f, 0.9f, 0.8f, 1.0f);
+        sun.color = Color4f(1.0f, 0.7f, 0.5f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 10.0f;
+        sun.energy = 15.0f;
         sun.turn(220.0f);
-        sun.pitch(-30.0f);
-        sun.scatteringEnabled = false;
+        sun.pitch(-10.0f);
+        sun.scatteringEnabled = true;
         sun.scattering = 0.2f;
         sun.mediumDensity = 0.1f;
-        sun.scatteringUseShadow = false;
+        sun.scatteringUseShadow = true;
         sun.scatteringMaxRandomStepOffset = 0.5f;
         environment.sun = sun;
         
@@ -158,13 +174,17 @@ class GameScene: Scene
         
         // Car
         eCar = addEntity();
-        eCar.position = Vector3f(0.0f, 26.0f, 210.0f);
-        Vector3f chassisSizeBottom = Vector3f(1.76917f, 0.777934f, 4.77418f);
+        //eCar.position = Vector3f(0.0f, 26.0f, 210.0f);
+        eCar.position = Vector3f(-2.0f, 1.0f, -10.0f);
+        Vector3f chassisSizeBottom = Vector3f(1.76917f, 0.7f, 4.4f);
         Vector3f chassisSizeTop = Vector3f(1.54f, 0.492f, 2.39f);
         Vector3f chassisBottomPosition = Vector3f(0.0f, 0.22f, 0.0f);
         Vector3f chassisTopPosition = Vector3f(0.0f, 0.479246f, -0.839547f);
         eCar.drawable = aChassis.meshes[0];
         eCar.blurMask = 0.0f;
+        
+        headlightsMaterial = aChassis.materials[1];
+        headlightsMaterial.emissionEnergy = headlightsEnergy;
         
         auto eCarWindows = addEntity(eCar);
         eCarWindows.drawable = aChassis.meshes[1];
@@ -204,6 +224,35 @@ class GameScene: Scene
         eWheel4.position = car.wheels[3].localWheelPosition;
         eWheel4.blurMask = 0.0f;
         
+        // Headlights
+        light1 = addLight(LightType.Spot, eCar);
+        light1.volumeRadius = 10.0f;
+        light1.energy = 20.0f;
+        light1.spotOuterCutoff = 45.0f;
+        light1.position = Vector3f(-0.6f, 0.0f, 2.2f);
+        light1.turn(180);
+        
+        light2 = addLight(LightType.Spot, eCar);
+        light2.volumeRadius = 10.0f;
+        light2.energy = 20.0f;
+        light2.spotOuterCutoff = 45.0f;
+        light2.position = Vector3f(0.6f, 0.0f, 2.2f);
+        light2.turn(180);
+        
+        light3 = addLight(LightType.AreaSphere, eCar);
+        light3.color = Color4f(1.0f, 0.0f, 0.0f, 1.0);
+        light3.volumeRadius = 5.0f;
+        light3.energy = 10.0f;
+        light3.specular = 0.0f;
+        light3.position = Vector3f(-0.6f, 0.0f, -2.5f);
+        
+        light4 = addLight(LightType.AreaSphere, eCar);
+        light4.color = Color4f(1.0f, 0.0f, 0.0f, 1.0);
+        light4.volumeRadius = 5.0f;
+        light4.energy = 10.0f;
+        light4.specular = 0.0f;
+        light4.position = Vector3f(0.6f, 0.0f, -2.5f);
+        
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
         
@@ -212,16 +261,17 @@ class GameScene: Scene
         mParticlesDust.baseColorTexture = aTexParticleDust.texture;
         mParticlesDust.blendMode = Transparent;
         mParticlesDust.depthWrite = false;
-        mParticlesDust.emissionEnergy = 0.5f;
         mParticlesDust.sun = sun;
+        mParticlesDust.opacity = 0.2f;
+        mParticlesDust.useShadows = true;
 
         auto eParticlesRight = addEntity(eCar);
         emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
         eParticlesRight.position = Vector3f(-0.9f, -1.0f, 1.4f);
         emitterRight.minLifetime = 1.0f;
         emitterRight.maxLifetime = 3.0f;
-        emitterRight.minSize = 1.0f;
-        emitterRight.maxSize = 2.0f;
+        emitterRight.minSize = 0.5f;
+        emitterRight.maxSize = 1.0f;
         emitterRight.minInitialSpeed = 0.2f;
         emitterRight.maxInitialSpeed = 0.2f;
         emitterRight.scaleStep = Vector2f(2, 2);
@@ -249,12 +299,17 @@ class GameScene: Scene
         engineVoice = audio.play3d(sfxEngine, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engineVoice, true);
         audio.set3dSourceMinMaxDistance(engineVoice, 1.0f, 50.0f);
-        audio.setVolume(engineVoice, volume * 0.5f);
+        audio.setVolume(engineVoice, sfxVolume);
+        
         audio.update3dAudio();
         
         squealVoice = audio.play3d(sfxSquealLoop, car.position.x, car.position.y, car.position.z);
-        audio.setVolume(squealVoice, volume * 0.0f);
+        audio.setVolume(squealVoice, sfxVolume);
         audio.setLooping(squealVoice, true);
+        
+        musicVoice = audio.play(music);
+        audio.setLooping(musicVoice, true);
+        audio.setVolume(musicVoice, musicVolume);
     }
     
     override void onKeyDown(int key)
@@ -271,14 +326,51 @@ class GameScene: Scene
     
     float lastDirection = 0.0f;
     
+    float accelerationPressed = false;
+    float carEngineSoundSpeed = 1.0f;
+    
     override void onUpdate(Time t)
     {
-        if (inputManager.getButton("forward")) 
+        if (inputManager.getButton("forward"))
+        {
             car.accelerate(1.0f, 2.0f * t.delta);
+            if (carEngineSoundSpeed < 1.5f)
+                carEngineSoundSpeed += t.delta * 0.5f;
+        }
         else if (inputManager.getButton("back"))
+        {
             car.accelerate(-1.0f, 2.0f * t.delta);
+            if (carEngineSoundSpeed < 1.5f)
+                carEngineSoundSpeed += t.delta * 0.5f;
+        }
         else
+        {
             car.idle();
+            
+            if (carEngineSoundSpeed > 1.0f)
+                carEngineSoundSpeed -= t.delta * 0.5f;
+        }
+        
+        if (inputManager.getButton("headlights"))
+        {
+            if (!headlightsPressed)
+            {
+                headlightsPressed = true;
+                headlightsOn = !headlightsOn;
+                light1.shining = headlightsOn;
+                light2.shining = headlightsOn;
+                light3.shining = headlightsOn;
+                light4.shining = headlightsOn;
+                if (headlightsOn)
+                    headlightsMaterial.emissionEnergy = headlightsEnergy;
+                else
+                    headlightsMaterial.emissionEnergy = 0.0f;
+            }
+        }
+        else
+        {
+            headlightsPressed = false;
+        }
         
         float axis = inputManager.getAxis("horizontal");
         car.steer(-axis * 8.0f * t.delta);
@@ -300,15 +392,15 @@ class GameScene: Scene
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
-        float engineSoundSpeed = lerp(1.0f, 1.5f, car.throttle);
-        audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
+        float engineSoundBlend = lerp(1.0f, 1.25f, car.throttle);
+        audio.setRelativePlaySpeed(engineVoice, engineSoundBlend);
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
         float longitudinalSlip = car.longitudinalSlip;
         float squealVolume = clamp(lateralSlip, 0.0f, 1.0f);
         if (car.brake) squealVolume = clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
-        audio.setVolume(squealVoice, volume * squealVolume * 0.8f);
+        audio.setVolume(squealVoice, sfxVolume * squealVolume * 0.8f);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
         
         // Dust particles
