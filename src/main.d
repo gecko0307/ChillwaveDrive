@@ -193,7 +193,7 @@ class GameScene: Scene
         
         // Car
         eCar = addEntity();
-        eCar.position = Vector3f(0.0f, 26.0f, 210.0f);
+        eCar.position = Vector3f(0.0f, 25.2f, 210.0f);
         Vector3f chassisSizeBottom = Vector3f(1.76917f, 0.7f, 4.4f);
         Vector3f chassisSizeTop = Vector3f(1.54f, 0.492f, 2.39f);
         Vector3f chassisBottomPosition = Vector3f(0.0f, 0.22f, 0.0f);
