@@ -347,6 +347,20 @@ class GameScene: Scene
     float accelerationPressed = false;
     float carEngineSoundSpeed = 1.0f;
     
+    float triggerForward = 0.0f;
+    float triggerBackward = 0.0f;
+    override void onJoystickAxisMotion(int axis, float value)
+    {
+        if (axis == GA_TRIGGERRIGHT)
+        {
+            triggerForward = value;
+        }
+        else if (axis == GA_TRIGGERLEFT)
+        {
+            triggerBackward = value;
+        }
+    }
+    
     override void onUpdate(Time t)
     {
         // Car controls
@@ -359,6 +373,18 @@ class GameScene: Scene
         else if (inputManager.getButton("back"))
         {
             car.accelerate(-1.0f, 2.0f * t.delta);
+            if (carEngineSoundSpeed < 1.5f)
+                carEngineSoundSpeed += t.delta * 0.5f;
+        }
+        else if (triggerForward > 0.0f)
+        {
+            car.accelerate(1.0f, 2.0f * triggerForward * t.delta);
+            if (carEngineSoundSpeed < 1.5f)
+                carEngineSoundSpeed += t.delta * 0.5f;
+        }
+        else if (triggerBackward > 0.0f)
+        {
+            car.accelerate(-1.0f, 2.0f * triggerBackward * t.delta);
             if (carEngineSoundSpeed < 1.5f)
                 carEngineSoundSpeed += t.delta * 0.5f;
         }

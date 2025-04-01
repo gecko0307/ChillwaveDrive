@@ -182,6 +182,7 @@ class Wheel: Owner, NewtonRaycaster
             
             // Friction force
             float idleThreshold = 0.5f;
+            // speedFactor interpolates between static (0.0) and dynamic (1.0) friction
             float speedFactor = clamp(chassisSpeed / idleThreshold, 0.0f, 1.0f);
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralDynamicFrictionCoefficient;
