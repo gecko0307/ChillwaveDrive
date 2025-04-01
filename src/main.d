@@ -312,6 +312,8 @@ class GameScene: Scene
         eParticlesLeft.visible = true;
         
         vehicleView = New!VehicleViewComponent(eventManager, camera, car);
+        if ("mouseSensibility" in game.config.props)
+           vehicleView.mouseSensibility = game.config.props["mouseSensibility"].toFloat;
         eventManager.showCursor(false);
         
         engineVoice = audio.play3d(sfxEngine, car.position.x, car.position.y, car.position.z);
