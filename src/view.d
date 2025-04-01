@@ -36,28 +36,23 @@ import vehicle;
 class VehicleViewComponent: EntityComponent
 {
     Vehicle vehicle;
-    Vector3f targetPosition;
-    Vector3f position;
-    Vector3f offset;
     
     int oldMouseX;
     int oldMouseY;
     
+    float targetTurnAngle = 0.0f;
+    float turnAngle = 0.0f;
+    
     bool active = true;
     bool mouseActive = true;
     
-    float mouseSensibility = 0.1f;
-    
-    float boostFactor = 0.0f;
+    float mouseSensibility = 0.2f;
 
     this(EventManager em, Entity e, Vehicle vehicle)
     {
         super(em, e);
         
         this.vehicle = vehicle;
-        offset = Vector3f(0.0f, 0.0f, 1.0f);
-        position = vehicle.position + offset;
-        targetPosition = vehicle.position + vehicle.transformation.forward * -4.0f;
         
         oldMouseX = eventManager.windowWidth / 2;
         oldMouseY = eventManager.windowHeight / 2;
@@ -67,30 +62,22 @@ class VehicleViewComponent: EntityComponent
     {
         processEvents();
         
+        float turnDelta = 0.0f;
         if (active & mouseActive)
         {
-            float turnAngle = (eventManager.mouseX - oldMouseX) * mouseSensibility;
-            Quaternionf mouseRotation = rotationQuaternion!float(Axis.y, turnAngle * time.delta);
-            offset = mouseRotation.rotate(offset);
+            turnDelta = (eventManager.mouseX - oldMouseX) * mouseSensibility * time.delta;
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
         
-        float minSpeed = 2.0f;
-        float maxSpeed = 15.0f;
-        float speedFactor = clamp((vehicle.speed - minSpeed) / (maxSpeed - minSpeed), 0.0f, 1.0f);
-        boostFactor = clamp((vehicle.speed - 30.0f) / (50.0f - 30.0f), 0.0f, 1.0f);
+        targetTurnAngle += turnDelta;
+        turnAngle += (targetTurnAngle - turnAngle) * 0.2f;
+        Quaternionf mouseRotation = rotationQuaternion!float(Axis.y, turnAngle);
+        Vector3f offset = mouseRotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
         
-        float faceDistance = lerp(5.0f, 4.0f, speedFactor);
-        Vector3f facePosition = (offset.normalized * -faceDistance) * vehicle.transformation;
+        Vector3f cameraPosition = (offset.normalized * -4.7f) * vehicle.transformation;
+        cameraPosition.y = vehicle.position.y + 1.6f;
         
-        targetPosition = facePosition;
-        
-        Vector3f tp = targetPosition;
-        tp.y = vehicle.position.y + 1.5f;
-        Vector3f d = tp - position;
-        position += d * 10.0f * time.delta;
-        
-        Vector3f viewFrom = position;
+        Vector3f viewFrom = cameraPosition;
         Vector3f viewTo = vehicle.position + Vector3f(0, 1.0f, 0);
         Vector3f viewDir = (viewTo - viewFrom).normalized;
         Vector3f viewUp = Vector3f(0, 1, 0);

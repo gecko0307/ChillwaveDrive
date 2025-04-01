@@ -56,10 +56,10 @@
 			"name":"Glass",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					1,
-					1,
-					1,
-					0.0
+					0.5,
+					0.5,
+					0.5,
+					0.5
 				],
 				"metallicFactor": 0.5,
 				"roughnessFactor":0.1
@@ -132,8 +132,8 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"CoupeBlue",
-			"uri":"textures/CoupeBlue.png"
+			"name":"CoupeBaseColor",
+			"uri":"textures/CoupeYellow.png"
 		},
 		{
 			"mimeType":"image/png",
