@@ -1,12 +1,10 @@
 {
-    "name": "demo",
-    "description": "Dagon Vehicle Demo",
+    "name": "ChillwaveDrive",
+    "description": "Chillwave Drive",
     "license": "Boost",
     "authors": [
         "Timur Gafarov"
     ],
-    
-    "targetType": "executable",
     
     "dependencies": {
         "dagon": "~master",
@@ -16,15 +14,16 @@
         "bindbc-loader": "1.1.4"
     },
     
-    "importPaths": [
-        "src"
-    ],
-
+    "importPaths": ["src"],
+    "sourcePaths": ["src"],
+    "mainSourceFile": "src/main.d",
+    "targetType": "executable",
+    
     "buildRequirements":[
         "allowWarnings"
     ],
-
-    "sourcePaths": ["src"],
     
-    "mainSourceFile": "src/main.d"
+    "postBuildCommands-windows": [
+        "$PACKAGE_DIR\\bin/rcedit-x64 \"ChillwaveDrive.exe\" --set-file-version \"1.0.0.0\" --set-product-version \"1.0.0\" --set-icon \"$PACKAGE_DIR\\res\\icon.ico\" --application-manifest \"$PACKAGE_DIR\\res\\ChillwaveDrive.manifest\""
+    ]
 }

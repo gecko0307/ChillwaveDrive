@@ -24,8 +24,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-
-module sky;
+module atmosphere;
 
 import std.stdio;
 import std.math;
@@ -49,19 +48,15 @@ class AtmosphereShader: Shader
     String vs, fs;
 
     Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
-    
     Texture noiseTexture;
-    Texture normalTexture;
-    
     float time = 0.0f;
     float turbidity = 0.4f;
-    
     float sunEnergy = 1.0f;
 
     this(Owner owner)
     {
-        vs = Shader.load("data/sky/Sky.vert.glsl");
-        fs = Shader.load("data/sky/Sky.frag.glsl");
+        vs = Shader.load("data/atmosphere/Atmosphere.vert.glsl");
+        fs = Shader.load("data/atmosphere/Atmosphere.frag.glsl");
 
         auto myProgram = New!ShaderProgram(vs, fs, this);
         super(myProgram, owner);

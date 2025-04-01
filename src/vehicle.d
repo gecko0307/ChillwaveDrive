@@ -285,14 +285,12 @@ class Vehicle: EntityComponent
             entity.rotation.toMatrix4x4;
         this.chassisBody.raycastable = false;
         this.chassisBody.groupId = materialID;
-        //this.chassisBody.collisionCallback = &onCollision;
         
         NewtonBodySetContinuousCollisionMode(chassisBody.newtonBody, 1);
         NewtonBodySetMatrix(chassisBody.newtonBody, chassisBody.transformation.arrayof.ptr);
         
         NewtonMaterialSetDefaultFriction(world.newtonWorld, 0, materialID, 0.2f, 0.2f);
         NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
-        //NewtonMaterialSetCollisionCallback(world.newtonWorld, materialID, world.defaultGroupId, null, &chassisContactsProcess);
         
         float suspensionPos = 0.2f;
         wheels[0] = New!Wheel(Vector3f(-0.75f, suspensionPos, +1.35f), -1.0f, this);

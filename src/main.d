@@ -9,7 +9,7 @@ import dagon.ext.newton;
 import soloud;
 import vehicle;
 import view;
-import sky;
+import atmosphere;
 
 float normalizeInRange(float x, float xmin, float xmax)
 {
@@ -29,7 +29,6 @@ class GameScene: Scene
     NewtonPhysicsWorld physicsWorld;
     
     TextureAsset aCloudNoise;
-    TextureAsset aCloudNormal;
     
     GLTFAsset aChassis;
     GLTFAsset aWheel;
@@ -93,13 +92,12 @@ class GameScene: Scene
         aTrack = addGLTFAsset("data/track/track.gltf");
         
         // Car
-        aChassis = addGLTFAsset("data/cars/coupe.gltf");
-        aWheel = addGLTFAsset("data/cars/wheel1.gltf");
+        aChassis = addGLTFAsset("data/car/coupe.gltf");
+        aWheel = addGLTFAsset("data/car/wheel1.gltf");
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
         
         // Environment
-        aCloudNoise = addTextureAsset("data/sky/noise.png");
-        aCloudNormal = addTextureAsset("data/sky/normal.png");
+        aCloudNoise = addTextureAsset("data/atmosphere/noise.png");
         
         // Sounds
         sfxEngine = Wav.create();
@@ -126,7 +124,7 @@ class GameScene: Scene
     {
         game.deferredRenderer.ssaoEnabled = true;
         game.deferredRenderer.ssaoRadius = 0.5f;
-        game.deferredRenderer.ssaoPower = 18.0f;
+        game.deferredRenderer.ssaoPower = 9.0f;
         game.postProcessingRenderer.glowEnabled = true;
         game.postProcessingRenderer.glowThreshold = 5.0f;
         game.postProcessingRenderer.glowIntensity = 0.1f;
@@ -175,7 +173,6 @@ class GameScene: Scene
         eSky.material.useFog = false;
         skyShader = New!AtmosphereShader(assetManager);
         skyShader.noiseTexture = aCloudNoise.texture;
-        skyShader.normalTexture = aCloudNormal.texture;
         eSky.material.shader = skyShader;
         
         // Track
