@@ -543,7 +543,7 @@ void main(string[] args)
     
     loadSoloud();
     
-    VehicleDemoGame game = New!VehicleDemoGame(1280, 720, false, "Dagon vehicle demo", args);
+    VehicleDemoGame game = New!VehicleDemoGame(1280, 720, false, "Chillwave Drive", args);
     game.run();
     Delete(game);
 }
