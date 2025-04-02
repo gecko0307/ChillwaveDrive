@@ -33,7 +33,6 @@ class Wheel: Owner, NewtonRaycaster
     float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
     float load = 0.25f;
-    float grip = 0.75f;
     float slipAngle = 0.0f;
     float slipRatio = 0.0f;
     float torque = 0.0f;
@@ -135,8 +134,6 @@ class Wheel: Owner, NewtonRaycaster
             
             suspension.lengthPrev = suspension.length;
             suspension.length = max(0.0f, suspToGround - radius);
-            //if (suspension.length < suspension.minLength)
-            //    suspension.length = suspension.minLength;
             suspension.compression = suspension.maxLength - suspension.length;
             
             // Normal force
@@ -166,7 +163,7 @@ class Wheel: Owner, NewtonRaycaster
             else if (abs(torque) > 0.0f)
             {
                 // Apply torque
-                tractionForce = torque / radius * grip * invInertia;
+                tractionForce = torque / radius * vehicle.roadGrip * invInertia;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
                 angularAcceleration = tractionForce * 0.2f * dt;
                 longitudinalSpeed -= angularVelocity * radius;
@@ -271,11 +268,14 @@ class Vehicle: EntityComponent
     float throttle = 0.0f; // 0.0f..1.0f
     float steeringInput = 0.0f; // -1.0f..1.0f
     float maxSteeringAngle = 45.0f;
+    float maxTorque = 5000.0f;
     
     bool accelerating = false;
     bool brake = false;
     
     float movementDirection = 0.0f;
+    
+    float roadGrip = 0.75f;
     
     Matrix4x4f prevTransformation;
     
@@ -452,7 +452,6 @@ class Vehicle: EntityComponent
         if (accelerating)
         {
             float spd = speedKMH;
-            float maxTorque = 5000.0f;
             float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
             torque = maxTorque * decreaseFactor * throttle * torqueDirection;
         }

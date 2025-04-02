@@ -225,7 +225,7 @@ class GameScene: Scene
         Wheel rearWheelLeft = car.addWheel(Vector3f(-0.75f, suspensionPos, -1.35f), wheelRadius, -1.0f);
         Wheel rearWheelRight = car.addWheel(Vector3f(+0.75f, suspensionPos, -1.35f), wheelRadius, +1.0f);
         
-        bool rearDrive = false;
+        bool rearDrive = true;
         
         if (rearDrive)
         {
