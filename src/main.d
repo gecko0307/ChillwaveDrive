@@ -16,6 +16,75 @@ float normalizeInRange(float x, float xmin, float xmax)
     return clamp((x - xmin) / (xmax - xmin), 0.0f, 1.0f);
 }
 
+import dlib.serialization.json;
+
+class JSONAsset: Asset
+{
+    String str;
+    JSONDocument doc;
+    
+    this(Owner o)
+    {
+        super(o);
+    }
+
+    ~this()
+    {
+        release();
+    }
+
+    override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
+    {
+        str = String(istrm);
+        doc = New!JSONDocument(str.toString);
+        return true;
+    }
+    
+    override bool loadThreadUnsafePart()
+    {
+        return true;
+    }
+
+    override void release()
+    {
+        if (doc)
+            Delete(doc);
+        str.free();
+    }
+}
+
+float jsonPropFloat(JSONValue val, string name, float defaultValue)
+{
+    if (name in val.asObject)
+        return val.asObject[name].asNumber;
+    else
+        return defaultValue;
+}
+
+uint jsonPropUInt(JSONValue val, string name, uint defaultValue)
+{
+    if (name in val.asObject)
+        return cast(uint)val.asObject[name].asNumber;
+    else
+        return defaultValue;
+}
+
+string jsonPropString(JSONValue val, string name, string defaultValue)
+{
+    if (name in val.asObject)
+        return val.asObject[name].asString;
+    else
+        return defaultValue;
+}
+
+Vector3f jsonPropVector(JSONValue val, string name, Vector3f defaultValue)
+{
+    if (name in val.asObject)
+        return val.asObject[name].asVector;
+    else
+        return defaultValue;
+}
+
 class GameScene: Scene
 {
     VehicleDemoGame game;
@@ -30,14 +99,16 @@ class GameScene: Scene
     
     TextureAsset aCloudNoise;
     
-    GLTFAsset aChassis;
-    GLTFAsset aWheel;
+    JSONAsset aCar;
     
-    TextureAsset aTexParticleDust;
+    GLTFAsset aChassis;
+    Array!GLTFAsset aWheels;
     
     Entity eCar;
-    Entity eWheel1, eWheel2, eWheel3, eWheel4;
+    Array!Entity eWheels;
     Vehicle car;
+    
+    TextureAsset aTexParticleDust;
     
     Light sun;
     AtmosphereShader skyShader;
@@ -85,6 +156,12 @@ class GameScene: Scene
         this.game = game;
         this.audio = game.audio;
     }
+    
+    ~this()
+    {
+        aWheels.free();
+        eWheels.free();
+    }
 
     override void beforeLoad()
     {
@@ -92,8 +169,30 @@ class GameScene: Scene
         aTrack = addGLTFAsset("data/track/track.gltf");
         
         // Car
-        aChassis = addGLTFAsset("data/car/coupe.gltf");
-        aWheel = addGLTFAsset("data/car/wheel1.gltf");
+        aCar = New!JSONAsset(assetManager);
+        assetManager.preloadAsset(aCar, "data/car/coupe.json");
+        
+        string chassisFilename = "data/car/coupe.gltf";
+        auto root = aCar.doc.root.asObject;
+        if ("chassis" in root)
+        {
+            auto chassis = root["chassis"];
+            chassisFilename = jsonPropString(root["chassis"], "model", "data/car/coupe.gltf");
+        }
+        
+        aChassis = addGLTFAsset(chassisFilename);
+        
+        if ("wheels" in root)
+        {
+            auto wheels = root["wheels"].asArray;
+            foreach(wheel; wheels)
+            {
+                string wheelFilename = jsonPropString(wheel, "model", "data/car/wheel.gltf");
+                auto aWheel = addGLTFAsset(wheelFilename);
+                aWheels.append(aWheel);
+            }
+        }
+        
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
         
         // Environment
@@ -194,93 +293,132 @@ class GameScene: Scene
         // Car
         eCar = addEntity();
         eCar.position = Vector3f(0.0f, 25.2f, 210.0f);
-        Vector3f chassisSizeBottom = Vector3f(1.76917f, 0.7f, 4.4f);
-        Vector3f chassisSizeTop = Vector3f(1.54f, 0.492f, 2.39f);
-        Vector3f chassisBottomPosition = Vector3f(0.0f, 0.22f, 0.0f);
-        Vector3f chassisTopPosition = Vector3f(0.0f, 0.479246f, -0.839547f);
-        eCar.drawable = aChassis.meshes[0];
         eCar.blurMask = 0.0f;
         
-        headlightsMaterial = aChassis.materials[1];
-        headlightsMaterial.emissionEnergy = headlightsEnergy;
+        auto root = aCar.doc.root;
         
-        auto eCarWindows = addEntity(eCar);
-        eCarWindows.drawable = aChassis.meshes[1];
-        eCarWindows.transparent = true;
-        eCarWindows.castShadow = false;
+        NewtonCompoundShape chassisShape = null;
         
-        auto chassisShapeBottom = New!NewtonBoxShape(chassisSizeBottom, physicsWorld);
-        chassisShapeBottom.setTransformation(translationMatrix(chassisBottomPosition));
-        auto chassisShapeTop = New!NewtonBoxShape(chassisSizeTop, physicsWorld);
-        chassisShapeTop.setTransformation(translationMatrix(chassisTopPosition));
-        auto chassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisShapeBottom, chassisShapeTop], physicsWorld);
-        float carMass = 1500.0f;
+        if ("chassis" in root.asObject)
+        {
+            auto chassis = root.asObject["chassis"].asObject;
+            
+            if ("meshes" in chassis)
+            {
+                auto meshes = chassis["meshes"];
+                
+                uint mainMeshIndex = jsonPropUInt(meshes, "main", 0);
+                if (aChassis.meshes.length > mainMeshIndex)
+                    eCar.drawable = aChassis.meshes[mainMeshIndex];
+                
+                if ("windows" in meshes.asObject)
+                {
+                    uint windowsMeshIndex = jsonPropUInt(meshes, "windows", 0);
+                    if (aChassis.meshes.length > windowsMeshIndex)
+                    {
+                        auto eWindows = addEntity(eCar);
+                        eWindows.drawable = aChassis.meshes[windowsMeshIndex];
+                        eWindows.transparent = true;
+                        eWindows.castShadow = false;
+                    }
+                }
+            }
+            
+            if ("materials" in chassis)
+            {
+                auto materials = chassis["materials"];
+                
+                if ("headlights" in materials.asObject)
+                {
+                    uint headlightsMaterialIndex = jsonPropUInt(materials, "headlights", 0);
+                    if (aChassis.materials.length > headlightsMaterialIndex)
+                    {
+                        headlightsMaterial = aChassis.materials[headlightsMaterialIndex];
+                        headlightsMaterial.emissionEnergy = headlightsEnergy;
+                    }
+                }
+            }
+            
+            if ("hitboxes" in chassis)
+            {
+                if (chassis["hitboxes"].asArray.length > 0)
+                {
+                    Array!NewtonCollisionShape hitboxShapes;
+                    foreach(hitbox; chassis["hitboxes"].asArray)
+                    {
+                        Vector3f hitboxSize = jsonPropVector(hitbox, "size", Vector3f(1.0f, 1.0f, 1.0f));
+                        Vector3f hitboxPosition = jsonPropVector(hitbox, "position", Vector3f(0.0f, 0.0f, 0.0f));
+                        auto shape = New!NewtonBoxShape(hitboxSize, physicsWorld);
+                        shape.setTransformation(translationMatrix(hitboxPosition));
+                        hitboxShapes.append(shape);
+                    }
+                    chassisShape = New!NewtonCompoundShape(hitboxShapes.data, physicsWorld);
+                }
+            }
+        }
+        
+        float carMass = jsonPropFloat(root, "facing", 1500.0f);
+        Vector3f carInertia = jsonPropVector(root, "inertia", Vector3f(1.0f, 1.0f, 1.0f));
+        
         car = New!Vehicle(physicsWorld, eCar, chassisShape, carMass, 1);
-        car.setInertia(carMass, boxInertia(chassisSizeBottom, carMass));
+        car.setInertia(carMass, boxInertia(carInertia, carMass));
+        car.chassisBody.centerOfMass = jsonPropVector(root, "centerOfMass", Vector3f(0.0f, 0.0f, 0.0f));
+        car.maxSteeringAngle = jsonPropFloat(root, "maxSteeringAngle", 45.0f);
+        car.maxTorque = jsonPropFloat(root, "maxTorque", 5000.0f);
         
-        float wheelRadius = 0.337f;
-        float suspensionPos = 0.2f;
-        Wheel frontWheelLeft = car.addWheel(Vector3f(-0.75f, suspensionPos, +1.35f), wheelRadius, -1.0f);
-        Wheel frontWheelRight = car.addWheel(Vector3f(+0.75f, suspensionPos, +1.35f), wheelRadius, +1.0f);
-        Wheel rearWheelLeft = car.addWheel(Vector3f(-0.75f, suspensionPos, -1.35f), wheelRadius, -1.0f);
-        Wheel rearWheelRight = car.addWheel(Vector3f(+0.75f, suspensionPos, -1.35f), wheelRadius, +1.0f);
-        
-        bool rearDrive = true;
-        
-        if (rearDrive)
+        if ("wheels" in root.asObject)
         {
-            car.chassisBody.centerOfMass = Vector3f(0.0f, -0.35f, 0.0f);
-            
-            rearWheelLeft.torqueSplitRatio = 0.5f;
-            rearWheelRight.torqueSplitRatio = 0.5f;
-            
-            frontWheelLeft.camberAngle = -4.0f;
-            frontWheelRight.camberAngle = -4.0f;
-            
-            rearWheelLeft.camberAngle = -4.0f;
-            rearWheelRight.camberAngle = -4.0f;
-            
-            frontWheelLeft.lateralDynamicFrictionCoefficient = 1.1f;
-            frontWheelRight.lateralDynamicFrictionCoefficient = 1.1f;
-            
-            rearWheelLeft.lateralDynamicFrictionCoefficient = 0.75f;
-            rearWheelRight.lateralDynamicFrictionCoefficient = 0.75f;
+            auto wheels = root.asObject["wheels"].asArray;
+            foreach(i, wheel; wheels)
+            {
+                auto aWheel = aWheels[i];
+                
+                float wheelRadius = jsonPropFloat(wheel, "radius", 0.337f);
+                float facing = jsonPropFloat(wheel, "facing", -1.0f);
+                
+                Vector3f suspensionPosition = Vector3f(-0.75f, 0.2f, +1.35f);
+                float suspensionMaxLength = 0.3f;
+                float suspensionStiffness = 100.0f;
+                float suspensionDamping = 10.0f;
+                
+                if ("suspension" in wheel.asObject)
+                {
+                    auto suspension = wheel.asObject["suspension"];
+                    suspensionPosition = jsonPropVector(suspension, "position", suspensionPosition);
+                    suspensionMaxLength = jsonPropFloat(suspension, "maxLength", suspensionMaxLength);
+                    suspensionStiffness = jsonPropFloat(suspension, "stiffness", suspensionStiffness);
+                    suspensionDamping = jsonPropFloat(suspension, "damping", suspensionDamping);
+                }
+                
+                float tyreLateralFriction = 0.75f;
+                float tyreLongitudinalFriction = 1.0f;
+                
+                if ("tyre" in wheel.asObject)
+                {
+                    auto tyre = wheel.asObject["tyre"];
+                    tyreLateralFriction = jsonPropFloat(tyre, "lateralFriction", tyreLateralFriction);
+                    tyreLongitudinalFriction = jsonPropFloat(tyre, "longitudinalFriction", tyreLongitudinalFriction);
+                }
+                
+                Wheel pWheel = car.addWheel(suspensionPosition, wheelRadius, facing);
+                pWheel.load = jsonPropFloat(wheel, "loadSplit", 0.25f);
+                pWheel.torqueSplitRatio = jsonPropFloat(wheel, "torqueSplit", 0.0f);
+                pWheel.camberAngle = jsonPropFloat(wheel, "camberAngle", 0.0f);
+                pWheel.lateralDynamicFrictionCoefficient = tyreLateralFriction;
+                pWheel.longitudinalDynamicFrictionCoefficient = tyreLongitudinalFriction;
+                pWheel.suspension.maxLength = suspensionMaxLength;
+                pWheel.suspension.stiffness = suspensionStiffness;
+                pWheel.suspension.damping = suspensionDamping;
+                
+                Entity eWheel = addEntity(eCar);
+                eWheel.drawable = aWheel.meshes[0];
+                eWheel.position = pWheel.localWheelPosition;
+                eWheel.blurMask = 0.0f;
+                eWheels.append(eWheel);
+            }
         }
-        else
-        {
-            car.chassisBody.centerOfMass = Vector3f(0.0f, -0.3f, 0.0f);
-            
-            frontWheelLeft.torqueSplitRatio = 0.5f;
-            frontWheelRight.torqueSplitRatio = 0.5f;
-            
-            frontWheelLeft.lateralDynamicFrictionCoefficient = 0.75f;
-            frontWheelRight.lateralDynamicFrictionCoefficient = 0.75f;
-            
-            rearWheelLeft.lateralDynamicFrictionCoefficient = 0.75f;
-            rearWheelRight.lateralDynamicFrictionCoefficient = 0.75f;
-        }
         
-        eWheel1 = addEntity(eCar);
-        eWheel1.drawable = aWheel.meshes[0];
-        eWheel1.position = frontWheelLeft.localWheelPosition;
-        eWheel1.blurMask = 0.0f;
-        
-        eWheel2 = addEntity(eCar);
-        eWheel2.drawable = aWheel.meshes[0];
-        eWheel2.position = frontWheelRight.localWheelPosition;
-        eWheel2.blurMask = 0.0f;
-        
-        eWheel3 = addEntity(eCar);
-        eWheel3.drawable = aWheel.meshes[0];
-        eWheel3.position = rearWheelLeft.localWheelPosition;
-        eWheel3.blurMask = 0.0f;
-        
-        eWheel4 = addEntity(eCar);
-        eWheel4.drawable = aWheel.meshes[0];
-        eWheel4.position = rearWheelRight.localWheelPosition;
-        eWheel4.blurMask = 0.0f;
-        
-        // Headlights
+        // Headlights (TODO: load from car asset)
         light1 = addLight(LightType.Spot, eCar);
         light1.volumeRadius = 10.0f;
         light1.energy = 20.0f;
@@ -450,10 +588,13 @@ class GameScene: Scene
                 light2.shining = headlightsOn;
                 light3.shining = headlightsOn;
                 light4.shining = headlightsOn;
-                if (headlightsOn)
-                    headlightsMaterial.emissionEnergy = headlightsEnergy;
-                else
-                    headlightsMaterial.emissionEnergy = 0.0f;
+                if (headlightsMaterial)
+                {
+                    if (headlightsOn)
+                        headlightsMaterial.emissionEnergy = headlightsEnergy;
+                    else
+                        headlightsMaterial.emissionEnergy = 0.0f;
+                }
             }
         }
         else
@@ -462,15 +603,11 @@ class GameScene: Scene
         }
         
         // Rotate wheels
-        eWheel1.position = car.wheels[0].localWheelPosition;
-        eWheel2.position = car.wheels[1].localWheelPosition;
-        eWheel3.position = car.wheels[2].localWheelPosition;
-        eWheel4.position = car.wheels[3].localWheelPosition;
-        
-        eWheel1.rotation = car.wheels[0].localRotation;
-        eWheel2.rotation = car.wheels[1].localRotation;
-        eWheel3.rotation = car.wheels[2].localRotation;
-        eWheel4.rotation = car.wheels[3].localRotation;
+        foreach(i, w; eWheels)
+        {
+            w.position = car.wheels[i].localWheelPosition;
+            w.rotation = car.wheels[i].localRotation;
+        }
         
         car.update(t);
         
