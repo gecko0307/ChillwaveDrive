@@ -216,30 +216,68 @@ class GameScene: Scene
         auto chassisShape = New!NewtonCompoundShape(cast(NewtonCollisionShape[])[chassisShapeBottom, chassisShapeTop], physicsWorld);
         float carMass = 1500.0f;
         car = New!Vehicle(physicsWorld, eCar, chassisShape, carMass, 1);
-        car.chassisBody.centerOfMass = Vector3f(0.0f, -0.3f, 0.0f);
-        car.setInertia(carMass, boxInertia(chassisSizeBottom * Vector3f(1.0f, 1.0f, 1.0f), carMass));
+        car.setInertia(carMass, boxInertia(chassisSizeBottom, carMass));
         
-        foreach(ref w; car.wheels)
-            w.radius = 0.337f;
+        float wheelRadius = 0.337f;
+        float suspensionPos = 0.2f;
+        Wheel frontWheelLeft = car.addWheel(Vector3f(-0.75f, suspensionPos, +1.35f), wheelRadius, -1.0f);
+        Wheel frontWheelRight = car.addWheel(Vector3f(+0.75f, suspensionPos, +1.35f), wheelRadius, +1.0f);
+        Wheel rearWheelLeft = car.addWheel(Vector3f(-0.75f, suspensionPos, -1.35f), wheelRadius, -1.0f);
+        Wheel rearWheelRight = car.addWheel(Vector3f(+0.75f, suspensionPos, -1.35f), wheelRadius, +1.0f);
+        
+        bool rearDrive = false;
+        
+        if (rearDrive)
+        {
+            car.chassisBody.centerOfMass = Vector3f(0.0f, -0.35f, 0.0f);
+            
+            rearWheelLeft.torqueSplitRatio = 0.5f;
+            rearWheelRight.torqueSplitRatio = 0.5f;
+            
+            frontWheelLeft.camberAngle = -4.0f;
+            frontWheelRight.camberAngle = -4.0f;
+            
+            rearWheelLeft.camberAngle = -4.0f;
+            rearWheelRight.camberAngle = -4.0f;
+            
+            frontWheelLeft.lateralDynamicFrictionCoefficient = 1.1f;
+            frontWheelRight.lateralDynamicFrictionCoefficient = 1.1f;
+            
+            rearWheelLeft.lateralDynamicFrictionCoefficient = 0.75f;
+            rearWheelRight.lateralDynamicFrictionCoefficient = 0.75f;
+        }
+        else
+        {
+            car.chassisBody.centerOfMass = Vector3f(0.0f, -0.3f, 0.0f);
+            
+            frontWheelLeft.torqueSplitRatio = 0.5f;
+            frontWheelRight.torqueSplitRatio = 0.5f;
+            
+            frontWheelLeft.lateralDynamicFrictionCoefficient = 0.75f;
+            frontWheelRight.lateralDynamicFrictionCoefficient = 0.75f;
+            
+            rearWheelLeft.lateralDynamicFrictionCoefficient = 0.75f;
+            rearWheelRight.lateralDynamicFrictionCoefficient = 0.75f;
+        }
         
         eWheel1 = addEntity(eCar);
         eWheel1.drawable = aWheel.meshes[0];
-        eWheel1.position = car.wheels[0].localWheelPosition;
+        eWheel1.position = frontWheelLeft.localWheelPosition;
         eWheel1.blurMask = 0.0f;
         
         eWheel2 = addEntity(eCar);
         eWheel2.drawable = aWheel.meshes[0];
-        eWheel2.position = car.wheels[1].localWheelPosition;
+        eWheel2.position = frontWheelRight.localWheelPosition;
         eWheel2.blurMask = 0.0f;
         
         eWheel3 = addEntity(eCar);
         eWheel3.drawable = aWheel.meshes[0];
-        eWheel3.position = car.wheels[2].localWheelPosition;
+        eWheel3.position = rearWheelLeft.localWheelPosition;
         eWheel3.blurMask = 0.0f;
         
         eWheel4 = addEntity(eCar);
         eWheel4.drawable = aWheel.meshes[0];
-        eWheel4.position = car.wheels[3].localWheelPosition;
+        eWheel4.position = rearWheelRight.localWheelPosition;
         eWheel4.blurMask = 0.0f;
         
         // Headlights

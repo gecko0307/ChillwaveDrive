@@ -25,6 +25,7 @@ class Wheel: Owner, NewtonRaycaster
     Suspension suspension;
     float radius = 0.35f;
     float steeringAngle = 0.0f;
+    float camberAngle = 0.0f;
     float facing = 0.0f;
     float normalForce = 0.0f;
     float tractionForce = 0.0f;
@@ -32,10 +33,11 @@ class Wheel: Owner, NewtonRaycaster
     float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
     float load = 0.25f;
-    float grip = 0.6f;
+    float grip = 0.75f;
     float slipAngle = 0.0f;
     float slipRatio = 0.0f;
     float torque = 0.0f;
+    float torqueSplitRatio = 0.0f;
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float invInertia = 0.8f;
@@ -62,8 +64,8 @@ class Wheel: Owner, NewtonRaycaster
         
         suspension.minLength = 0.2f;
         suspension.maxLength = 0.3f;
-        suspension.stiffness = 110.0f;
-        suspension.damping = 12.0f;
+        suspension.stiffness = 100.0f;
+        suspension.damping = 10.0f;
         suspension.compression = 0.0f;
         suspension.length = 0.0f;
         suspension.lengthPrev = 0.0f;
@@ -94,7 +96,7 @@ class Wheel: Owner, NewtonRaycaster
     
     void update(double dt)
     {
-        Vector3f upVectorWorld = vehicle.verticalAxis();
+        Vector3f upVectorWorld = verticalAxis();
         Vector3f rayDir = -upVectorWorld;
         Vector3f suspPosition = position * vehicle.chassisBody.transformation;
         
@@ -132,9 +134,9 @@ class Wheel: Owner, NewtonRaycaster
             onGround = true;
             
             suspension.lengthPrev = suspension.length;
-            suspension.length = suspToGround - radius;
-            if (suspension.length < suspension.minLength)
-                suspension.length = suspension.minLength;
+            suspension.length = max(0.0f, suspToGround - radius);
+            //if (suspension.length < suspension.minLength)
+            //    suspension.length = suspension.minLength;
             suspension.compression = suspension.maxLength - suspension.length;
             
             // Normal force
@@ -185,7 +187,7 @@ class Wheel: Owner, NewtonRaycaster
             // speedFactor interpolates between static (0.0) and dynamic (1.0) friction
             float speedFactor = clamp(chassisSpeed / idleThreshold, 0.0f, 1.0f);
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
-            float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, 0.0f) * lateralDynamicFrictionCoefficient;
+            float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, degtorad(clamp(camberAngle, -4.0f, 4.0f))) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
             longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
@@ -205,14 +207,19 @@ class Wheel: Owner, NewtonRaycaster
         return tyreBottom * vehicle.chassisBody.transformation;
     }
     
+    Vector3f verticalAxis()
+    {
+        return vehicle.verticalAxis;
+    }
+    
     Vector3f lateralAxis()
     {
-        return steering.rotate(vehicle.chassisBody.transformation.right * facing).normalized;
+        return steering.rotate(vehicle.lateralAxis * facing).normalized;
     }
     
     Vector3f longitudinalAxis()
     {
-        return steering.rotate(vehicle.chassisBody.transformation.forward).normalized;
+        return steering.rotate(vehicle.longitudinalAxis).normalized;
     }
     
     float getLateralFrictionForce()
@@ -237,6 +244,7 @@ class Wheel: Owner, NewtonRaycaster
         float facingAngle = 90.0f - 90.0f * facing;
         return
             rotationQuaternion!float(Axis.y, degtorad(facingAngle + steeringAngle)) *
+            rotationQuaternion!float(Axis.z, degtorad(-camberAngle)) *
             rotationQuaternion!float(Axis.x, roll * facing);
     }
 }
@@ -257,7 +265,7 @@ class Vehicle: EntityComponent
     NewtonPhysicsWorld world;
     NewtonCollisionShape chassisShape;
     NewtonRigidBody chassisBody;
-    Wheel[4] wheels;
+    Array!Wheel wheels;
     
     float torqueDirection = 1.0f; // -1.0f or 1.0f
     float throttle = 0.0f; // 0.0f..1.0f
@@ -293,13 +301,20 @@ class Vehicle: EntityComponent
         NewtonMaterialSetDefaultFriction(world.newtonWorld, 0, materialID, 0.2f, 0.2f);
         NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
         
-        float suspensionPos = 0.2f;
-        wheels[0] = New!Wheel(Vector3f(-0.75f, suspensionPos, +1.35f), -1.0f, this);
-        wheels[1] = New!Wheel(Vector3f(+0.75f, suspensionPos, +1.35f), +1.0f, this);
-        wheels[2] = New!Wheel(Vector3f(-0.75f, suspensionPos, -1.35f), -1.0f, this);
-        wheels[3] = New!Wheel(Vector3f(+0.75f, suspensionPos, -1.35f), +1.0f, this);
-        
         prevTransformation = Matrix4x4f.identity;
+    }
+    
+    ~this()
+    {
+        wheels.free();
+    }
+    
+    Wheel addWheel(Vector3f suspensionPosition, float radius, float facing)
+    {
+        Wheel wheel = New!Wheel(suspensionPosition, facing, this);
+        wheel.radius = radius;
+        wheels.append(wheel);
+        return wheel;
     }
     
     void setInertia(float mass, Vector3f itertia)
@@ -322,9 +337,14 @@ class Vehicle: EntityComponent
         return chassisBody.transformation;
     }
     
-    Vector3f forwardAxis()
+    Vector3f longitudinalAxis()
     {
         return chassisBody.transformation.forward;
+    }
+    
+    Vector3f lateralAxis()
+    {
+        return chassisBody.transformation.right;
     }
     
     Vector3f verticalAxis()
@@ -428,25 +448,19 @@ class Vehicle: EntityComponent
             wheels[1].steeringAngle = steeringAngleInner;
         }
         
-        float torquePerWheel = 0.0f;
+        float torque = 0.0f;
         if (accelerating)
         {
             float spd = speedKMH;
             float maxTorque = 5000.0f;
             float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
-            torquePerWheel = maxTorque * decreaseFactor * throttle * torqueDirection * 0.5f;
+            torque = maxTorque * decreaseFactor * throttle * torqueDirection;
         }
-        
-        wheels[0].torque = torquePerWheel;
-        wheels[1].torque = torquePerWheel;
-        
-        wheels[0].brake = brake;
-        wheels[1].brake = brake;
-        wheels[2].brake = brake;
-        wheels[3].brake = brake;
         
         foreach(w; wheels)
         {
+            w.torque = torque * w.torqueSplitRatio;
+            w.brake = brake;
             w.update(t.delta);
         }
         
@@ -473,7 +487,7 @@ class Vehicle: EntityComponent
         else
             steeringInput = 0.0f;
         
-        movementDirection = (dot(velocity.normalized, forwardAxis) < 0.0f)? -1.0f : 1.0f;
+        movementDirection = (dot(velocity.normalized, longitudinalAxis) < 0.0f)? -1.0f : 1.0f;
         
         if (!accelerating)
         {
