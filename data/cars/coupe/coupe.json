@@ -6,7 +6,7 @@
     "maxSteeringAngle": 45,
     "maxTorque": 5000,
     "chassis": {
-        "model": "data/car/coupe.gltf",
+        "model": "data/cars/coupe/coupe.gltf",
         "meshes": {
             "main": 0,
             "windows": 1
@@ -27,7 +27,7 @@
     },
     "wheels": [
         {
-            "model": "data/car/wheel.gltf",
+            "model": "data/cars/coupe/wheel.gltf",
             "radius": 0.337,
             "facing": -1,
             "loadSplit": 0.25,
@@ -45,7 +45,7 @@
             }
         },
         {
-            "model": "data/car/wheel.gltf",
+            "model": "data/cars/coupe/wheel.gltf",
             "radius": 0.337,
             "facing": 1,
             "loadSplit": 0.25,
@@ -63,7 +63,7 @@
             }
         },
         {
-            "model": "data/car/wheel.gltf",
+            "model": "data/cars/coupe/wheel.gltf",
             "radius": 0.337,
             "facing": -1,
             "loadSplit": 0.25,
@@ -81,7 +81,7 @@
             }
         },
         {
-            "model": "data/car/wheel.gltf",
+            "model": "data/cars/coupe/wheel.gltf",
             "radius": 0.337,
             "facing": 1,
             "loadSplit": 0.25,

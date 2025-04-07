@@ -170,14 +170,14 @@ class GameScene: Scene
         
         // Car
         aCar = New!JSONAsset(assetManager);
-        assetManager.preloadAsset(aCar, "data/car/coupe.json");
+        assetManager.preloadAsset(aCar, "data/cars/coupe/coupe.json");
         
-        string chassisFilename = "data/car/coupe.gltf";
+        string chassisFilename = "data/cars/coupe/coupe.gltf";
         auto root = aCar.doc.root.asObject;
         if ("chassis" in root)
         {
             auto chassis = root["chassis"];
-            chassisFilename = jsonPropString(root["chassis"], "model", "data/car/coupe.gltf");
+            chassisFilename = jsonPropString(root["chassis"], "model", chassisFilename);
         }
         
         aChassis = addGLTFAsset(chassisFilename);
@@ -187,7 +187,7 @@ class GameScene: Scene
             auto wheels = root["wheels"].asArray;
             foreach(wheel; wheels)
             {
-                string wheelFilename = jsonPropString(wheel, "model", "data/car/wheel.gltf");
+                string wheelFilename = jsonPropString(wheel, "model", "data/cars/coupe/wheel.gltf");
                 auto aWheel = addGLTFAsset(wheelFilename);
                 aWheels.append(aWheel);
             }
