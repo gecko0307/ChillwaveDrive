@@ -7,9 +7,9 @@
     ],
     
     "dependencies": {
-        "dagon": "~master",
-        "dagon:newton": "~master",
-        "dagon:ftfont": "~master",
+        "dagon": "~>0.21.0",
+        "dagon:newton": "~>0.21.0",
+        "dagon:ftfont": "~>0.21.0",
         "bindbc-soloud": "~>0.1.1",
         "bindbc-loader": "1.1.4"
     },
