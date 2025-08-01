@@ -45,8 +45,10 @@ import dagon.graphics.texture;
 
 class AtmosphereShader: Shader
 {
+   protected:
     String vs, fs;
 
+   public:
     Vector3f sunDirection = Vector3f(-1.0f, -1.0f, -1.0f).normalized;
     Texture noiseTexture;
     float time = 0.0f;

@@ -527,7 +527,7 @@ class GameScene: Scene
     
     float triggerForward = 0.0f;
     float triggerBackward = 0.0f;
-    override void onJoystickAxisMotion(int axis, float value)
+    override void onControllerAxisMotion(int axis, float value)
     {
         if (axis == GA_TRIGGERRIGHT)
         {
@@ -723,4 +723,6 @@ void main(string[] args)
     VehicleDemoGame game = New!VehicleDemoGame(1280, 720, false, "Chillwave Drive", args);
     game.run();
     Delete(game);
+    
+    logDebug("Leaked memory: ", allocatedMemory);
 }
