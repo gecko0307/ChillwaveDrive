@@ -1,5 +1,6 @@
 # Chillwave Drive
-Vehicle physics demo for [Dagon engine](https://github.com/gecko0307/dagon). Can be used as a basis for building a racing game.
-Uses Newton Game Dynamics for physics and SoLoud for playing sounds.
+Vehicle demo for [Dagon engine](https://github.com/gecko0307/dagon) with realistic graphics and a physically-based simcade car physics (on top of the Newton Game Dynamics engine), including the famous Pacejka tyre model. Not all features of a real car are simulated yet.
 
-[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2025/05/chillwave-drive.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/05/chillwave-drive.jpg)
+The new version includes support for rear-wheel drive and features [McLaren GT by carmodifier](https://sketchfab.com/3d-models/2020-mclaren-gt-9e436ba9d4924b719552f1889a5a6d87).
+
+[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2025/11/chillwave-drive-02.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/11/chillwave-drive-02.jpg)
