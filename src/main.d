@@ -540,7 +540,7 @@ class GameScene: Scene
         }
         else if (button == MB_RIGHT)
         {
-            application.takeScreenshot("screenshot");
+            application.takeScreenshot("screenshots/screenshot");
         }
     }
     
