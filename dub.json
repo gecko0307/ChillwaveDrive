@@ -10,7 +10,7 @@
         "dagon": "0.35.0",
         "dagon:exformats": "0.35.0",
         "dagon:newton": "0.35.0",
-        "bindbc-soloud": "~>0.1.1",
+        "bindbc-soloud": "0.2.1",
         "bindbc-loader": "1.1.4"
     },
     
@@ -23,7 +23,7 @@
         "allowWarnings"
     ],
     
-    "lflags-linux": ["-rpath=."],
+    "lflags-linux": ["-rpath=$$ORIGIN"],
     
     "postBuildCommands-windows": [
         "$PACKAGE_DIR\\bin/rcedit-x64 \"ChillwaveDrive.exe\" --set-file-version \"1.0.0.0\" --set-product-version \"1.0.0\" --set-icon \"$PACKAGE_DIR\\res\\icon.ico\" --application-manifest \"$PACKAGE_DIR\\res\\ChillwaveDrive.manifest\""
