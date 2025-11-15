@@ -33,6 +33,7 @@ import std.random;
 import dagon;
 import vehicle;
 
+/// A third-person racing view component for the game camera.
 class VehicleViewComponent: EntityComponent
 {
     Vehicle vehicle;
