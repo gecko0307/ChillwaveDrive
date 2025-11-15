@@ -232,7 +232,7 @@ class Wheel: Owner, NewtonRaycaster
         }
         
         angularVelocity += angularAcceleration * dt;
-        if (abs(angularVelocity) > 0.5f)
+        if (abs(angularVelocity) > 0.1f)
         {
             float angularVelocityVisual = clamp(angularVelocity, -10.0f, 10.0f);
             roll += angularVelocityVisual * dt;
