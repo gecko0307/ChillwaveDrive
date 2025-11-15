@@ -37,6 +37,5 @@ data/__internal
 *.bat
 *.sh
 
-# Resolve
-.resolve/
-dependencies.json
+# Screenshots
+screenshots/*
