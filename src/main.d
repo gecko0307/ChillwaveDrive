@@ -124,8 +124,6 @@ class GameScene: Scene
     
     NewtonPhysicsWorld physicsWorld;
     
-    TextureAsset aCloudNoise;
-    
     JSONAsset aCar;
     
     GLTFAsset aChassis;
@@ -234,9 +232,6 @@ class GameScene: Scene
         }
         
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
-        
-        // Environment
-        aCloudNoise = addTextureAsset("data/atmosphere/noise.png");
         
         // Sounds
         sfxEngine = Wav.create();
