@@ -14,3 +14,5 @@ Updated version includes support for rear-wheel drive and features [McLaren GT m
 - S / Left trigger - brake/reverse
 - A / Left stick -X - steer left
 - D / Left stick +X - steer right
+
+Xbox controller is recommended.
