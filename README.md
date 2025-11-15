@@ -1,5 +1,5 @@
 # Chillwave Drive
-Raycast vehicle demo for [Dagon engine](https://github.com/gecko0307/dagon) with realistic graphics and a physically-based simcade physics (on top of the Newton Game Dynamics engine), including the famous Pacejka '94 tyre model. Not all features of a real car are simulated yet.
+Driving game demo using [Dagon engine](https://github.com/gecko0307/dagon) with realistic graphics and simcade raycast car physics (on top of the Newton Game Dynamics engine), including the famous Pacejka '94 tyre model. Not all features of a real car are simulated yet.
 
 Updated version includes support for rear-wheel drive and features McLaren GT model. Car parameters are loaded from a JSON file, the actual chassis and wheel models are stored in glTF.
 
