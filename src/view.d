@@ -44,10 +44,24 @@ class VehicleViewComponent: EntityComponent
     float targetTurnAngle = 0.0f;
     float turnAngle = 0.0f;
     
+    float targetPitchAngle = degtorad(20.0f);
+    float pitchAngle = degtorad(20.0f);
+    
+    float minDistanceToTarget = 5.0f;
+    float maxDistanceToTarget = 20.0f;
+    
+    float targetDistance;
+    float smoothTargetDistance;
+    
     bool active = true;
     bool mouseActive = true;
     
     float mouseSensibility = 0.2f;
+    float mouseZoomSensibility = 0.5f;
+    
+    float turnStiffness = 0.1f;
+    float pitchStiffness = 0.1f;
+    float zoomStiffness = 0.1f;
 
     this(EventManager em, Entity e, Vehicle vehicle)
     {
@@ -55,28 +69,41 @@ class VehicleViewComponent: EntityComponent
         
         this.vehicle = vehicle;
         
+        eventManager.setMouseToCenter();
         oldMouseX = eventManager.windowWidth / 2;
         oldMouseY = eventManager.windowHeight / 2;
+        
+        targetDistance = minDistanceToTarget;
+        smoothTargetDistance = targetDistance;
     }
     
     override void update(Time time)
     {
         processEvents();
         
-        float turnDelta = 0.0f;
+        float turnDelta = 0.0f, pitchDelta = 0.0f;
         if (active & mouseActive)
         {
             turnDelta = (eventManager.mouseX - oldMouseX) * mouseSensibility * time.delta;
+            pitchDelta = -(eventManager.mouseY - oldMouseY) * mouseSensibility * time.delta;
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
         
         targetTurnAngle += turnDelta;
-        turnAngle += (targetTurnAngle - turnAngle) * 0.2f;
-        Quaternionf mouseRotation = rotationQuaternion!float(Axis.y, turnAngle);
+        turnAngle += (targetTurnAngle - turnAngle) * turnStiffness;
+        
+        targetPitchAngle += pitchDelta;
+        targetPitchAngle = clamp(targetPitchAngle, degtorad(10.0f), degtorad(40.0f));
+        pitchAngle += (targetPitchAngle - pitchAngle) * pitchStiffness;
+        
+        Quaternionf mouseRotation =
+            rotationQuaternion(Vector3f(0.0f, 1.0f, 0.0f), turnAngle) *
+            rotationQuaternion(Vector3f(1.0f, 0.0f, 0.0f), pitchAngle);
+        
         Vector3f offset = mouseRotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
         
-        Vector3f cameraPosition = (offset.normalized * -6.5f) * vehicle.transformation;
-        cameraPosition.y = vehicle.position.y + 1.6f;
+        smoothTargetDistance += (targetDistance - smoothTargetDistance) * zoomStiffness;
+        Vector3f cameraPosition = (offset.normalized * -smoothTargetDistance) * vehicle.transformation;
         
         Vector3f viewFrom = cameraPosition;
         Vector3f viewTo = vehicle.position + Vector3f(0, 1.0f, 0);
@@ -92,5 +119,23 @@ class VehicleViewComponent: EntityComponent
         entity.absoluteTransformation = entity.transformation;
         entity.invAbsoluteTransformation = entity.invTransformation;
         entity.prevAbsoluteTransformation = entity.prevTransformation;
+    }
+    
+    override void onMouseButtonUp(int button)
+    {
+        if (button == MB_LEFT)
+        {
+            eventManager.setMouse(oldMouseX, oldMouseY);
+        }
+    }
+    
+    override void onMouseWheel(int x, int y)
+    {
+        if (!active || !mouseActive)
+            return;
+        
+        float zoom = cast(float)y * mouseZoomSensibility;
+        targetDistance -= zoom;
+        targetDistance = clamp(targetDistance, minDistanceToTarget, maxDistanceToTarget);
     }
 }

@@ -265,7 +265,7 @@ class GameScene: Scene
         version(Windows) physicsWorld.loadPlugins(".");
         
         camera = addCamera();
-        camera.fov = 35.0f;
+        camera.fov = 50.0f;
         game.renderer.activeCamera = camera;
         
         sun = addLight(LightType.Sun);
@@ -445,7 +445,6 @@ class GameScene: Scene
                     dg.add(mesh);
                 }
                 eWheel.drawable = dg;
-                //eWheel.drawable = aWheel.meshes[0];
                 eWheel.position = pWheel.localWheelPosition;
                 eWheel.blurMask = 0.0f;
                 eWheels.append(eWheel);
@@ -527,8 +526,8 @@ class GameScene: Scene
         eParticlesLeft.visible = true;
         
         vehicleView = New!VehicleViewComponent(eventManager, camera, car);
-        if ("mouseSensibility" in game.config.props)
-           vehicleView.mouseSensibility = game.config.props["mouseSensibility"].toFloat;
+        //if ("mouseSensibility" in game.config.props)
+        //   vehicleView.mouseSensibility = game.config.props["mouseSensibility"].toFloat;
         eventManager.showCursor(false);
         
         engineVoice = audio.play3d(sfxEngine, car.position.x, car.position.y, car.position.z);
