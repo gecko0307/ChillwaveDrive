@@ -1,12 +1,12 @@
 {
-    "name": "mclaren_gt",
+    "name": "aston_martin_one77",
     "mass": 1530,
-    "inertia": [1.76917, 0.6, 4.4],
+    "inertia": [2.0, 1.0, 4.8],
     "centerOfMass": [0.0, -0.3, 0.0],
     "maxSteeringAngle": 45,
     "maxTorque": 5000,
     "chassis": {
-        "model": "data/cars/mclaren_gt/mclaren_gt.gltf",
+        "model": "data/cars/aston_martin_one77/aston_martin_one77.gltf",
         "hitboxes": [
             {
                 "size": [1.76917, 0.7, 4.4],
@@ -19,21 +19,21 @@
         ]
     },
     "windows": {
-        "model": "data/cars/mclaren_gt/mclaren_gt_windows.gltf"
+        "model": "data/cars/aston_martin_one77/aston_martin_one77_windows.gltf"
     },
     "wheels": [
         {
-            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
-            "radius": 0.324,
+            "model": "data/cars/aston_martin_one77/aston_martin_one77_wheel.gltf",
+            "radius": 0.365,
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
             "camberAngle": -4,
             "suspension": {
-                "position": [-0.87, 0.22, 1.25],
-                "maxLength": 0.3,
+                "position": [-0.92, 0.14, 1.5],
+                "maxLength": 0.2,
                 "stiffness": 100,
-                "damping": 10
+                "damping": 15
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -41,17 +41,17 @@
             }
         },
         {
-            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
-            "radius": 0.324,
+            "model": "data/cars/aston_martin_one77/aston_martin_one77_wheel.gltf",
+            "radius": 0.365,
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
             "camberAngle": -4,
             "suspension": {
-                "position": [0.87, 0.22, 1.25],
-                "maxLength": 0.3,
+                "position": [0.92, 0.14, 1.5],
+                "maxLength": 0.2,
                 "stiffness": 100,
-                "damping": 10
+                "damping": 15
             },
             "tyre": {
                 "lateralFriction": 2.0,
@@ -59,17 +59,17 @@
             }
         },
         {
-            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
-            "radius": 0.324,
+            "model": "data/cars/aston_martin_one77/aston_martin_one77_wheel.gltf",
+            "radius": 0.365,
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
             "camberAngle": -1,
             "suspension": {
-                "position": [-0.87, 0.4, -1.42],
-                "maxLength": 0.4,
-                "stiffness": 100,
-                "damping": 10
+                "position": [-0.92, 0.3, -1.45],
+                "maxLength": 0.35,
+                "stiffness": 95,
+                "damping": 15
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -77,17 +77,17 @@
             }
         },
         {
-            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
-            "radius": 0.324,
+            "model": "data/cars/aston_martin_one77/aston_martin_one77_wheel.gltf",
+            "radius": 0.365,
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
             "camberAngle": -1,
             "suspension": {
-                "position": [0.87, 0.4, -1.42],
-                "maxLength": 0.4,
-                "stiffness": 100,
-                "damping": 10
+                "position": [0.92, 0.3, -1.45],
+                "maxLength": 0.35,
+                "stiffness": 95,
+                "damping": 15
             },
             "tyre": {
                 "lateralFriction": 1.0,

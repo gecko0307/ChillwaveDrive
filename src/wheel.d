@@ -83,6 +83,11 @@ class Wheel: Owner, NewtonRaycaster
     
     PacejkaModel tyreModel;
     
+    float visualSuspensionLength;
+    float visualSuspensionChangeSpeed = 2.0f;
+    
+    float forcePoint = 0.03f;
+    
     this(Vector3f position, float facing, Vehicle vehicle)
     {
         super(vehicle);
@@ -90,13 +95,15 @@ class Wheel: Owner, NewtonRaycaster
         this.position = position;
         this.facing = facing;
         
-        suspension.minLength = 0.2f;
+        suspension.minLength = 0.0f;
         suspension.maxLength = 0.3f;
         suspension.stiffness = 100.0f;
         suspension.damping = 10.0f;
         suspension.compression = 0.0f;
         suspension.length = 0.0f;
         suspension.lengthPrev = 0.0f;
+        
+        visualSuspensionLength = suspension.maxLength;
     }
     
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
@@ -134,7 +141,6 @@ class Wheel: Owner, NewtonRaycaster
         
         Vector3f forwardAxis = longitudinalAxis();
         Vector3f sideAxis = lateralAxis();
-        Vector3f forcePosition = tyreContactPoint();
         
         bool hitGround = raycast(suspPosition, suspPosition + rayDir * maxRayDistance);
         if (!hitGround)
@@ -146,6 +152,8 @@ class Wheel: Owner, NewtonRaycaster
         }
         
         float suspToGround = distance(suspPosition, groundPosition);
+        
+        Vector3f forcePosition = groundPosition + Vector3f(0.0f, forcePoint, 0.0f);
         
         angularVelocity = 0.0f;
         float angularAcceleration = 0.0f;
@@ -173,7 +181,7 @@ class Wheel: Owner, NewtonRaycaster
             onGround = true;
             
             suspension.lengthPrev = suspension.length;
-            suspension.length = max(0.0f, suspToGround - radius);
+            suspension.length = clamp(suspToGround - radius, suspension.minLength, suspension.maxLength);
             suspension.compression = suspension.maxLength - suspension.length;
             
             // Normal force
@@ -238,12 +246,8 @@ class Wheel: Owner, NewtonRaycaster
             roll += angularVelocityVisual * dt;
             roll = fmod(roll, 2.0f * PI);
         }
-    }
-    
-    Vector3f tyreContactPoint() const
-    {
-        Vector3f tyreBottom = position - Vector3f(0.0f, suspension.length + radius, 0.0f);
-        return tyreBottom * vehicle.chassisBody.transformation;
+        
+        visualSuspensionLength += (suspension.length - visualSuspensionLength) * dt * visualSuspensionChangeSpeed;
     }
     
     Vector3f verticalAxis()
@@ -263,7 +267,7 @@ class Wheel: Owner, NewtonRaycaster
     
     Vector3f localWheelPosition()
     {
-        return position - Vector3f(0.0f, suspension.length, 0.0f);
+        return position - Vector3f(0.0f, visualSuspensionLength, 0.0f);
     }
     
     Quaternionf localRotation()
