@@ -1,0 +1,98 @@
+{
+    "name": "mclaren_gt",
+    "mass": 1530,
+    "inertia": [1.76917, 0.6, 4.4],
+    "centerOfMass": [0.0, -0.2, 0.0],
+    "maxSteeringAngle": 45,
+    "maxTorque": 5000,
+    "chassis": {
+        "model": "data/cars/mclaren_gt/mclaren_gt.gltf",
+        "hitboxes": [
+            {
+                "size": [1.76917, 0.7, 4.4],
+                "position": [0.0, 0.22, 0.0]
+            },
+            {
+                "size": [1.54, 0.492, 2.39],
+                "position": [0.0, 0.479246, -0.839547]
+            }
+        ]
+    },
+    "windows": {
+        "model": "data/cars/mclaren_gt/mclaren_gt_windows.gltf"
+    },
+    "wheels": [
+        {
+            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
+            "radius": 0.324,
+            "facing": -1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.0,
+            "camberAngle": -6,
+            "suspension": {
+                "position": [-0.87, 0.2, 1.25],
+                "maxLength": 0.25,
+                "stiffness": 100,
+                "damping": 10
+            },
+            "tyre": {
+                "lateralFriction": 1.0,
+                "longitudinalFriction": 1.0
+            }
+        },
+        {
+            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
+            "radius": 0.324,
+            "facing": 1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.0,
+            "camberAngle": -6,
+            "suspension": {
+                "position": [0.87, 0.2, 1.25],
+                "maxLength": 0.25,
+                "stiffness": 100,
+                "damping": 10
+            },
+            "tyre": {
+                "lateralFriction": 2.0,
+                "longitudinalFriction": 1.0
+            }
+        },
+        {
+            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
+            "radius": 0.324,
+            "facing": -1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.5,
+            "camberAngle": 0.0,
+            "suspension": {
+                "position": [-0.87, 0.4, -1.42],
+                "maxLength": 0.4,
+                "stiffness": 100,
+                "damping": 10
+            },
+            "tyre": {
+                "lateralFriction": 1.0,
+                "longitudinalFriction": 1.0
+            }
+        },
+        {
+            "model": "data/cars/mclaren_gt/mclaren_gt_wheel.gltf",
+            "radius": 0.324,
+            "facing": 1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.5,
+            "camberAngle": 0.0,
+            "suspension": {
+                "position": [0.87, 0.4, -1.42],
+                "maxLength": 0.4,
+                "stiffness": 100,
+                "damping": 10
+            },
+            "tyre": {
+                "lateralFriction": 1.0,
+                "longitudinalFriction": 1.0
+            }
+        }
+    ]
+}

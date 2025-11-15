@@ -74,7 +74,7 @@ class VehicleViewComponent: EntityComponent
         Quaternionf mouseRotation = rotationQuaternion!float(Axis.y, turnAngle);
         Vector3f offset = mouseRotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
         
-        Vector3f cameraPosition = (offset.normalized * -4.7f) * vehicle.transformation;
+        Vector3f cameraPosition = (offset.normalized * -6.5f) * vehicle.transformation;
         cameraPosition.y = vehicle.position.y + 1.6f;
         
         Vector3f viewFrom = cameraPosition;
