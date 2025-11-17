@@ -69,7 +69,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularAcceleration = 0.0f;
     float angularVelocity = 0.0f;
     float roll = 0.0f;
-    float invInertia = 0.99f;
+    float invInertia = 0.999f;
     float staticFrictionCoefficient = 0.99f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;

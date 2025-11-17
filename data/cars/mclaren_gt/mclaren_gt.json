@@ -4,7 +4,7 @@
     "inertia": [1.76917, 0.6, 4.4],
     "centerOfMass": [0.0, -0.3, 0.0],
     "maxSteeringAngle": 45,
-    "maxTorque": 650,
+    "maxTorque": 630,
     "chassis": {
         "model": "data/cars/mclaren_gt/mclaren_gt.gltf",
         "hitboxes": [

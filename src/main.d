@@ -653,7 +653,7 @@ class GameScene: Scene
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
-        float rpmFactor = clamp((car.rpm - 800.0f) / (6000.0f - 800.0f), 0.0f, 1.0f);
+        float rpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
         float engineSoundBlend = lerp(1.0f, 2.0f, rpmFactor);
         audio.setRelativePlaySpeed(engineVoice, engineSoundBlend);
         
