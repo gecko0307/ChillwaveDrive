@@ -674,6 +674,11 @@ class GameScene: Scene
         
         physicsWorld.update(t.delta);
         
+        // Cool effect
+        float speedFactor = clamp((speedKMH - 90.0f) / 60.0f, 0.0f, 1.0f);
+        camera.fov = lerp(50.0f, 57.0f, speedFactor);
+        game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.1f, speedFactor);
+        
         // Feed camera data to 3D listener
         audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);
         audio.set3dListenerAt(camera.directionAbsolute.x, camera.directionAbsolute.y, camera.directionAbsolute.z);
