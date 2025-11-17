@@ -114,6 +114,8 @@ Vector3f jsonPropVector(JSONValue val, string name, Vector3f defaultValue)
 
 class GameScene: Scene
 {
+    FontAsset aFontDroidSans14;
+    
     VehicleDemoGame game;
     Soloud audio;
     
@@ -192,6 +194,8 @@ class GameScene: Scene
 
     override void beforeLoad()
     {
+        aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
+        
         aEnvmap = addTextureAsset("data/envmaps/golden_gate_hills_2k.hdr");
         
         // Track
@@ -544,7 +548,15 @@ class GameScene: Scene
         musicVoice = audio.play(music);
         audio.setLooping(musicVoice, true);
         audio.setVolume(musicVoice, musicVolume);
+        
+        text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
+        text.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
+        auto eText = addEntityHUD();
+        eText.drawable = text;
+        eText.position = Vector3f(16.0f, 30.0f, 0.0f);
     }
+    
+    TextLine text;
     
     override void onKeyDown(int key)
     {
@@ -637,12 +649,12 @@ class GameScene: Scene
         
         car.update(t);
         
-        float speedKMH = car.longitudinalSpeedKMH;
-        float lateralSpeedKMH = car.lateralSpeedKMH;
+        float speedKMH = car.speedKMH();
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
-        float engineSoundBlend = lerp(1.0f, 1.25f, car.throttle);
+        float rpmFactor = clamp((car.rpm - 800.0f) / (6000.0f - 800.0f), 0.0f, 1.0f);
+        float engineSoundBlend = lerp(1.0f, 2.0f, rpmFactor);
         audio.setRelativePlaySpeed(engineVoice, engineSoundBlend);
         
         // Tire squeal sound
@@ -667,6 +679,19 @@ class GameScene: Scene
         audio.set3dListenerAt(camera.directionAbsolute.x, camera.directionAbsolute.y, camera.directionAbsolute.z);
         audio.set3dListenerUp(camera.upAbsolute.x, camera.upAbsolute.y, camera.upAbsolute.z);
         audio.update3dAudio();
+        
+        updateText(speedKMH);
+    }
+    
+    char[100] txt;
+    void updateText(float speed)
+    {
+        uint fps = cast(int)(1.0 / eventManager.deltaTime);
+        uint speedInt = cast(int)speed;
+        uint rpmInt = cast(int)car.rpm;
+        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u", speedInt, car.gear + 1, rpmInt);
+        string s = cast(string)txt[0..n];
+        text.setText(s);
     }
 }
 

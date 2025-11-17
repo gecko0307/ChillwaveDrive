@@ -66,14 +66,17 @@ class Wheel: Owner, NewtonRaycaster
     float slipRatio = 0.0f;
     float torque = 0.0f;
     float torqueSplitRatio = 0.0f;
+    float angularAcceleration = 0.0f;
     float angularVelocity = 0.0f;
     float roll = 0.0f;
-    float invInertia = 0.8f;
+    float invInertia = 0.99f;
     float staticFrictionCoefficient = 0.99f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
     Quaternionf steering = Quaternionf.identity;
     bool brake = false;
+    
+    float longitudinalSpeed = 0.0f;
     
     float maxRayDistance = 1000.0f;
     protected float closestHitRayParam = 1.0f;
@@ -156,7 +159,6 @@ class Wheel: Owner, NewtonRaycaster
         Vector3f forcePosition = groundPosition + Vector3f(0.0f, forcePoint, 0.0f);
         
         angularVelocity = 0.0f;
-        float angularAcceleration = 0.0f;
         
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
         {
@@ -174,7 +176,15 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = 0.0f;
             slipRatio = 0.0f;
             
-            angularVelocity = torque / radius * invInertia * dt;
+            angularAcceleration = 0.0f;
+            
+            if (abs(torque) > 0.0f)
+                angularVelocity = torque / radius * invInertia * dt;
+            else
+                angularVelocity *= 0.99f; // drag
+            
+            Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(suspPosition);
+            longitudinalSpeed = dot(wheelVelocity, forwardAxis);
         }
         else // suspension is compressed
         {
@@ -200,7 +210,7 @@ class Wheel: Owner, NewtonRaycaster
             float lateralSpeed = dot(wheelVelocity, sideAxis);
             float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
             
-            float longitudinalSpeed = dot(wheelVelocity, forwardAxis);
+            longitudinalSpeed = dot(wheelVelocity, forwardAxis);
             
             if (brake)
             {
@@ -214,8 +224,9 @@ class Wheel: Owner, NewtonRaycaster
                 // Apply torque
                 tractionForce = torque / radius * invInertia;
                 vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
-                angularAcceleration = tractionForce * 0.1f;
-                slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
+                angularAcceleration = tractionForce;
+                slipRatio = 0.0f;
+                //slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
             }
             else
             {
@@ -223,6 +234,7 @@ class Wheel: Owner, NewtonRaycaster
                 angularVelocity = longitudinalSpeed / radius * invInertia;
                 angularAcceleration = 0.0f;
                 slipRatio = 0.0f;
+                angularVelocity *= 0.99f; // drag
             }
             
             slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));

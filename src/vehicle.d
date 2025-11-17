@@ -57,7 +57,23 @@ class Vehicle: EntityComponent
     float throttle = 0.0f; // 0.0f..1.0f
     float steeringInput = 0.0f; // -1.0f..1.0f
     float maxSteeringAngle = 45.0f;
-    float maxTorque = 5000.0f;
+    float maxTorque = 500.0f;
+    
+    float gearRatio = 0.0f;
+    float[] gears = [
+        3.23f, 2.19f, 1.71f, 1.39f, 1.16f, 0.93f
+    ];
+    float[] maxRPMPerGear = [
+        6000.0f, 5000.0f, 5000.0f, 5000.0f, 5000.0f, 5000.0f
+    ];
+    float[] minRPMPerGear = [
+        800.0f, 1000.0f, 2000.0f, 3000.0f, 3000.0f, 4000.0f
+    ];
+    uint gear = 0;
+    float reverseGear = -2.9f;
+    float finalDriveRatio = 2.37f;
+    float drivetrainEfficiency = 0.9f;
+    float clutch = 0.0f;
     
     bool accelerating = false;
     bool brake = false;
@@ -89,6 +105,8 @@ class Vehicle: EntityComponent
         NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
         
         prevTransformation = Matrix4x4f.identity;
+        
+        gearRatio = gears[0];
     }
     
     ~this()
@@ -151,7 +169,13 @@ class Vehicle: EntityComponent
     
     float speedKMH() @property
     {
-        return chassisBody.velocity.length * 3.6;
+        float averageWheelsVelocity = 0.0f;
+        foreach(w; wheels)
+        {
+            averageWheelsVelocity += abs(w.longitudinalSpeed) * w.torqueSplitRatio;
+        }
+        
+        return averageWheelsVelocity * 3.6f;
     }
     
     void accelerate(float direction, float delta)
@@ -159,14 +183,23 @@ class Vehicle: EntityComponent
         brake = (movementDirection < 0.0f && direction > 0.0f) ||
                 (movementDirection > 0.0f && direction < 0.0f);
         
-        torqueDirection = direction;
-        
-        if (throttle < 1.0f)
-            throttle += delta;
-        else
-            throttle = 1.0f;
-        
-        accelerating = true;
+        if (!brake)
+        {
+            if (direction < 0.0f)
+            {
+                gear = 0;
+                gearRatio = reverseGear;
+            }
+            else
+                gearRatio = gears[gear];
+            
+            if (throttle < 1.0f)
+                throttle += 0.1f * delta;
+            else
+                throttle = 1.0f;
+            
+            accelerating = true;
+        }
     }
     
     void idle()
@@ -218,10 +251,30 @@ class Vehicle: EntityComponent
         return res / wheels.length;
     }
     
+    /**
+     * A: peak magnitude
+     * B: curve baseline y
+     * C: ends slope
+     * D: peak RPM
+     * F: ends slope
+     */
+    float engineTorqueCurve(float rpm)
+    {
+        const float A = maxTorque;
+        const float B = 0.0f;
+        const float C = 0.95f;
+        const float D = 5000.0f;
+        const float F = 3000.0f;
+        return (A - B) * exp(-pow((rpm - D) * C, 2.0f) / (F * F)) + B;
+    }
+    
+    const float rpmIdle = 800.0f;
+    const float rpmRedline = 7500.0f;
+    const float rpmMax = 8500.0f;
+    float rpm = 800.0f;
+    
     override void update(Time t)
     {
-        float speed = speedKMH;
-        
         float ackermann = 5.0f;
         float steeringAngleInner = maxSteeringAngle * steeringInput;
         float steeringAngleOuter = (maxSteeringAngle - ackermann) * steeringInput;
@@ -237,19 +290,74 @@ class Vehicle: EntityComponent
             wheels[1].steeringAngle = steeringAngleInner;
         }
         
-        float torque = 0.0f;
-        if (accelerating)
-        {
-            float spd = speedKMH;
-            float decreaseFactor = lerp(1.0f, 0.9f, clamp((spd - 80.0f) / (200.0f - 80.0f), 0.0f, 1.0f));
-            torque = maxTorque * decreaseFactor * throttle * torqueDirection;
-        }
+        float carSpeed = speedKMH();
+        float effectiveRadius = wheels[3].radius;
+        float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
+        float rpmFeedback = rpmWheel * finalDriveRatio * abs(gearRatio);
+        
+        // Can this be done better?
+        float p = 64.0f;
+        float effectiveClutch = pow(clutch, p);
+        float effectiveClutchInv = pow(clutch, 1.0f / p);
+        float rpmFromCrankshaft = rpmIdle + (max2(rpmMax, rpmFeedback) - rpmIdle) * throttle;
+        rpm = lerp(rpmFromCrankshaft, rpmFeedback, effectiveClutch);
+        
+        float engineTorque = engineTorqueCurve(rpm);
+        float axleTorque = sign(gearRatio) * engineTorque * effectiveClutchInv * abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
         
         foreach(w; wheels)
         {
-            w.torque = torque * w.torqueSplitRatio;
+            if (accelerating)
+                w.torque = axleTorque * w.torqueSplitRatio;
+            else
+                w.torque = 0.0f;
             w.brake = brake;
             w.update(t.delta);
+        }
+        
+        // Automatic gearbox (kind of)
+        if (accelerating)
+        {
+            if (rpm >= maxRPMPerGear[gear] && gear < gears.length - 1)
+            {
+                gear++;
+                gearRatio = gears[gear];
+            }
+            
+            if (rpm <= minRPMPerGear[gear])
+            {
+                accelerating = false;
+                clutch = 0.0f;
+                throttle = 0.0f;
+            }
+            else
+            {
+                if (clutch < 1.0f)
+                    clutch += 0.6f * t.delta;
+                else
+                    clutch = 1.0f;
+            }
+        }
+        else
+        {
+            throttle = 0.0f;
+            if (clutch > 0.0f)
+            {
+                clutch -= 0.01f * t.delta;
+            }
+            else
+            {
+                if (gear > 0)
+                {
+                    gear--;
+                    gearRatio = gears[gear];
+                    clutch = 1.0f;
+                }
+                else
+                {
+                    clutch = 0.0f;
+                }
+            }
         }
         
         chassisBody.update(t.delta);
@@ -276,10 +384,8 @@ class Vehicle: EntityComponent
             steeringInput = 0.0f;
         
         movementDirection = (dot(velocity.normalized, longitudinalAxis) < 0.0f)? -1.0f : 1.0f;
-        
-        if (!accelerating)
-        {
-            throttle = 0.0f;
-        }
     }
 }
+
+float rpmFromAngularVelocity(float omega) { return omega * 60.0f / (2.0f * PI); }
+float angularVelocityFromRpm(float rpm) { return rpm * 2.0f * PI / 60.0f; }
