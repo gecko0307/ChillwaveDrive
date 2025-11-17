@@ -4,7 +4,7 @@
     "inertia": [2.0, 1.0, 4.8],
     "centerOfMass": [0.0, -0.3, 0.0],
     "maxSteeringAngle": 45,
-    "maxTorque": 5000,
+    "maxTorque": 650.0,
     "chassis": {
         "model": "data/cars/aston_martin_one77/aston_martin_one77.gltf",
         "hitboxes": [

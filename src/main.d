@@ -396,7 +396,7 @@ class GameScene: Scene
         car.setInertia(carMass, boxInertia(carInertia, carMass));
         car.chassisBody.centerOfMass = jsonPropVector(root, "centerOfMass", Vector3f(0.0f, 0.0f, 0.0f));
         car.maxSteeringAngle = jsonPropFloat(root, "maxSteeringAngle", 45.0f);
-        car.maxTorque = jsonPropFloat(root, "maxTorque", 5000.0f);
+        car.maxTorque = jsonPropFloat(root, "maxTorque", 500.0f);
         
         if ("wheels" in root.asObject)
         {
