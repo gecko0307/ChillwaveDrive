@@ -59,6 +59,7 @@ class Vehicle: EntityComponent
     
     float maxTorque = 500.0f;
     float rpmIdle = 800.0f;
+    float rpmPeakTorquePoint = 5500.0f;
     float rpmRedline = 8000.0f;
     float rpmMax = 8500.0f;
     float rpm;
@@ -260,7 +261,7 @@ class Vehicle: EntityComponent
         const float A = maxTorque;
         const float B = 0.0f;
         const float C = 0.95f;
-        const float D = 5500.0f;
+        const float D = rpmPeakTorquePoint;
         const float F = 3000.0f;
         return (A - B) * exp(-pow((rpm - D) * C, 2.0f) / (F * F)) + B;
     }
@@ -317,16 +318,12 @@ class Vehicle: EntityComponent
                 throttle += 0.2f * t.delta;
             else
                 throttle = 1.0f;
-
-            if (clutch < 1.0f)
-                clutch += 0.6f * t.delta;
-            else
-                clutch = 1.0f;
             
             if (rpm >= upshiftRPM[gear] && gear < gears.length - 1)
             {
                 gear++;
                 gearRatio = gears[gear];
+                clutch = 0.0f;
             }
         }
         else
@@ -336,17 +333,18 @@ class Vehicle: EntityComponent
             else
                 throttle = 0.0f;
             
-            if (clutch > 0.0f)
-                clutch -= 0.5f * t.delta;
-            else
-                clutch = 0.0f;
-            
             if (rpm <= downshiftRPM[gear] && gear > 0)
             {
                 gear--;
                 gearRatio = gears[gear];
+                clutch = 0.0f;
             }
         }
+        
+        if (clutch < 1.0f)
+            clutch += 0.6f * t.delta;
+        else
+            clutch = 1.0f;
         
         chassisBody.update(t.delta);
 
