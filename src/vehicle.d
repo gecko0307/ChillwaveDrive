@@ -54,26 +54,31 @@ class Vehicle: EntityComponent
     Array!Wheel wheels;
     
     float torqueDirection = 1.0f; // -1.0f or 1.0f
-    float throttle = 0.0f; // 0.0f..1.0f
     float steeringInput = 0.0f; // -1.0f..1.0f
     float maxSteeringAngle = 45.0f;
-    float maxTorque = 500.0f;
     
-    float gearRatio = 0.0f;
+    float maxTorque = 500.0f;
+    float rpmIdle = 800.0f;
+    float rpmRedline = 8000.0f;
+    float rpmMax = 8500.0f;
+    float rpm;
+    
     float[] gears = [
         3.23f, 2.19f, 1.71f, 1.39f, 1.16f, 0.93f
     ];
-    float[] upshiftRPM = [6000, 6000, 6000, 6000, 6000, 6000];
-    float[] downshiftRPM = [800, 1000, 2000, 3000, 3000, 4000];
-    uint gear = 0;
     float reverseGear = -3.0f;
+    float[] upshiftRPM = [6000, 6000, 6000, 6000, 6000, 6000];
+    float[] downshiftRPM = [0, 3000, 3000, 3000, 3000, 3000];
+    uint gear = 0;
+    float gearRatio = 0.0f;
     float finalDriveRatio = 2.37f;
     float drivetrainEfficiency = 0.99f;
-    float clutch = 0.0f;
+    
+    float throttle = 0.0f; // 0.0f..1.0f
+    float clutch = 0.0f; // 0.0f..1.0f
     
     bool accelerating = false;
     bool brake = false;
-    
     float movementDirection = 0.0f;
     
     Matrix4x4f prevTransformation;
@@ -103,6 +108,7 @@ class Vehicle: EntityComponent
         prevTransformation = Matrix4x4f.identity;
         
         gearRatio = gears[0];
+        rpm = rpmIdle;
     }
     
     ~this()
@@ -189,11 +195,6 @@ class Vehicle: EntityComponent
             else
                 gearRatio = gears[gear];
             
-            if (throttle < 1.0f)
-                throttle += 0.1f * delta;
-            else
-                throttle = 1.0f;
-            
             accelerating = true;
         }
     }
@@ -264,11 +265,6 @@ class Vehicle: EntityComponent
         return (A - B) * exp(-pow((rpm - D) * C, 2.0f) / (F * F)) + B;
     }
     
-    const float rpmIdle = 800.0f;
-    const float rpmRedline = 8000.0f;
-    const float rpmMax = 8500.0f;
-    float rpm = 800.0f;
-    
     override void update(Time t)
     {
         float ackermann = 5.0f;
@@ -287,19 +283,21 @@ class Vehicle: EntityComponent
         }
         
         float carSpeed = speedKMH();
-        float effectiveRadius = wheels[3].radius;
-        float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
-        float rpmFeedback = rpmWheel * finalDriveRatio * abs(gearRatio) * drivetrainEfficiency;
+        
+        float transmissionRatio = abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
         
         // Can this be done better?
-        float p = 3.0f;
-        float k = lerp(0.0f, 0.99f, clamp(carSpeed / 90.0f, 0.0f, 1.0f));
-        float effectiveClutch = pow(clutch, p);
+        const float clutchPower = 2.0f;
+        float speedFactor = clamp(carSpeed / 80.0f, 0.0f, 1.0f);
+        float effectiveClutch = pow(clutch, clutchPower);
+        float effectiveRadius = wheels[3].radius;
+        float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
+        float rpmFeedback = rpmWheel * transmissionRatio;
         float rpmFromCrankshaft = rpmIdle + (max2(rpmMax, rpmFeedback) - rpmIdle) * throttle;
-        rpm = max(rpmIdle, lerp(rpmFromCrankshaft, rpmFeedback, effectiveClutch * k));
+        rpm = max(rpmIdle, lerp(rpmFromCrankshaft, rpmFeedback, speedFactor));
         
-        float engineTorque = engineTorqueCurve(rpm);
-        float axleTorque = sign(gearRatio) * engineTorque * effectiveClutch * abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
+        float engineTorque = engineTorqueCurve(rpm) * throttle;
+        float axleTorque = sign(gearRatio) * engineTorque * effectiveClutch * transmissionRatio;
         
         foreach(w; wheels)
         {
@@ -314,24 +312,21 @@ class Vehicle: EntityComponent
         // Automatic gearbox (kind of)
         if (accelerating)
         {
+            
+            if (throttle < 1.0f)
+                throttle += 0.2f * t.delta;
+            else
+                throttle = 1.0f;
+
+            if (clutch < 1.0f)
+                clutch += 0.6f * t.delta;
+            else
+                clutch = 1.0f;
+            
             if (rpm >= upshiftRPM[gear] && gear < gears.length - 1)
             {
                 gear++;
                 gearRatio = gears[gear];
-            }
-            
-            if (rpm <= downshiftRPM[gear])
-            {
-                accelerating = false;
-                clutch = 0.0f;
-                throttle = 0.0f;
-            }
-            else
-            {
-                if (clutch < 1.0f)
-                    clutch += 0.6f * t.delta;
-                else
-                    clutch = 1.0f;
             }
         }
         else
@@ -342,21 +337,14 @@ class Vehicle: EntityComponent
                 throttle = 0.0f;
             
             if (clutch > 0.0f)
-            {
                 clutch -= 0.5f * t.delta;
-            }
             else
+                clutch = 0.0f;
+            
+            if (rpm <= downshiftRPM[gear] && gear > 0)
             {
-                if (gear > 0)
-                {
-                    gear--;
-                    gearRatio = gears[gear];
-                    clutch = 1.0f;
-                }
-                else
-                {
-                    clutch = 0.0f;
-                }
+                gear--;
+                gearRatio = gears[gear];
             }
         }
         

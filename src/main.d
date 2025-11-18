@@ -323,7 +323,7 @@ class GameScene: Scene
         
         // Car
         eCar = addEntity();
-        eCar.position = Vector3f(0.0f, 1.0f, 0.0f);
+        eCar.position = Vector3f(0.0f, 0.65f, 0.0f);
         eCar.turn(90.0f);
         eCar.blurMask = 0.0f;
         
@@ -653,8 +653,9 @@ class GameScene: Scene
         
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
-        float rpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
-        float engineSoundBlend = lerp(1.0f, 2.0f, rpmFactor);
+        float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
+        rpmFactor += (newRpmFactor - rpmFactor) * 0.25f;
+        float engineSoundBlend = lerp(1.0f, 1.8f, rpmFactor);
         audio.setRelativePlaySpeed(engineVoice, engineSoundBlend);
         
         // Tire squeal sound
@@ -675,7 +676,7 @@ class GameScene: Scene
         physicsWorld.update(t.delta);
         
         // Cool effect
-        float speedFactor = clamp((speedKMH - 90.0f) / 60.0f, 0.0f, 1.0f);
+        float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
         camera.fov = lerp(50.0f, 57.0f, speedFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.08f, speedFactor);
         
@@ -688,13 +689,15 @@ class GameScene: Scene
         updateText(speedKMH);
     }
     
+    float rpmFactor = 0.0f;
+    
     char[100] txt;
     void updateText(float speed)
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);
         uint speedInt = cast(int)speed;
         uint rpmInt = cast(int)car.rpm;
-        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u", speedInt, car.gear + 1, rpmInt);
+        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, rpmInt, car.throttle, car.clutch);
         string s = cast(string)txt[0..n];
         text.setText(s);
     }
