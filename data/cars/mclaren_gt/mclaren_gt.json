@@ -30,8 +30,8 @@
             "torqueSplit": 0.0,
             "camberAngle": -3,
             "suspension": {
-                "position": [-0.87, 0.22, 1.25],
-                "maxLength": 0.3,
+                "position": [-0.87, 0.25, 1.25],
+                "maxLength": 0.35,
                 "stiffness": 100,
                 "damping": 10
             },
@@ -48,13 +48,13 @@
             "torqueSplit": 0.0,
             "camberAngle": -3,
             "suspension": {
-                "position": [0.87, 0.22, 1.25],
-                "maxLength": 0.3,
+                "position": [0.87, 0.25, 1.25],
+                "maxLength": 0.35,
                 "stiffness": 100,
                 "damping": 10
             },
             "tyre": {
-                "lateralFriction": 2.0,
+                "lateralFriction": 1.0,
                 "longitudinalFriction": 1.0
             }
         },
@@ -66,13 +66,13 @@
             "torqueSplit": 0.5,
             "camberAngle": 0,
             "suspension": {
-                "position": [-0.87, 0.4, -1.42],
-                "maxLength": 0.4,
+                "position": [-0.87, 0.43, -1.42],
+                "maxLength": 0.45,
                 "stiffness": 100,
                 "damping": 10
             },
             "tyre": {
-                "lateralFriction": 1.0,
+                "lateralFriction": 0.66,
                 "longitudinalFriction": 1.0
             }
         },
@@ -84,13 +84,13 @@
             "torqueSplit": 0.5,
             "camberAngle": 0,
             "suspension": {
-                "position": [0.87, 0.4, -1.42],
-                "maxLength": 0.4,
+                "position": [0.87, 0.43, -1.42],
+                "maxLength": 0.45,
                 "stiffness": 100,
                 "damping": 10
             },
             "tyre": {
-                "lateralFriction": 1.0,
+                "lateralFriction": 0.66,
                 "longitudinalFriction": 1.0
             }
         }

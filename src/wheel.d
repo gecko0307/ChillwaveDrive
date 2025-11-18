@@ -87,7 +87,7 @@ class Wheel: Owner, NewtonRaycaster
     PacejkaModel tyreModel;
     
     float visualSuspensionLength;
-    float visualSuspensionChangeSpeed = 2.0f;
+    float visualSuspensionChangeSpeed = 8.0f;
     
     float forcePoint = 0.03f;
     
