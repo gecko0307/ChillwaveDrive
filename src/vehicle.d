@@ -285,7 +285,7 @@ class Vehicle: EntityComponent
         float transmissionRatio = abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
         
         const float clutchCurve = 5.0f;
-        const float engineInertia = 5.0f;
+        const float engineInertia = 4.5f;
         
         float effectiveClutch = pow(clutch, clutchCurve);
         float effectiveRadius = wheels[3].radius;
