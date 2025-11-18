@@ -654,7 +654,7 @@ class GameScene: Scene
         // Engine sound
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
         float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
-        rpmFactor += (newRpmFactor - rpmFactor) * 0.25f;
+        rpmFactor += (newRpmFactor - rpmFactor) * 0.9f;
         float engineSoundBlend = lerp(1.0f, 1.8f, rpmFactor);
         audio.setRelativePlaySpeed(engineVoice, engineSoundBlend);
         
@@ -696,8 +696,7 @@ class GameScene: Scene
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);
         uint speedInt = cast(int)speed;
-        uint rpmInt = cast(int)car.rpm;
-        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, rpmInt, car.throttle, car.clutch);
+        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %f | thr: %f | clt: %f", speedInt, car.gear + 1, car.rpm, car.throttle, car.clutch);
         string s = cast(string)txt[0..n];
         text.setText(s);
     }
