@@ -292,10 +292,7 @@ class Vehicle: EntityComponent
         float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
         float rpmClutch = rpmWheel * transmissionRatio;
         float rpmFree = lerp(rpmIdle, rpmMax, throttle);
-        rpm = lerp(
-            max2(rpmIdle, rpmClutch),
-            max3(rpmIdle, (rpmFree - rpmClutch) / engineInertia, rpmClutch),
-            effectiveClutch);
+        rpm = lerp(rpmIdle, max3(rpmIdle, (rpmFree - rpmClutch) / engineInertia, rpmClutch), effectiveClutch);
         float engineTorque = engineTorqueCurve(rpm) * throttle;
         float axleTorque = sign(gearRatio) * engineTorque * effectiveClutch * transmissionRatio;
         
