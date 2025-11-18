@@ -28,7 +28,7 @@
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -4,
+            "camberAngle": -3,
             "suspension": {
                 "position": [-0.87, 0.22, 1.25],
                 "maxLength": 0.3,
@@ -46,7 +46,7 @@
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -4,
+            "camberAngle": -3,
             "suspension": {
                 "position": [0.87, 0.22, 1.25],
                 "maxLength": 0.3,
@@ -64,7 +64,7 @@
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
-            "camberAngle": -1,
+            "camberAngle": 0,
             "suspension": {
                 "position": [-0.87, 0.4, -1.42],
                 "maxLength": 0.4,
@@ -82,7 +82,7 @@
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
-            "camberAngle": -1,
+            "camberAngle": 0,
             "suspension": {
                 "position": [0.87, 0.4, -1.42],
                 "maxLength": 0.4,
