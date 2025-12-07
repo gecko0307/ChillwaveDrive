@@ -28,7 +28,7 @@
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -2,
+            "camberAngle": -3,
             "suspension": {
                 "position": [-0.87, 0.25, 1.25],
                 "maxLength": 0.35,
@@ -46,7 +46,7 @@
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -2,
+            "camberAngle": -3,
             "suspension": {
                 "position": [0.87, 0.25, 1.25],
                 "maxLength": 0.35,
