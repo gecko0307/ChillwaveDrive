@@ -31,6 +31,7 @@ import std.stdio;
 import std.conv;
 import std.meta;
 import std.math;
+import std.random;
 import dagon;
 import dagon.ext.newton;
 import soloud;
@@ -166,17 +167,22 @@ class GameScene: Scene
 
     WavStream music;
     Wav sfxEngine;
-    Wav sfxEngine2;
-    Wav sfxSquealLoop;
+    Wav sfxSteer;
+    Wav sfxWheels;
+    Wav sfxRevving;
+    Wav sfxSqueal;
+    Wav[3] sfxSuspension;
     Wav[2] sfxHit;
     
     int musicVoice;
     int engineVoice;
-    int engine2Voice;
+    int steerVoice;
+    int wheelsVoice;
     int squealVoice;
     int hitVoice;
+    int suspVoice;
     
-    float musicVolume = 0.15f;
+    float musicVolume = 0.0f;
     float sfxVolume = 0.3f;
 
     this(VehicleDemoGame game)
@@ -242,9 +248,29 @@ class GameScene: Scene
         sfxEngine.load("data/sounds/engine.wav");
         sfxEngine.set3dDistanceDelay(true);
         
-        sfxSquealLoop = Wav.create();
-        sfxSquealLoop.load("data/sounds/squeal.wav");
-        sfxSquealLoop.set3dDistanceDelay(true);
+        sfxSteer = Wav.create();
+        sfxSteer.load("data/sounds/steer.wav");
+        sfxSteer.set3dDistanceDelay(true);
+        
+        sfxWheels = Wav.create();
+        sfxWheels.load("data/sounds/wheels.wav");
+        sfxWheels.set3dDistanceDelay(true);
+        
+        sfxSqueal = Wav.create();
+        sfxSqueal.load("data/sounds/squeal.wav");
+        sfxSqueal.set3dDistanceDelay(true);
+        
+        sfxSuspension[0] = Wav.create();
+        sfxSuspension[0].load("data/sounds/suspension1.wav");
+        sfxSuspension[0].set3dDistanceDelay(true);
+        
+        sfxSuspension[1] = Wav.create();
+        sfxSuspension[1].load("data/sounds/suspension2.wav");
+        sfxSuspension[1].set3dDistanceDelay(true);
+        
+        sfxSuspension[2] = Wav.create();
+        sfxSuspension[2].load("data/sounds/suspension3.wav");
+        sfxSuspension[2].set3dDistanceDelay(true);
         
         sfxHit[0] = Wav.create();
         sfxHit[0].load("data/sounds/hit1.wav");
@@ -530,8 +556,6 @@ class GameScene: Scene
         eParticlesLeft.visible = true;
         
         vehicleView = New!VehicleViewComponent(eventManager, camera, car);
-        //if ("mouseSensibility" in game.config.props)
-        //   vehicleView.mouseSensibility = game.config.props["mouseSensibility"].toFloat;
         eventManager.showCursor(false);
         
         engineVoice = audio.play3d(sfxEngine, car.position.x, car.position.y, car.position.z);
@@ -539,11 +563,21 @@ class GameScene: Scene
         audio.set3dSourceMinMaxDistance(engineVoice, 1.0f, 50.0f);
         audio.setVolume(engineVoice, sfxVolume);
         
-        audio.update3dAudio();
+        steerVoice = audio.play3d(sfxSteer, car.position.x, car.position.y, car.position.z);
+        audio.setLooping(steerVoice, true);
+        audio.set3dSourceMinMaxDistance(steerVoice, 1.0f, 50.0f);
+        audio.setVolume(steerVoice, sfxVolume);
         
-        squealVoice = audio.play3d(sfxSquealLoop, car.position.x, car.position.y, car.position.z);
+        wheelsVoice = audio.play3d(sfxWheels, car.position.x, car.position.y, car.position.z);
+        audio.setLooping(wheelsVoice, true);
+        audio.set3dSourceMinMaxDistance(wheelsVoice, 1.0f, 50.0f);
+        audio.setVolume(wheelsVoice, sfxVolume);
+        
+        squealVoice = audio.play3d(sfxSqueal, car.position.x, car.position.y, car.position.z);
         audio.setVolume(squealVoice, sfxVolume);
         audio.setLooping(squealVoice, true);
+        
+        audio.update3dAudio();
         
         musicVoice = audio.play(music);
         audio.setLooping(musicVoice, true);
@@ -595,6 +629,8 @@ class GameScene: Scene
             triggerBackward = value;
         }
     }
+    
+    float steeringInputPrev = 0.0f;
     
     override void onUpdate(Time t)
     {
@@ -655,8 +691,8 @@ class GameScene: Scene
         audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
         float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
         rpmFactor += (newRpmFactor - rpmFactor) * 0.9f;
-        float engineSoundBlend = lerp(1.0f, 1.8f, rpmFactor);
-        audio.setRelativePlaySpeed(engineVoice, engineSoundBlend);
+        float engineSoundSpeed = lerp(0.8f, 1.8f, rpmFactor);
+        audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
@@ -665,6 +701,38 @@ class GameScene: Scene
         if (car.brake) squealVolume = clamp((speedKMH - 10.0f) / 10.0f, 0.0f, 1.0f);
         audio.setVolume(squealVoice, sfxVolume * squealVolume * 0.8f);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
+        
+        // Wheels sound
+        float wheelsVolume = 0.0f;
+        if (!car.brake)
+        {
+            if (speedKMH <= 1.0f)
+                wheelsVolume = clamp(speedKMH, 0.0f, 1.0f);
+            else
+                wheelsVolume = 1.0f - clamp((speedKMH - 1.0f) / 30.0f, 0.0f, 1.0f);
+            wheelsVolume *= (1.0f - squealVolume);
+        }
+        float wheelsSoundSpeed = lerp(0.7f, 1.2f, clamp((speedKMH - 30.0f) / 30.0f, 0.0f, 1.0f));
+        audio.setVolume(wheelsVoice, sfxVolume * wheelsVolume);
+        audio.setRelativePlaySpeed(wheelsVoice, wheelsSoundSpeed);
+        
+        float steerVolume = cast(float)(abs(car.steeringInput - steeringInputPrev) > 0.01f) * 0.3f;
+        steerVolume *= 1.0f - clamp((speedKMH - 1.0f) / 30.0f, 0.0f, 1.0f);
+        audio.setVolume(steerVoice, sfxVolume * steerVolume);
+        steeringInputPrev = car.steeringInput;
+        
+        foreach(w; car.wheels)
+        {
+            float lengthDiff = abs(w.suspension.length - w.suspension.lengthPrev);
+            if (lengthDiff > 0.01f)
+            {
+                if (!cast(bool)audio.isValidVoiceHandle(suspVoice))
+                {
+                    suspVoice = audio.play3d(sfxSuspension[uniform(0, $)], car.position.x, car.position.y, car.position.z);
+                    audio.setVolume(suspVoice, sfxVolume);
+                }
+            }
+        }
         
         // Dust particles
         bool makingDust = lateralSlip > 0.0f || car.brake;
