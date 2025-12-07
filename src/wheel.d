@@ -107,6 +107,40 @@ class Wheel: Owner, NewtonRaycaster
         suspension.lengthPrev = 0.0f;
         
         visualSuspensionLength = suspension.maxLength;
+        
+        tyreModel.a0 = 1.28f;    // Shape factor (1.4..1.8)
+        tyreModel.a1 = -28.0f;   // Load influence on lateral friction coefficient, 1/kN (-80..+80)
+        tyreModel.a2 = 1275.0f;  // Lateral friction coefficient (900..1700)
+        tyreModel.a3 = 1900.0f;  // Change of stiffness with slip, N/deg (500..2000)
+        tyreModel.a4 = 8.0f;     // Change of progressivity of stiffness / load, 1/kN (0..50)
+        tyreModel.a5 = 0.015f;   // Camber influence on stiffness, %/deg/100 (-0.1..+0.1)
+        tyreModel.a6 = -0.25f;   // Curvature change with load (-2..+2)
+        tyreModel.a7 = 0.1f;     // Curvature factor (-20..+1)
+        tyreModel.a8 = -0.03f;   // Load influence on horizontal shift, deg/kN (-1..+1)
+        tyreModel.a9 = -0.001f;  // Horizontal shift at load = 0 and camber = 0, deg (-1..+1)
+        tyreModel.a10 = -0.15f;  // Camber influence on horizontal shift, deg/deg (-0.1..+0.1)
+        tyreModel.a11 = 0.0f;    // Vertical shift, N (-200..+200)
+        tyreModel.a12 = 17.8f;   // Vertical shift at load, N = 0 (-10..+10)
+        tyreModel.a13 = -2.4f;   // Camber influence on vertical shift, load dependent, N/deg/kN (-10..+10)
+        tyreModel.a14 = 0.0f;    // Camber influence on vertical shift, N/deg (-15..+15)
+        tyreModel.a15 = 0.0f;    // Camber influence on lateral friction coefficient, 1/deg (-0.01..+0.01)
+        tyreModel.a16 = 0.0f;    // Curvature change with camber (-0.1..+0.1)
+        tyreModel.a17 = 0.0f;    // Curvature shift (-1..+1)
+        
+        tyreModel.b0 = 1.36f;    // Shape factor (1.4..1.8)
+        tyreModel.b1 = -40.0f;   // Load influence on longitudinal friction coefficient, 1/kN (-80..+80)
+        tyreModel.b2 = 1275.0f;  // Longitudinal friction coefficient (900..1700)
+        tyreModel.b3 = 40.0f;    // Curvature factor of stiffness/load, N/%/kN^2 (-20..+20)
+        tyreModel.b4 = 240.0f;   // Change of stiffness with slip, N/% (100..500)
+        tyreModel.b5 = 0.08f;    // Change of progressivity of stiffness/load, 1/kN (-1..+1)
+        tyreModel.b6 = -0.05f;   // Curvature change with load^2 (-0.1..+0.1)
+        tyreModel.b7 = 0.05f;    // Curvature change with load (-1..+1)
+        tyreModel.b8 = -0.025f;  // Curvature factor (-20..+1)
+        tyreModel.b9 = 0.015f;   // Load influence on horizontal shift, %/kN (-1..+1)
+        tyreModel.b10 = 0.4f;    // Horizontal shift, % (-5..+5)
+        tyreModel.b11 = -50.0f;  // Vertical shift, N (-100..+100)
+        tyreModel.b12 = 0.0f;    // Vertical shift at load = 0, N (-10..+10)
+        tyreModel.b13 = 0.0f;    // Curvature shift (-1..+1)
     }
     
     float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
@@ -158,7 +192,7 @@ class Wheel: Owner, NewtonRaycaster
         
         Vector3f forcePosition = groundPosition + Vector3f(0.0f, forcePoint, 0.0f);
         
-        angularVelocity = 0.0f;
+        //angularVelocity = 0.0f;
         
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
         {
@@ -199,7 +233,7 @@ class Wheel: Owner, NewtonRaycaster
             float springForce = suspension.compression * suspension.stiffness;
             float compressionSpeed = suspension.lengthPrev - suspension.length;
             float dampingForce = (compressionSpeed * suspension.damping) / dt;
-            normalForce = (springForce + dampingForce) * wheelLoad;
+            normalForce = (springForce + dampingForce) * load;
             
             vehicle.chassisBody.addForceAtPos(groundNormal * normalForce, forcePosition);
             
@@ -223,10 +257,8 @@ class Wheel: Owner, NewtonRaycaster
             {
                 // Apply torque
                 tractionForce = torque / radius * invInertia;
-                vehicle.chassisBody.addForceAtPos(forwardAxis * tractionForce, forcePosition);
                 angularAcceleration = tractionForce;
-                slipRatio = 0.0f;
-                //slipRatio = clamp(abs((angularVelocity * radius) / max2(abs(longitudinalSpeed), 0.00001f)), 0.0f, 1.0f);
+                slipRatio = -12.8f;
             }
             else
             {
@@ -247,11 +279,13 @@ class Wheel: Owner, NewtonRaycaster
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, degtorad(camberAngle)) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
             longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
+
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
         }
         
         angularVelocity += angularAcceleration * dt;
+        
         if (abs(angularVelocity) > 0.1f)
         {
             float angularVelocityVisual = clamp(angularVelocity, -10.0f, 10.0f);

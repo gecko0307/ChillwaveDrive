@@ -2,7 +2,7 @@
     "name": "mclaren_gt",
     "mass": 1530,
     "inertia": [1.76917, 0.6, 4.4],
-    "centerOfMass": [0.0, -0.3, 0.0],
+    "centerOfMass": [0.0, -0.3, 0.1],
     "maxSteeringAngle": 45,
     "maxTorque": 630,
     "chassis": {
@@ -28,12 +28,12 @@
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -3,
+            "camberAngle": -2,
             "suspension": {
                 "position": [-0.87, 0.25, 1.25],
                 "maxLength": 0.35,
-                "stiffness": 100,
-                "damping": 10
+                "stiffness": 100000,
+                "damping": 20000
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -46,12 +46,12 @@
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -3,
+            "camberAngle": -2,
             "suspension": {
                 "position": [0.87, 0.25, 1.25],
                 "maxLength": 0.35,
-                "stiffness": 100,
-                "damping": 10
+                "stiffness": 100000,
+                "damping": 20000
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -68,8 +68,8 @@
             "suspension": {
                 "position": [-0.87, 0.43, -1.42],
                 "maxLength": 0.45,
-                "stiffness": 100,
-                "damping": 10
+                "stiffness": 100000,
+                "damping": 20000
             },
             "tyre": {
                 "lateralFriction": 0.66,
@@ -86,8 +86,8 @@
             "suspension": {
                 "position": [0.87, 0.43, -1.42],
                 "maxLength": 0.45,
-                "stiffness": 100,
-                "damping": 10
+                "stiffness": 100000,
+                "damping": 20000
             },
             "tyre": {
                 "lateralFriction": 0.66,
