@@ -164,15 +164,17 @@ class GameScene: Scene
     Color4f fogDay = Color4f(0.4f, 0.5f, 0.7f, 1.0f);
     Color4f fogSunset = Color4f(0.6f, 0.4f, 0.7f, 1.0f);
     Color4f fogNight = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    
+    UIWidget overlay;
 
     WavStream music;
     Wav sfxEngine;
     Wav sfxSteer;
     Wav sfxWheels;
-    Wav sfxRevving;
     Wav sfxSqueal;
     Wav[2] sfxSuspension;
     Wav[2] sfxHit;
+    Wav sfxCamera;
     
     int musicVoice;
     int engineVoice;
@@ -182,7 +184,7 @@ class GameScene: Scene
     int hitVoice;
     int suspVoice;
     
-    float musicVolume = 0.0f;
+    float musicVolume = 0.1f;
     float sfxVolume = 0.3f;
 
     this(VehicleDemoGame game)
@@ -265,7 +267,7 @@ class GameScene: Scene
         sfxSuspension[0].set3dDistanceDelay(true);
         
         sfxSuspension[1] = Wav.create();
-        sfxSuspension[1].load("data/sounds/suspension3.wav");
+        sfxSuspension[1].load("data/sounds/suspension2.wav");
         sfxSuspension[1].set3dDistanceDelay(true);
         
         sfxHit[0] = Wav.create();
@@ -275,6 +277,10 @@ class GameScene: Scene
         sfxHit[1] = Wav.create();
         sfxHit[1].load("data/sounds/hit2.wav");
         sfxHit[1].set3dDistanceDelay(true);
+        
+        sfxCamera = Wav.create();
+        sfxCamera.load("data/sounds/camera.wav");
+        sfxCamera.set3dDistanceDelay(true);
         
         music = WavStream.create();
         music.load("data/music/stellar_escape.mp3");
@@ -584,6 +590,14 @@ class GameScene: Scene
         auto eText = addEntityHUD();
         eText.drawable = text;
         eText.position = Vector3f(16.0f, 30.0f, 0.0f);
+        
+        overlay = addWidget!UIWidget();
+        overlay.backgroundFocusedColor = overlay.backgroundUnfocusedColor =
+            Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        overlay.width = eventManager.windowWidth;
+        overlay.height = eventManager.windowHeight;
+        overlay.fitToParent = true;
+        overlay.background.opacity = 0.0f;
     }
     
     TextLine text;
@@ -603,7 +617,11 @@ class GameScene: Scene
         }
         else if (button == MB_RIGHT)
         {
+            auto shotVoice = audio.play(sfxCamera);
+            audio.setVolume(shotVoice, sfxVolume);
             application.takeScreenshot("screenshots/screenshot");
+            overlay.background.opacity = 1.0f;
+            overlay.background.fadeOut(0.25f);
         }
     }
     
