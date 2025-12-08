@@ -57,6 +57,8 @@ class Vehicle: EntityComponent
     float steeringInput = 0.0f; // -1.0f..1.0f
     float maxSteeringAngle = 45.0f;
     
+    bool arcadeSteering = true;
+    
     float maxTorque = 500.0f;
     float rpmIdle = 800.0f;
     float rpmPeakTorquePoint = 5500.0f;
@@ -213,6 +215,11 @@ class Vehicle: EntityComponent
             steeringInput = -1.0f;
     }
     
+    void manualSteer(float input)
+    {
+        steeringInput = input;
+    }
+    
     float lateralSpeedKMH() @property
     {
         Vector3f rightVector = chassisBody.transformation.right;
@@ -284,8 +291,8 @@ class Vehicle: EntityComponent
         
         float transmissionRatio = abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
         
-        const float clutchCurve = 2.0f; //5.0f;
-        const float engineInertia = 4.5f; //4.5f;
+        const float clutchCurve = 3.0f;
+        const float engineInertia = 4.5f;
         
         float effectiveClutch = pow(clutch, clutchCurve);
         float effectiveRadius = wheels[3].radius;
@@ -361,13 +368,16 @@ class Vehicle: EntityComponent
 
         prevTransformation = entity.transformation;
         
-        float steeringDecreaseStep = 1.8f * t.delta;
-        if (steeringInput > steeringDecreaseStep)
-            steeringInput -= steeringDecreaseStep;
-        else if (steeringInput < -steeringDecreaseStep)
-            steeringInput += steeringDecreaseStep;
-        else
-            steeringInput = 0.0f;
+        if (arcadeSteering)
+        {
+            float steeringDecreaseStep = 1.8f * t.delta;
+            if (steeringInput > steeringDecreaseStep)
+                steeringInput -= steeringDecreaseStep;
+            else if (steeringInput < -steeringDecreaseStep)
+                steeringInput += steeringDecreaseStep;
+            else
+                steeringInput = 0.0f;
+        }
         
         movementDirection = (dot(velocity.normalized, longitudinalAxis) < 0.0f)? -1.0f : 1.0f;
     }

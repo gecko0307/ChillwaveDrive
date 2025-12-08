@@ -598,6 +598,8 @@ class GameScene: Scene
         overlay.height = eventManager.windowHeight;
         overlay.fitToParent = true;
         overlay.background.opacity = 0.0f;
+        
+        car.arcadeSteering = true;
     }
     
     TextLine text;
@@ -644,14 +646,46 @@ class GameScene: Scene
         }
     }
     
+    float joystickSteer = 0.0f;
+    override void onJoystickAxisMotion(uint deviceIndex, int axis, float value)
+    {
+        joystickSteer = -value;
+    }
+    
+    bool joystickForward = false;
+    bool joystickBack = false;
+    override void onJoystickButtonDown(uint deviceIndex, int button)
+    {
+        if (button == 1)
+        {
+            joystickForward = true;
+        }
+        else if (button == 0)
+        {
+            joystickBack = true;
+        }
+    }
+    
+    override void onJoystickButtonUp(uint deviceIndex, int button)
+    {
+        if (button == 1)
+        {
+            joystickForward = false;
+        }
+        else if (button == 0)
+        {
+            joystickBack = false;
+        }
+    }
+    
     float steeringInputPrev = 0.0f;
     
     override void onUpdate(Time t)
     {
         // Car controls
-        if (inputManager.getButton("forward"))
+        if (inputManager.getButton("forward") || joystickForward)
             car.accelerate(1.0f, 2.0f * t.delta);
-        else if (inputManager.getButton("back"))
+        else if (inputManager.getButton("back") || joystickBack)
             car.accelerate(-1.0f, 2.0f * t.delta);
         else if (triggerForward > 0.0f)
             car.accelerate(1.0f, 2.0f * triggerForward * t.delta);
@@ -662,8 +696,13 @@ class GameScene: Scene
         
         carEngineSoundSpeed = lerp(1.0f, 1.5f, car.throttle);
         
-        float axis = inputManager.getAxis("horizontal");
-        car.steer(-axis * 5.0f * t.delta);
+        if (car.arcadeSteering)
+        {
+            float axis = inputManager.getAxis("horizontal");
+            car.steer(-axis * 5.0f * t.delta);
+        }
+        else
+            car.manualSteer(joystickSteer);
         
         // Headlights on/off
         if (inputManager.getButton("headlights"))
@@ -794,6 +833,24 @@ class VehicleDemoGame: Game
         audio = Soloud.create();
         audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
         currentScene = New!GameScene(this);
+        
+        /*
+        int num = SDL_NumJoysticks();
+        for (int i = 0; i < num; i++) {
+            logInfo(i, ": ", SDL_JoystickNameForIndex(i).to!string);
+        }
+        SDL_Joystick* wheel = SDL_JoystickOpen(1);
+        if (wheel is null) {
+            logInfo("Joystick open error: ", SDL_GetError().to!string);
+        }
+        SDL_JoystickEventState(SDL_ENABLE);
+        SDL_JoystickType type = SDL_JoystickGetType(wheel);
+        logInfo("Type: ", type);
+        logInfo("SDL_JOYSTICK_TYPE_WHEEL: ", SDL_JOYSTICK_TYPE_WHEEL);
+        char[33] guidStr;
+        SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(wheel), guidStr.ptr, guidStr.length);
+        logInfo("GUID: ", guidStr);
+        */
     }
 }
 
