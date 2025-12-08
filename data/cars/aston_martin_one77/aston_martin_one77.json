@@ -2,7 +2,7 @@
     "name": "aston_martin_one77",
     "mass": 1530,
     "inertia": [2.0, 1.0, 4.8],
-    "centerOfMass": [0.0, -0.1, 0.1],
+    "centerOfMass": [0.0, 0.0, 0.1],
     "maxSteeringAngle": 45,
     "maxTorque": 650.0,
     "chassis": {
@@ -30,10 +30,10 @@
             "torqueSplit": 0.0,
             "camberAngle": -4,
             "suspension": {
-                "position": [-0.92, 0.14, 1.5],
-                "maxLength": 0.2,
-                "stiffness": 100000,
-                "damping": 15000
+                "position": [-0.92, 0.43, 1.5],
+                "maxLength": 0.55,
+                "stiffness": 40000,
+                "damping": 5000
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -48,10 +48,10 @@
             "torqueSplit": 0.0,
             "camberAngle": -4,
             "suspension": {
-                "position": [0.92, 0.14, 1.5],
-                "maxLength": 0.2,
-                "stiffness": 100000,
-                "damping": 15000
+                "position": [0.92, 0.43, 1.5],
+                "maxLength": 0.55,
+                "stiffness": 40000,
+                "damping": 5000
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -66,13 +66,13 @@
             "torqueSplit": 0.5,
             "camberAngle": -1,
             "suspension": {
-                "position": [-0.92, 0.3, -1.45],
-                "maxLength": 0.35,
-                "stiffness": 95000,
-                "damping": 15000
+                "position": [-0.92, 0.43, -1.45],
+                "maxLength": 0.55,
+                "stiffness": 40000,
+                "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 0.66,
+                "lateralFriction": 0.7,
                 "longitudinalFriction": 1.0
             }
         },
@@ -84,13 +84,13 @@
             "torqueSplit": 0.5,
             "camberAngle": -1,
             "suspension": {
-                "position": [0.92, 0.3, -1.45],
-                "maxLength": 0.35,
-                "stiffness": 95000,
-                "damping": 15000
+                "position": [0.92, 0.43, -1.45],
+                "maxLength": 0.55,
+                "stiffness": 40000,
+                "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 0.66,
+                "lateralFriction": 0.7,
                 "longitudinalFriction": 1.0
             }
         }
