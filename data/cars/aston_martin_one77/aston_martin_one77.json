@@ -2,7 +2,7 @@
     "name": "aston_martin_one77",
     "mass": 1530,
     "inertia": [2.0, 1.0, 4.8],
-    "centerOfMass": [0.0, -0.3, 0.0],
+    "centerOfMass": [0.0, -0.1, 0.1],
     "maxSteeringAngle": 45,
     "maxTorque": 650.0,
     "chassis": {
@@ -32,8 +32,8 @@
             "suspension": {
                 "position": [-0.92, 0.14, 1.5],
                 "maxLength": 0.2,
-                "stiffness": 100,
-                "damping": 15
+                "stiffness": 100000,
+                "damping": 15000
             },
             "tyre": {
                 "lateralFriction": 1.0,
@@ -50,11 +50,11 @@
             "suspension": {
                 "position": [0.92, 0.14, 1.5],
                 "maxLength": 0.2,
-                "stiffness": 100,
-                "damping": 15
+                "stiffness": 100000,
+                "damping": 15000
             },
             "tyre": {
-                "lateralFriction": 2.0,
+                "lateralFriction": 1.0,
                 "longitudinalFriction": 1.0
             }
         },
@@ -68,11 +68,11 @@
             "suspension": {
                 "position": [-0.92, 0.3, -1.45],
                 "maxLength": 0.35,
-                "stiffness": 95,
-                "damping": 15
+                "stiffness": 95000,
+                "damping": 15000
             },
             "tyre": {
-                "lateralFriction": 1.0,
+                "lateralFriction": 0.66,
                 "longitudinalFriction": 1.0
             }
         },
@@ -86,11 +86,11 @@
             "suspension": {
                 "position": [0.92, 0.3, -1.45],
                 "maxLength": 0.35,
-                "stiffness": 95,
-                "damping": 15
+                "stiffness": 95000,
+                "damping": 15000
             },
             "tyre": {
-                "lateralFriction": 1.0,
+                "lateralFriction": 0.66,
                 "longitudinalFriction": 1.0
             }
         }

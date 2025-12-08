@@ -171,7 +171,7 @@ class GameScene: Scene
     Wav sfxWheels;
     Wav sfxRevving;
     Wav sfxSqueal;
-    Wav[3] sfxSuspension;
+    Wav[2] sfxSuspension;
     Wav[2] sfxHit;
     
     int musicVoice;
@@ -265,12 +265,8 @@ class GameScene: Scene
         sfxSuspension[0].set3dDistanceDelay(true);
         
         sfxSuspension[1] = Wav.create();
-        sfxSuspension[1].load("data/sounds/suspension2.wav");
+        sfxSuspension[1].load("data/sounds/suspension3.wav");
         sfxSuspension[1].set3dDistanceDelay(true);
-        
-        sfxSuspension[2] = Wav.create();
-        sfxSuspension[2].load("data/sounds/suspension3.wav");
-        sfxSuspension[2].set3dDistanceDelay(true);
         
         sfxHit[0] = Wav.create();
         sfxHit[0].load("data/sounds/hit1.wav");
