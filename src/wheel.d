@@ -38,6 +38,7 @@ import pacejka;
 struct Suspension
 {
     float minLength;
+    float restLength;
     float maxLength;
     float stiffness; 
     float damping;
@@ -53,6 +54,8 @@ class Wheel: Owner, NewtonRaycaster
     Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
     Suspension suspension;
     float radius = 0.35f;
+    float mass = 25.0f;
+    float stiffness = 200000.0f;
     float steeringAngle = 0.0f;
     float camberAngle = 0.0f;
     float facing = 0.0f;
@@ -69,7 +72,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularAcceleration = 0.0f;
     float angularVelocity = 0.0f;
     float roll = 0.0f;
-    float invInertia = 0.999f;
+    float invInertia = 1.0f;
     float staticFrictionCoefficient = 0.99f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
@@ -87,9 +90,9 @@ class Wheel: Owner, NewtonRaycaster
     PacejkaModel tyreModel;
     
     float visualSuspensionLength;
-    float visualSuspensionChangeSpeed = 8.0f;
+    float visualSuspensionChangeSpeed = 5.0f;
     
-    float forcePoint = 0.03f;
+    float forcePoint = 0.0f;
     
     this(Vector3f position, float facing, Vehicle vehicle)
     {
@@ -98,7 +101,7 @@ class Wheel: Owner, NewtonRaycaster
         this.position = position;
         this.facing = facing;
         
-        suspension.minLength = 0.0f;
+        suspension.minLength = 0.28f;
         suspension.maxLength = 0.3f;
         suspension.stiffness = 100.0f;
         suspension.damping = 10.0f;
@@ -110,7 +113,7 @@ class Wheel: Owner, NewtonRaycaster
         
         tyreModel.a0 = 1.28f;    // Shape factor (1.4..1.8)
         tyreModel.a1 = -28.0f;   // Load influence on lateral friction coefficient, 1/kN (-80..+80)
-        tyreModel.a2 = 1275.0f;  // Lateral friction coefficient (900..1700)
+        tyreModel.a2 = 1200.0f;  // Lateral friction coefficient (900..1700)
         tyreModel.a3 = 1900.0f;  // Change of stiffness with slip, N/deg (500..2000)
         tyreModel.a4 = 8.0f;     // Change of progressivity of stiffness / load, 1/kN (0..50)
         tyreModel.a5 = 0.015f;   // Camber influence on stiffness, %/deg/100 (-0.1..+0.1)
@@ -129,7 +132,7 @@ class Wheel: Owner, NewtonRaycaster
         
         tyreModel.b0 = 1.36f;    // Shape factor (1.4..1.8)
         tyreModel.b1 = -40.0f;   // Load influence on longitudinal friction coefficient, 1/kN (-80..+80)
-        tyreModel.b2 = 1275.0f;  // Longitudinal friction coefficient (900..1700)
+        tyreModel.b2 = 1650.0f;  // Longitudinal friction coefficient (900..1700)
         tyreModel.b3 = 40.0f;    // Curvature factor of stiffness/load, N/%/kN^2 (-20..+20)
         tyreModel.b4 = 240.0f;   // Change of stiffness with slip, N/% (100..500)
         tyreModel.b5 = 0.08f;    // Change of progressivity of stiffness/load, 1/kN (-1..+1)
@@ -168,6 +171,8 @@ class Wheel: Owner, NewtonRaycaster
     
     void update(double dt)
     {
+        invInertia = 1.0f / (mass * radius * radius);
+        
         camberAngle = clamp(camberAngle, -4.0f, 4.0f);
         
         Vector3f upVectorWorld = verticalAxis();
@@ -224,18 +229,22 @@ class Wheel: Owner, NewtonRaycaster
         {
             onGround = true;
             
+            float effectiveMass = vehicle.sprungMass * load;
+            float xStat = (effectiveMass * 9.81f) / suspension.stiffness;
+            suspension.restLength = suspension.maxLength - xStat;
+            
             suspension.lengthPrev = suspension.length;
             suspension.length = clamp(suspToGround - radius, suspension.minLength, suspension.maxLength);
-            suspension.compression = suspension.maxLength - suspension.length;
+            suspension.compression = max2(suspension.restLength - suspension.length, 0.0f);
             
             // Normal force
-            float wheelLoad = vehicle.chassisBody.mass * load;
             float springForce = suspension.compression * suspension.stiffness;
             float compressionSpeed = suspension.lengthPrev - suspension.length;
             float dampingForce = (compressionSpeed * suspension.damping) / dt;
-            normalForce = (springForce + dampingForce) * load;
-            
-            vehicle.chassisBody.addForceAtPos(groundNormal * normalForce, forcePosition);
+            float suspensionForce = springForce + dampingForce;
+            vehicle.chassisBody.addForceAtPos(groundNormal * suspensionForce, suspPosition);
+            float unsprungMass = vehicle.unsprungMass / cast(float)vehicle.wheels.length;
+            normalForce = suspensionForce + unsprungMass * 9.81f;
             
             float chassisSpeed = vehicle.speed;
             Vector3f chassisVelocity = vehicle.velocity;
@@ -275,6 +284,7 @@ class Wheel: Owner, NewtonRaycaster
             float idleThreshold = 1.0f;
             // speedFactor interpolates between static (0.0) and dynamic (1.0) friction
             float speedFactor = clamp(wheelSpeed / idleThreshold, 0.0f, 1.0f);
+            float wheelLoad = vehicle.totalMass * load;
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, degtorad(camberAngle)) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);

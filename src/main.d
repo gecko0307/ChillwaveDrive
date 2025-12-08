@@ -184,7 +184,7 @@ class GameScene: Scene
     int hitVoice;
     int suspVoice;
     
-    float musicVolume = 0.1f;
+    float musicVolume = 0.0f;
     float sfxVolume = 0.3f;
 
     this(VehicleDemoGame game)

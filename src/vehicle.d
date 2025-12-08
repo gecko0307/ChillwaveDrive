@@ -45,27 +45,39 @@ Vector3f boxInertia(Vector3f halfSize, float mass)
     return Vector3f(Ixx, Iyy, Izz);
 }
 
+enum GasolineDensity = 0.74f;
+
 /// Simulates a simple vehicle with an arbitrary number of wheels.
 class Vehicle: EntityComponent
 {
     NewtonPhysicsWorld world;
+    
+    // Chassis
     NewtonCollisionShape chassisShape;
     NewtonRigidBody chassisBody;
-    Array!Wheel wheels;
+    Matrix4x4f prevTransformation;
+    float driverMass = 80.0f;
+    float fuelTankCapacity = 50.0f;
+    float fuelMass;
+    float totalMass;
+    float sprungMass;
+    float unsprungMass;
     
-    float torqueDirection = 1.0f; // -1.0f or 1.0f
-    float steeringInput = 0.0f; // -1.0f..1.0f
-    float maxSteeringAngle = 45.0f;
-    
-    bool arcadeSteering = true;
-    
+    // Engine
     float maxTorque = 500.0f;
     float rpmIdle = 800.0f;
     float rpmPeakTorquePoint = 5500.0f;
     float rpmRedline = 8000.0f;
     float rpmMax = 8500.0f;
     float rpm = 0.0f;
+    float engineInertia = 15.0f;
+    float throttle = 0.0f; // 0.0f..1.0f
     
+    // Clutch
+    float clutchCurve = 3.0f;
+    float clutch = 0.0f; // 0.0f..1.0f
+    
+    // Drivetrain
     float[] gears = [3.23f, 2.19f, 1.71f, 1.39f, 1.16f, 0.93f];
     float reverseGear = -3.0f;
     float[] upshiftRPM = [6500, 6500, 6500, 6500, 6500, 6500];
@@ -75,14 +87,17 @@ class Vehicle: EntityComponent
     float finalDriveRatio = 2.37f;
     float drivetrainEfficiency = 0.99f;
     
-    float throttle = 0.0f; // 0.0f..1.0f
-    float clutch = 0.0f; // 0.0f..1.0f
+    // Wheels
+    Array!Wheel wheels;
     
+    // Control
+    float maxSteeringAngle = 45.0f;
+    float steeringInput = 0.0f; // -1.0f..1.0f
+    float torqueDirection = 1.0f; // -1.0f or 1.0f
+    bool arcadeSteering = true;
     bool accelerating = false;
     bool brake = false;
     float movementDirection = 0.0f;
-    
-    Matrix4x4f prevTransformation;
     
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
@@ -107,6 +122,12 @@ class Vehicle: EntityComponent
         NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
         
         prevTransformation = Matrix4x4f.identity;
+        
+        fuelMass = fuelTankCapacity * GasolineDensity;
+        totalMass = mass + driverMass + fuelMass;
+        
+        unsprungMass = mass * 0.15f;
+        sprungMass = totalMass - unsprungMass;
         
         gearRatio = gears[0];
     }
@@ -291,9 +312,6 @@ class Vehicle: EntityComponent
         
         float transmissionRatio = abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
         
-        const float clutchCurve = 3.0f;
-        const float engineInertia = 4.5f;
-        
         float effectiveClutch = pow(clutch, clutchCurve);
         float effectiveRadius = wheels[3].radius;
         float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
@@ -317,7 +335,7 @@ class Vehicle: EntityComponent
         if (accelerating)
         {
             if (throttle < 1.0f)
-                throttle += t.delta;
+                throttle += 0.1f * t.delta;
             else
                 throttle = 1.0f;
             
