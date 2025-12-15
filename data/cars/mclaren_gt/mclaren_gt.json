@@ -16,7 +16,10 @@
                 "size": [1.54, 0.492, 2.39],
                 "position": [0.0, 0.479246, -0.839547]
             }
-        ]
+        ],
+        "materials": {
+            "headlights": "Lights_Front"
+        }
     },
     "windows": {
         "model": "data/cars/mclaren_gt/mclaren_gt_windows.gltf"
@@ -72,7 +75,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 0.68,
+                "lateralFriction": 0.72,
                 "longitudinalFriction": 1.0
             }
         },
@@ -90,7 +93,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 0.68,
+                "lateralFriction": 0.72,
                 "longitudinalFriction": 1.0
             }
         }

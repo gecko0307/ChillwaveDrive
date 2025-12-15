@@ -148,10 +148,10 @@ class GameScene: Scene
     Emitter emitterRight;
     
     bool headlightsPressed = false;
-    bool headlightsOn = false;
+    bool headlightsOn = true;
     float headlightsEnergy = 5.0f;
     Material headlightsMaterial;
-    Light light1, light2, light3, light4;
+    Light light1, light2, light1_vol, light2_vol;
     
     Color4f ambientClearSkyDay = Color4f(0.4f, 0.4f, 0.7f, 1.0f);
     Color4f ambientClearSkySunset = Color4f(0.6f, 0.4f, 0.7f, 1.0f);
@@ -168,6 +168,7 @@ class GameScene: Scene
     UIWidget overlay;
 
     WavStream music;
+    WavStream sfxAmbient;
     Wav sfxEngine1;
     Wav sfxEngine2;
     Wav sfxSteer;
@@ -206,7 +207,7 @@ class GameScene: Scene
     {
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
-        aEnvmap = addTextureAsset("data/envmaps/golden_gate_hills_2k.hdr");
+        aEnvmap = addTextureAsset("data/envmaps/rural_evening_road_4k.hdr");
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
@@ -288,13 +289,16 @@ class GameScene: Scene
         sfxCamera.load("data/sounds/camera.wav");
         sfxCamera.set3dDistanceDelay(true);
         
+        sfxAmbient = WavStream.create();
+        sfxAmbient.load("data/sounds/ambient.mp3");
+        
         music = WavStream.create();
         music.load("data/music/stellar_escape.mp3");
     }
 
     override void afterLoad()
     {
-        environment.backgroundColor = Color4f(0.3f, 0.4f, 0.6f, 1.0f);
+        environment.backgroundColor = Color4f(0.05f, 0.1f, 0.2f, 1.0f);
         environment.fogColor = environment.backgroundColor;
         environment.fogStart = 0.0f;
         environment.fogEnd = 400.0f;
@@ -303,15 +307,16 @@ class GameScene: Scene
         version(Windows) physicsWorld.loadPlugins(".");
         
         camera = addCamera();
-        camera.fov = 50.0f;
+        camera.fov = 40.0f;
         game.renderer.activeCamera = camera;
         
         sun = addLight(LightType.Sun);
-        sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
+        //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
+        sun.color = Color4f(1.0f, 0.4f, 0.3f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 10.0f;
-        sun.turn(0.0f);
-        sun.pitch(-30.0f);
+        sun.energy = 2.0f;
+        sun.turn(-10.0f); //0.0f
+        sun.pitch(-10.0f); //-30.0f
         sun.scatteringEnabled = true;
         sun.scattering = 0.2f;
         sun.mediumDensity = 0.25f;
@@ -324,7 +329,7 @@ class GameScene: Scene
         Delete(cubemap);
         
         environment.ambientMap = prefilteredCubemap;
-        environment.ambientEnergy = 1.0f;
+        environment.ambientEnergy = 0.25f;
         
         auto eSky = addEntity();
         auto psync = New!PositionSync(eventManager, eSky, camera);
@@ -336,7 +341,7 @@ class GameScene: Scene
         eSky.material.useCulling = false;
         eSky.material.baseColorTexture = prefilteredCubemap;
         eSky.material.linearColor = true;
-        eSky.material.emissionEnergy = 1.0f;
+        eSky.material.emissionEnergy = 0.25f;
         eSky.gbufferMask = 0.0f;
         
         // Track
@@ -382,10 +387,10 @@ class GameScene: Scene
                 
                 if ("headlights" in materials.asObject)
                 {
-                    uint headlightsMaterialIndex = jsonPropUInt(materials, "headlights", 0);
-                    if (aChassis.materials.length > headlightsMaterialIndex)
+                    string headlightsMaterialName = jsonPropString(materials, "headlights", "");
+                    if (headlightsMaterialName.length)
                     {
-                        headlightsMaterial = aChassis.materials[headlightsMaterialIndex];
+                        headlightsMaterial = aChassis.material(headlightsMaterialName);
                         headlightsMaterial.emissionEnergy = headlightsEnergy;
                     }
                 }
@@ -492,36 +497,38 @@ class GameScene: Scene
         // Headlights (TODO: load from car asset)
         light1 = addLight(LightType.Spot, eCar);
         light1.volumeRadius = 10.0f;
-        light1.energy = 20.0f;
+        light1.energy = 30.0f;
         light1.spotOuterCutoff = 45.0f;
-        light1.position = Vector3f(-0.6f, 0.0f, 2.2f);
+        light1.position = Vector3f(-0.6f, 0.0f, 2.0f);
         light1.turn(180);
         
         light2 = addLight(LightType.Spot, eCar);
         light2.volumeRadius = 10.0f;
-        light2.energy = 20.0f;
+        light2.energy = 30.0f;
         light2.spotOuterCutoff = 45.0f;
-        light2.position = Vector3f(0.6f, 0.0f, 2.2f);
+        light2.position = Vector3f(0.6f, 0.0f, 2.0f);
         light2.turn(180);
         
-        light3 = addLight(LightType.AreaSphere, eCar);
-        light3.color = Color4f(1.0f, 0.0f, 0.0f, 1.0);
-        light3.volumeRadius = 5.0f;
-        light3.energy = 10.0f;
-        light3.specular = 0.0f;
-        light3.position = Vector3f(-0.6f, 0.0f, -2.5f);
+        light1_vol = addLight(LightType.AreaSphere, eCar);
+        light1_vol.volumeRadius = 10.0f;
+        light1_vol.energy = 8.0f;
+        light1_vol.volumeRadius = 1.0f;
+        light1_vol.scatteringEnabled = true;
+        light1_vol.mediumDensity = 0.5f;
+        light1_vol.position = Vector3f(-0.65f, 0.2f, 1.9f);
         
-        light4 = addLight(LightType.AreaSphere, eCar);
-        light4.color = Color4f(1.0f, 0.0f, 0.0f, 1.0);
-        light4.volumeRadius = 5.0f;
-        light4.energy = 10.0f;
-        light4.specular = 0.0f;
-        light4.position = Vector3f(0.6f, 0.0f, -2.5f);
+        light2_vol = addLight(LightType.AreaSphere, eCar);
+        light2_vol.volumeRadius = 10.0f;
+        light2_vol.energy = 8.0f;
+        light2_vol.volumeRadius = 1.0f;
+        light2_vol.scatteringEnabled = true;
+        light2_vol.mediumDensity = 0.5f;
+        light2_vol.position = Vector3f(0.65f, 0.2f, 1.9f);
         
         light1.shining = headlightsOn;
         light2.shining = headlightsOn;
-        light3.shining = headlightsOn;
-        light4.shining = headlightsOn;
+        light1_vol.shining = headlightsOn;
+        light2_vol.shining = headlightsOn;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -537,7 +544,7 @@ class GameScene: Scene
 
         auto eParticlesRight = addEntity(eCar);
         emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
-        eParticlesRight.position = Vector3f(-0.9f, -1.0f, -1.4f);
+        eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.8f);
         emitterRight.minLifetime = 1.0f;
         emitterRight.maxLifetime = 3.0f;
         emitterRight.minSize = 0.5f;
@@ -551,11 +558,11 @@ class GameScene: Scene
 
         auto eParticlesLeft = addEntity(eCar);
         emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
-        eParticlesLeft.position = Vector3f(0.9f, -1.0f, -1.4f);
+        eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.8f);
         emitterLeft.minLifetime = 1.0f;
         emitterLeft.maxLifetime = 3.0f;
-        emitterLeft.minSize = 1.0f;
-        emitterLeft.maxSize = 2.0f;
+        emitterLeft.minSize = 0.5f;
+        emitterLeft.maxSize = 1.0f;
         emitterLeft.minInitialSpeed = 0.2f;
         emitterLeft.maxInitialSpeed = 0.2f;
         emitterLeft.scaleStep = Vector2f(2, 2);
@@ -565,6 +572,10 @@ class GameScene: Scene
         
         vehicleView = New!VehicleViewComponent(eventManager, camera, car);
         eventManager.showCursor(false);
+        
+        auto ambientVoice = audio.play(sfxAmbient);
+        audio.setLooping(ambientVoice, true);
+        audio.setVolume(ambientVoice, sfxVolume);
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
@@ -607,6 +618,8 @@ class GameScene: Scene
         overlay.background.opacity = 0.0f;
         
         car.arcadeSteering = true;
+        
+        game.deferred.passLight.volumetricScatteringEnabled = true;
     }
     
     TextLine text;
@@ -627,6 +640,10 @@ class GameScene: Scene
                 audio.setLooping(musicVoice, true);
                 audio.setVolume(musicVoice, musicVolume);
             }
+        }
+        else if (key == KEY_RETURN)
+        {
+            
         }
     }
     
@@ -733,8 +750,8 @@ class GameScene: Scene
                 headlightsOn = !headlightsOn;
                 light1.shining = headlightsOn;
                 light2.shining = headlightsOn;
-                light3.shining = headlightsOn;
-                light4.shining = headlightsOn;
+                light1_vol.shining = headlightsOn;
+                light2_vol.shining = headlightsOn;
                 if (headlightsMaterial)
                 {
                     if (headlightsOn)
@@ -824,8 +841,8 @@ class GameScene: Scene
         
         // Cool effect
         float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
-        camera.fov = lerp(50.0f, 57.0f, speedFactor);
-        game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.08f, speedFactor);
+        camera.fov = lerp(40.0f, 57.0f, speedFactor);
+        game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
         
         // Feed camera data to 3D listener
         audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);
