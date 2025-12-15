@@ -168,7 +168,8 @@ class GameScene: Scene
     UIWidget overlay;
 
     WavStream music;
-    Wav sfxEngine;
+    Wav sfxEngine1;
+    Wav sfxEngine2;
     Wav sfxSteer;
     Wav sfxWheels;
     Wav sfxSqueal;
@@ -177,7 +178,8 @@ class GameScene: Scene
     Wav sfxCamera;
     
     int musicVoice;
-    int engineVoice;
+    int engine1Voice;
+    int engine2Voice;
     int steerVoice;
     int wheelsVoice;
     int squealVoice;
@@ -246,9 +248,13 @@ class GameScene: Scene
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
         
         // Sounds
-        sfxEngine = Wav.create();
-        sfxEngine.load("data/sounds/engine.wav");
-        sfxEngine.set3dDistanceDelay(true);
+        sfxEngine1 = Wav.create();
+        sfxEngine1.load("data/sounds/engine.wav");
+        sfxEngine1.set3dDistanceDelay(true);
+        
+        sfxEngine2 = Wav.create();
+        sfxEngine2.load("data/sounds/engine2.wav");
+        sfxEngine2.set3dDistanceDelay(true);
         
         sfxSteer = Wav.create();
         sfxSteer.load("data/sounds/steer.wav");
@@ -560,10 +566,15 @@ class GameScene: Scene
         vehicleView = New!VehicleViewComponent(eventManager, camera, car);
         eventManager.showCursor(false);
         
-        engineVoice = audio.play3d(sfxEngine, car.position.x, car.position.y, car.position.z);
-        audio.setLooping(engineVoice, true);
-        audio.set3dSourceMinMaxDistance(engineVoice, 1.0f, 50.0f);
-        audio.setVolume(engineVoice, sfxVolume);
+        engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
+        audio.setLooping(engine1Voice, true);
+        audio.set3dSourceMinMaxDistance(engine1Voice, 1.0f, 50.0f);
+        audio.setVolume(engine1Voice, sfxVolume);
+        
+        engine2Voice = audio.play3d(sfxEngine2, car.position.x, car.position.y, car.position.z);
+        audio.setLooping(engine2Voice, true);
+        audio.set3dSourceMinMaxDistance(engine2Voice, 1.0f, 50.0f);
+        audio.setVolume(engine2Voice, sfxVolume);
         
         steerVoice = audio.play3d(sfxSteer, car.position.x, car.position.y, car.position.z);
         audio.setLooping(steerVoice, true);
@@ -750,11 +761,18 @@ class GameScene: Scene
         float speedKMH = car.speedKMH();
         
         // Engine sound
-        audio.set3dSourcePosition(engineVoice, car.position.x, car.position.y, car.position.z);
+        audio.set3dSourcePosition(engine1Voice, car.position.x, car.position.y, car.position.z);
         float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
         rpmFactor += (newRpmFactor - rpmFactor) * 0.9f;
-        float engineSoundSpeed = lerp(0.8f, 1.8f, rpmFactor);
-        audio.setRelativePlaySpeed(engineVoice, engineSoundSpeed);
+        float engineSoundSpeed = lerp(1.0f, 1.8f, rpmFactor);
+        audio.setRelativePlaySpeed(engine1Voice, engineSoundSpeed);
+        
+        audio.set3dSourcePosition(engine2Voice, car.position.x, car.position.y, car.position.z);
+        float engine2SoundSpeed = lerp(0.5f, 1.0f, rpmFactor);
+        audio.setRelativePlaySpeed(engine2Voice, engineSoundSpeed);
+        float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor * rpmFactor);
+        audio.setVolume(engine2Voice, sfxVolume * engine2Volume);
+        audio.setVolume(engine1Voice, sfxVolume * (1.0f - engine2Volume));
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
@@ -791,7 +809,7 @@ class GameScene: Scene
                 if (!cast(bool)audio.isValidVoiceHandle(suspVoice))
                 {
                     suspVoice = audio.play3d(sfxSuspension[uniform(0, $)], car.position.x, car.position.y, car.position.z);
-                    audio.setVolume(suspVoice, sfxVolume);
+                    audio.setVolume(suspVoice, 0.5f * sfxVolume);
                 }
             }
         }
