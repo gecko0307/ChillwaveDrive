@@ -14,6 +14,9 @@ Updated version implements engine and drivetrain simulation, includes support fo
 - S / Left trigger - brake/reverse
 - A / Left stick -X - steer left
 - D / Left stick +X - steer right
+- L - toggle headlights
+- M - play/stop background music
+- Escape - exit.
 
 Xbox controller is recommended.
 
