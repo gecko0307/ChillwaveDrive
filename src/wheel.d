@@ -60,7 +60,6 @@ class Wheel: Owner, NewtonRaycaster
     float camberAngle = 0.0f;
     float facing = 0.0f;
     float normalForce = 0.0f;
-    float tractionForce = 0.0f;
     float lateralFrictionForce = 0.0f;
     float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
@@ -206,7 +205,6 @@ class Wheel: Owner, NewtonRaycaster
             suspension.compression = 0.0f;
             
             normalForce = 0.0f;
-            tractionForce = 0.0f;
             lateralFrictionForce = 0.0f;
             longitudinalFrictionForce = 0.0f;
             
@@ -263,8 +261,8 @@ class Wheel: Owner, NewtonRaycaster
             else if (abs(torque) > 0.0f)
             {
                 // Apply torque
-                tractionForce = torque / radius * invInertia;
-                angularAcceleration = tractionForce;
+                angularAcceleration = torque / radius * invInertia;
+                angularVelocity = max2(angularVelocity, longitudinalSpeed / radius * invInertia);
                 slipRatio = -12.8f;
             }
             else
@@ -273,7 +271,7 @@ class Wheel: Owner, NewtonRaycaster
                 angularVelocity = longitudinalSpeed / radius * invInertia;
                 angularAcceleration = 0.0f;
                 slipRatio = 0.0f;
-                angularVelocity *= 0.99f; // drag
+                angularVelocity *= 0.99f;
             }
             
             slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));
@@ -294,12 +292,8 @@ class Wheel: Owner, NewtonRaycaster
         
         angularVelocity += angularAcceleration * dt;
         
-        if (abs(angularVelocity) > 0.1f)
-        {
-            float angularVelocityVisual = clamp(angularVelocity, -10.0f, 10.0f);
-            roll += angularVelocityVisual * dt;
-            roll = fmod(roll, 2.0f * PI);
-        }
+        roll += angularVelocity * dt;
+        roll = fmod(roll, 2.0f * PI);
         
         visualSuspensionLength += (suspension.length - visualSuspensionLength) * dt * visualSuspensionChangeSpeed;
     }
