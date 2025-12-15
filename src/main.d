@@ -312,10 +312,10 @@ class GameScene: Scene
         
         sun = addLight(LightType.Sun);
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
-        sun.color = Color4f(1.0f, 0.4f, 0.3f, 1.0f);
+        sun.color = Color4f(1.0f, 0.5f, 0.2f, 1.0f);
         sun.shadowEnabled = true;
         sun.energy = 2.0f;
-        sun.turn(-10.0f); //0.0f
+        sun.turn(-25.0f); //0.0f
         sun.pitch(-10.0f); //-30.0f
         sun.scatteringEnabled = true;
         sun.scattering = 0.2f;
@@ -329,7 +329,7 @@ class GameScene: Scene
         Delete(cubemap);
         
         environment.ambientMap = prefilteredCubemap;
-        environment.ambientEnergy = 0.25f;
+        environment.ambientEnergy = 0.3f;
         
         auto eSky = addEntity();
         auto psync = New!PositionSync(eventManager, eSky, camera);
@@ -341,7 +341,7 @@ class GameScene: Scene
         eSky.material.useCulling = false;
         eSky.material.baseColorTexture = prefilteredCubemap;
         eSky.material.linearColor = true;
-        eSky.material.emissionEnergy = 0.25f;
+        eSky.material.emissionEnergy = 0.3f;
         eSky.gbufferMask = 0.0f;
         
         // Track

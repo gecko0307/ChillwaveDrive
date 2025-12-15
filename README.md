@@ -3,7 +3,7 @@ Driving game demo using [Dagon engine](https://github.com/gecko0307/dagon) with 
 
 Updated version implements engine and drivetrain simulation, includes support for rear-wheel drive and features McLaren GT model. Car parameters are loaded from a JSON file, the actual chassis and wheel models are stored in glTF.
 
-[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2025/11/chillwave-drive-02.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/11/chillwave-drive-02.jpg)
+[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)
 
 ## Controls
 
