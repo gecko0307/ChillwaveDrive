@@ -343,7 +343,7 @@ class Vehicle: EntityComponent
             {
                 gear++;
                 gearRatio = gears[gear];
-                clutch = 0.0f;
+                clutch = 0.5f;
             }
             
             clutch += t.delta;
@@ -360,7 +360,7 @@ class Vehicle: EntityComponent
             {
                 gear--;
                 gearRatio = gears[gear];
-                clutch = 0.0f;
+                clutch = 0.5f;
             }
         }
         

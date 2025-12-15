@@ -772,7 +772,6 @@ class GameScene: Scene
         audio.setRelativePlaySpeed(engine2Voice, engineSoundSpeed);
         float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor * rpmFactor);
         audio.setVolume(engine2Voice, sfxVolume * engine2Volume);
-        audio.setVolume(engine1Voice, sfxVolume * (1.0f - engine2Volume));
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
