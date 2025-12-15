@@ -7,9 +7,9 @@
     ],
     
     "dependencies": {
-        "dagon": "0.35.0",
-        "dagon:exformats": "0.35.0",
-        "dagon:newton": "0.35.0",
+        "dagon": "0.36.2",
+        "dagon:exformats": "0.36.2",
+        "dagon:newton": "0.36.2",
         "bindbc-soloud": "0.2.1",
         "bindbc-loader": "1.1.4"
     },

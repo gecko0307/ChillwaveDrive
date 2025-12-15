@@ -197,8 +197,6 @@ class Wheel: Owner, NewtonRaycaster
         
         Vector3f forcePosition = groundPosition + Vector3f(0.0f, forcePoint, 0.0f);
         
-        //angularVelocity = 0.0f;
-        
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
         {
             onGround = false;
@@ -260,7 +258,7 @@ class Wheel: Owner, NewtonRaycaster
                 // Block the wheel
                 angularAcceleration = 0.0f;
                 angularVelocity = 0.0f;
-                slipRatio = 1.0f;
+                slipRatio = 100.0f;
             }
             else if (abs(torque) > 0.0f)
             {
@@ -281,7 +279,7 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));
             
             // Friction force
-            float idleThreshold = 1.0f;
+            float idleThreshold = 0.5f;
             // speedFactor interpolates between static (0.0) and dynamic (1.0) friction
             float speedFactor = clamp(wheelSpeed / idleThreshold, 0.0f, 1.0f);
             float wheelLoad = vehicle.totalMass * load;

@@ -184,8 +184,8 @@ class GameScene: Scene
     int hitVoice;
     int suspVoice;
     
-    float musicVolume = 0.0f;
-    float sfxVolume = 0.3f;
+    float musicVolume = 0.5f;
+    float sfxVolume = 0.5f;
 
     this(VehicleDemoGame game)
     {
@@ -531,7 +531,7 @@ class GameScene: Scene
 
         auto eParticlesRight = addEntity(eCar);
         emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
-        eParticlesRight.position = Vector3f(-0.9f, -1.0f, 1.4f);
+        eParticlesRight.position = Vector3f(-0.9f, -1.0f, -1.4f);
         emitterRight.minLifetime = 1.0f;
         emitterRight.maxLifetime = 3.0f;
         emitterRight.minSize = 0.5f;
@@ -545,7 +545,7 @@ class GameScene: Scene
 
         auto eParticlesLeft = addEntity(eCar);
         emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
-        eParticlesLeft.position = Vector3f(0.9f, -1.0f, 1.4f);
+        eParticlesLeft.position = Vector3f(0.9f, -1.0f, -1.4f);
         emitterLeft.minLifetime = 1.0f;
         emitterLeft.maxLifetime = 3.0f;
         emitterLeft.minSize = 1.0f;
@@ -581,10 +581,6 @@ class GameScene: Scene
         
         audio.update3dAudio();
         
-        musicVoice = audio.play(music);
-        audio.setLooping(musicVoice, true);
-        audio.setVolume(musicVoice, musicVolume);
-        
         text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
         text.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
         auto eText = addEntityHUD();
@@ -608,6 +604,19 @@ class GameScene: Scene
     {
         if (key == KEY_ESCAPE)
             application.exit();
+        else if (key == KEY_M)
+        {
+            if (audio.isValidVoiceHandle(musicVoice))
+            {
+                audio.stop(musicVoice);
+            }
+            else
+            {
+                musicVoice = audio.play(music);
+                audio.setLooping(musicVoice, true);
+                audio.setVolume(musicVoice, musicVolume);
+            }
+        }
     }
     
     override void onMouseButtonUp(int button)
