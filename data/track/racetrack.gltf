@@ -14,8 +14,7 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0,
-				1
+				0
 			]
 		}
 	],
@@ -23,9 +22,6 @@
 		{
 			"mesh":0,
 			"name":"road"
-		},
-		{
-			"name":"racetrack_path"
 		}
 	],
 	"materials":[
@@ -39,7 +35,6 @@
 				"baseColorTexture":{
 					"index":1
 				},
-				"metallicFactor":0,
 				"metallicRoughnessTexture":{
 					"index":2
 				}
@@ -182,8 +177,8 @@
 		},
 		{
 			"mimeType":"image/webp",
-			"name":"asphalt1_roughness",
-			"uri":"asphalt1_roughness.webp"
+			"name":"asphalt1_metallic-asphalt1_roughness",
+			"uri":"asphalt1_metallic-asphalt1_roughness.webp"
 		},
 		{
 			"mimeType":"image/webp",

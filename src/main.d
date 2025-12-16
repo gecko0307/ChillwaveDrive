@@ -314,12 +314,12 @@ class GameScene: Scene
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
         sun.color = Color4f(1.0f, 0.5f, 0.2f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 2.0f;
-        sun.turn(-25.0f); //0.0f
+        sun.energy = 3.0f;
+        sun.turn(-35.0f); //0.0f
         sun.pitch(-10.0f); //-30.0f
         sun.scatteringEnabled = true;
-        sun.scattering = 0.2f;
-        sun.mediumDensity = 0.25f;
+        sun.scattering = 0.3f;
+        sun.mediumDensity = 0.2f;
         sun.scatteringUseShadow = false;
         sun.scatteringMaxRandomStepOffset = 0.5f;
         environment.sun = sun;
@@ -329,6 +329,7 @@ class GameScene: Scene
         Delete(cubemap);
         
         environment.ambientMap = prefilteredCubemap;
+        //environment.ambientBRDF = game.deferredRenderer.brdf;
         environment.ambientEnergy = 0.3f;
         
         auto eSky = addEntity();
@@ -841,7 +842,7 @@ class GameScene: Scene
         
         // Cool effect
         float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
-        camera.fov = lerp(40.0f, 57.0f, speedFactor);
+        camera.fov = lerp(40.0f, 50.0f, speedFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
         
         // Feed camera data to 3D listener

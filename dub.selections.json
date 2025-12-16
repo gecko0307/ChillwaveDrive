@@ -8,7 +8,7 @@
 		"bindbc-opengl": "1.1.1",
 		"bindbc-sdl": "1.5.2",
 		"bindbc-soloud": "0.2.1",
-		"dagon": "0.36.2",
+		"dagon": { "path": "E:/dlang/dagon/dagon" },
 		"dlib": "1.4.0"
 	}
 }
