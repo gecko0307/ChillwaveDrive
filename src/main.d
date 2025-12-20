@@ -721,14 +721,14 @@ class GameScene: Scene
     override void onUpdate(Time t)
     {
         // Car controls
-        if (inputManager.getButton("forward") || joystickForward)
+        if (inputManager.getButton("forward")) // || joystickForward
             car.accelerate(1.0f, 2.0f * t.delta);
-        else if (inputManager.getButton("back") || joystickBack)
+        else if (inputManager.getButton("back")) // || joystickBack
             car.accelerate(-1.0f, 2.0f * t.delta);
         else if (triggerForward > 0.0f)
-            car.accelerate(1.0f, 2.0f * triggerForward * t.delta);
+            car.accelerate(1.0f, triggerForward);
         else if (triggerBackward > 0.0f)
-            car.accelerate(-1.0f, 2.0f * triggerBackward * t.delta);
+            car.accelerate(-1.0f, triggerBackward);
         else
             car.idle();
         

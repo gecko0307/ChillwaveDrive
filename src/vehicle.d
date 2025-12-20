@@ -201,7 +201,7 @@ class Vehicle: EntityComponent
         return averageWheelsVelocity * 3.6f;
     }
     
-    void accelerate(float direction, float delta)
+    void accelerate(float direction, float throttle)
     {
         brake = (movementDirection < 0.0f && direction > 0.0f) ||
                 (movementDirection > 0.0f && direction < 0.0f);
@@ -217,6 +217,8 @@ class Vehicle: EntityComponent
                 gearRatio = gears[gear];
             
             accelerating = true;
+            
+            this.throttle = throttle;
         }
     }
     
@@ -334,10 +336,12 @@ class Vehicle: EntityComponent
         // Automatic gearbox (kind of)
         if (accelerating)
         {
+            /*
             if (throttle < 1.0f)
                 throttle += 0.1f * t.delta;
             else
                 throttle = 1.0f;
+            */
             
             if (rpm >= upshiftRPM[gear] && gear < gears.length - 1)
             {
