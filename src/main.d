@@ -502,6 +502,8 @@ class GameScene: Scene
         light1.spotOuterCutoff = 45.0f;
         light1.position = Vector3f(-0.6f, 0.0f, 2.0f);
         light1.turn(180);
+        //light1.scatteringEnabled = true;
+        //light1.mediumDensity = 0.1f;
         
         light2 = addLight(LightType.Spot, eCar);
         light2.volumeRadius = 10.0f;
@@ -509,7 +511,10 @@ class GameScene: Scene
         light2.spotOuterCutoff = 45.0f;
         light2.position = Vector3f(0.6f, 0.0f, 2.0f);
         light2.turn(180);
+        //light2.scatteringEnabled = true;
+        //light2.mediumDensity = 0.1f;
         
+        /*
         light1_vol = addLight(LightType.AreaSphere, eCar);
         light1_vol.volumeRadius = 10.0f;
         light1_vol.energy = 8.0f;
@@ -525,11 +530,12 @@ class GameScene: Scene
         light2_vol.scatteringEnabled = true;
         light2_vol.mediumDensity = 0.5f;
         light2_vol.position = Vector3f(0.65f, 0.2f, 1.9f);
+        */
         
         light1.shining = headlightsOn;
         light2.shining = headlightsOn;
-        light1_vol.shining = headlightsOn;
-        light2_vol.shining = headlightsOn;
+        //light1_vol.shining = headlightsOn;
+        //light2_vol.shining = headlightsOn;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -576,7 +582,7 @@ class GameScene: Scene
         
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
-        audio.setVolume(ambientVoice, sfxVolume);
+        audio.setVolume(ambientVoice, 0.1f * sfxVolume);
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
@@ -751,8 +757,8 @@ class GameScene: Scene
                 headlightsOn = !headlightsOn;
                 light1.shining = headlightsOn;
                 light2.shining = headlightsOn;
-                light1_vol.shining = headlightsOn;
-                light2_vol.shining = headlightsOn;
+                //light1_vol.shining = headlightsOn;
+                //light2_vol.shining = headlightsOn;
                 if (headlightsMaterial)
                 {
                     if (headlightsOn)
@@ -861,7 +867,7 @@ class GameScene: Scene
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);
         uint speedInt = cast(int)speed;
-        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %f | thr: %f | clt: %f", speedInt, car.gear + 1, car.rpm, car.throttle, car.clutch);
+        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
         string s = cast(string)txt[0..n];
         text.setText(s);
     }

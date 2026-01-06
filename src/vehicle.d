@@ -336,13 +336,6 @@ class Vehicle: EntityComponent
         // Automatic gearbox (kind of)
         if (accelerating)
         {
-            /*
-            if (throttle < 1.0f)
-                throttle += 0.1f * t.delta;
-            else
-                throttle = 1.0f;
-            */
-            
             if (rpm >= upshiftRPM[gear] && gear < gears.length - 1)
             {
                 gear++;

@@ -72,7 +72,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float invInertia = 1.0f;
-    float staticFrictionCoefficient = 0.99f;
+    float staticFrictionCoefficient = 0.98f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
     Quaternionf steering = Quaternionf.identity;
@@ -211,7 +211,7 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = 0.0f;
             slipRatio = 0.0f;
             
-            angularAcceleration = 0.0f;
+            //angularAcceleration = 0.0f;
             
             if (abs(torque) > 0.0f)
                 angularVelocity = torque / radius * invInertia * dt;
@@ -251,12 +251,14 @@ class Wheel: Owner, NewtonRaycaster
             
             longitudinalSpeed = dot(wheelVelocity, forwardAxis);
             
+            //logInfo(torque);
+            
             if (brake)
             {
                 // Block the wheel
                 angularAcceleration = 0.0f;
                 angularVelocity = 0.0f;
-                slipRatio = 100.0f;
+                slipRatio = 50.0f;
             }
             else if (abs(torque) > 0.0f)
             {
@@ -285,9 +287,8 @@ class Wheel: Owner, NewtonRaycaster
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, degtorad(camberAngle)) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
             longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
-
-            vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
+            vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
         }
         
         angularVelocity += angularAcceleration * dt;
