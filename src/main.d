@@ -37,7 +37,6 @@ import dagon.ext.newton;
 import soloud;
 import vehicle;
 import wheel;
-import view;
 import racingview;
 
 float normalizeInRange(float x, float xmin, float xmax)
@@ -198,6 +197,8 @@ class GameScene: Scene
     
     float musicVolume = 0.5f;
     float sfxVolume = 0.5f;
+    
+    int lastMouseX, lastMouseY;
 
     this(VehicleDemoGame game)
     {
@@ -323,7 +324,7 @@ class GameScene: Scene
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
         sun.color = Color4f(1.0f, 0.8f, 0.8f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 8.0f;
+        sun.energy = 5.0f;
         sun.turn(-48.0f); //0.0f
         sun.pitch(-15.0f); //-30.0f
         sun.scatteringEnabled = true;
@@ -339,7 +340,7 @@ class GameScene: Scene
         
         environment.ambientMap = prefilteredCubemap;
         environment.ambientBRDF = game.deferredRenderer.brdf;
-        environment.ambientEnergy = 1.0f;
+        environment.ambientEnergy = 0.5f;
         
         auto eSky = addEntity();
         auto psync = New!PositionSync(eventManager, eSky, camera);
@@ -351,7 +352,7 @@ class GameScene: Scene
         eSky.material.useCulling = false;
         eSky.material.baseColorTexture = prefilteredCubemap;
         eSky.material.linearColor = true;
-        eSky.material.emissionEnergy = 1.0f;
+        eSky.material.emissionEnergy = environment.ambientEnergy;
         eSky.gbufferMask = 0.0f;
         
         // Track
@@ -590,7 +591,19 @@ class GameScene: Scene
         eParticlesLeft.visible = true;
         
         vehicleView = New!RacingViewComponent(eventManager, camera, eCar);
-        eventManager.showCursor(false);
+        if (game.isWindowFocused)
+        {
+            vehicleView.active = true;
+            lastMouseX = eventManager.mouseX;
+            lastMouseY = eventManager.mouseY;
+            vehicleView.resetMouseInput();
+            eventManager.showCursor(false);
+        }
+        else
+        {
+            vehicleView.active = false;
+            eventManager.showCursor(true);
+        }
         
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
@@ -646,7 +659,16 @@ class GameScene: Scene
     override void onKeyDown(int key)
     {
         if (key == KEY_ESCAPE)
-            application.exit();
+        {
+            if (vehicleView.active)
+            {
+                vehicleView.active = false;
+                eventManager.showCursor(true);
+                eventManager.setMouse(lastMouseX, lastMouseY);
+            }
+            else
+                game.exit();
+        }
         else if (key == KEY_M)
         {
             if (audio.isValidVoiceHandle(musicVoice))
@@ -666,14 +688,18 @@ class GameScene: Scene
         }
     }
     
+    override void onMouseButtonDown(int button)
+    {
+        lastMouseX = eventManager.mouseX;
+        lastMouseY = eventManager.mouseY;
+        vehicleView.active = true;
+        vehicleView.resetMouseInput();
+        eventManager.showCursor(false);
+    }
+    
     override void onMouseButtonUp(int button)
     {
-        if (button == MB_LEFT)
-        {
-            vehicleView.active = !vehicleView.active;
-            eventManager.showCursor(!vehicleView.active);
-        }
-        else if (button == MB_RIGHT)
+        if (button == MB_RIGHT)
         {
             auto shotVoice = audio.play(sfxCamera);
             audio.setVolume(shotVoice, sfxVolume);
@@ -860,7 +886,7 @@ class GameScene: Scene
         
         // Cool effect
         float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
-        camera.fov = lerp(50.0f, 60.0f, speedFactor);
+        camera.fov = lerp(40.0f, 60.0f, speedFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
         
         // Feed camera data to 3D listener
