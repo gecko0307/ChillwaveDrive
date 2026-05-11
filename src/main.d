@@ -38,6 +38,7 @@ import soloud;
 import vehicle;
 import wheel;
 import view;
+import racingview;
 
 float normalizeInRange(float x, float xmin, float xmax)
 {
@@ -58,26 +59,33 @@ class JSONAsset: Asset
 
     ~this()
     {
-        release();
+        //release();
+        if (doc)
+        {
+            Delete(doc);
+            doc = null;
+        }
+        if (str.length)
+            str.free();
     }
 
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         str = String(istrm);
-        doc = New!JSONDocument(str.toString);
+        //logInfo(str);
+        //logInfo(str.length);
+        //doc = New!JSONDocument(str);
         return true;
     }
     
     override bool loadThreadUnsafePart()
     {
+        doc = New!JSONDocument(str);
         return true;
     }
 
     override void release()
     {
-        if (doc)
-            Delete(doc);
-        str.free();
     }
 }
 
@@ -123,7 +131,8 @@ class GameScene: Scene
     GLTFAsset aTrack;
     
     Camera camera;
-    VehicleViewComponent vehicleView;
+    //VehicleViewComponent vehicleView;
+    RacingViewComponent vehicleView;
     
     NewtonPhysicsWorld physicsWorld;
     
@@ -148,7 +157,7 @@ class GameScene: Scene
     Emitter emitterRight;
     
     bool headlightsPressed = false;
-    bool headlightsOn = true;
+    bool headlightsOn = false;
     float headlightsEnergy = 5.0f;
     Material headlightsMaterial;
     Light light1, light2, light1_vol, light2_vol;
@@ -207,7 +216,7 @@ class GameScene: Scene
     {
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
-        aEnvmap = addTextureAsset("data/envmaps/rural_evening_road_4k.hdr");
+        aEnvmap = addTextureAsset("data/envmaps/table_mountain_1_puresky_4k.hdr");
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
@@ -298,7 +307,7 @@ class GameScene: Scene
 
     override void afterLoad()
     {
-        environment.backgroundColor = Color4f(0.05f, 0.1f, 0.2f, 1.0f);
+        environment.backgroundColor = Color4f(0.2f, 0.3f, 0.4f, 1.0f);
         environment.fogColor = environment.backgroundColor;
         environment.fogStart = 0.0f;
         environment.fogEnd = 400.0f;
@@ -307,30 +316,30 @@ class GameScene: Scene
         version(Windows) physicsWorld.loadPlugins(".");
         
         camera = addCamera();
-        camera.fov = 40.0f;
+        camera.fov = 60.0f;
         game.renderer.activeCamera = camera;
         
         sun = addLight(LightType.Sun);
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
-        sun.color = Color4f(1.0f, 0.5f, 0.2f, 1.0f);
+        sun.color = Color4f(1.0f, 0.8f, 0.8f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 3.0f;
-        sun.turn(-35.0f); //0.0f
-        sun.pitch(-10.0f); //-30.0f
+        sun.energy = 8.0f;
+        sun.turn(-48.0f); //0.0f
+        sun.pitch(-15.0f); //-30.0f
         sun.scatteringEnabled = true;
         sun.scattering = 0.3f;
-        sun.mediumDensity = 0.2f;
+        sun.mediumDensity = 0.05f;
         sun.scatteringUseShadow = false;
         sun.scatteringMaxRandomStepOffset = 0.5f;
         environment.sun = sun;
         
-        Texture cubemap = generateCubemap(1024, aEnvmap.texture, null);
+        Texture cubemap = generateCubemap(1024, aEnvmap.texture, assetManager);
         Texture prefilteredCubemap = prefilterCubemap(1024, cubemap, assetManager);
-        Delete(cubemap);
+        //Delete(cubemap);
         
         environment.ambientMap = prefilteredCubemap;
-        //environment.ambientBRDF = game.deferredRenderer.brdf;
-        environment.ambientEnergy = 0.3f;
+        environment.ambientBRDF = game.deferredRenderer.brdf;
+        environment.ambientEnergy = 1.0f;
         
         auto eSky = addEntity();
         auto psync = New!PositionSync(eventManager, eSky, camera);
@@ -342,7 +351,7 @@ class GameScene: Scene
         eSky.material.useCulling = false;
         eSky.material.baseColorTexture = prefilteredCubemap;
         eSky.material.linearColor = true;
-        eSky.material.emissionEnergy = 0.3f;
+        eSky.material.emissionEnergy = 1.0f;
         eSky.gbufferMask = 0.0f;
         
         // Track
@@ -392,7 +401,10 @@ class GameScene: Scene
                     if (headlightsMaterialName.length)
                     {
                         headlightsMaterial = aChassis.material(headlightsMaterialName);
-                        headlightsMaterial.emissionEnergy = headlightsEnergy;
+                        if (headlightsOn)
+                            headlightsMaterial.emissionEnergy = headlightsEnergy;
+                        else
+                            headlightsMaterial.emissionEnergy = 0.0f;
                     }
                 }
             }
@@ -517,7 +529,7 @@ class GameScene: Scene
         /*
         light1_vol = addLight(LightType.AreaSphere, eCar);
         light1_vol.volumeRadius = 10.0f;
-        light1_vol.energy = 8.0f;
+        light1_vol.energy = 1.0f;
         light1_vol.volumeRadius = 1.0f;
         light1_vol.scatteringEnabled = true;
         light1_vol.mediumDensity = 0.5f;
@@ -525,7 +537,7 @@ class GameScene: Scene
         
         light2_vol = addLight(LightType.AreaSphere, eCar);
         light2_vol.volumeRadius = 10.0f;
-        light2_vol.energy = 8.0f;
+        light2_vol.energy = 1.0f;
         light2_vol.volumeRadius = 1.0f;
         light2_vol.scatteringEnabled = true;
         light2_vol.mediumDensity = 0.5f;
@@ -577,7 +589,7 @@ class GameScene: Scene
         eParticlesLeft.castShadow = false;
         eParticlesLeft.visible = true;
         
-        vehicleView = New!VehicleViewComponent(eventManager, camera, car);
+        vehicleView = New!RacingViewComponent(eventManager, camera, eCar);
         eventManager.showCursor(false);
         
         auto ambientVoice = audio.play(sfxAmbient);
@@ -848,7 +860,7 @@ class GameScene: Scene
         
         // Cool effect
         float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
-        camera.fov = lerp(40.0f, 50.0f, speedFactor);
+        camera.fov = lerp(50.0f, 60.0f, speedFactor);
         game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
         
         // Feed camera data to 3D listener
@@ -906,6 +918,8 @@ class VehicleDemoGame: Game
 
 void main(string[] args)
 {
+    //enableMemoryProfiler = true;
+    
     import loader = bindbc.loader.sharedlib;
     NewtonSupport sup = loadNewton();
     foreach(info; loader.errors)
@@ -920,4 +934,5 @@ void main(string[] args)
     Delete(game);
     
     logDebug("Leaked memory: ", allocatedMemory);
+    //printMemoryLog();
 }

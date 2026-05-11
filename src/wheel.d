@@ -47,6 +47,52 @@ struct Suspension
     float lengthPrev;
 }
 
+float frictionCurve(float slip, float stiffness)
+{
+    float x = slip * stiffness;
+    x = clamp(x, -1.0f, 1.0f);
+    return tanh(x);
+}
+
+void tireFriction(
+        float* outLongitudinalForce,
+        float* outLateralForce, 
+        float suspensionForce,
+        float longitudinalSlip,
+        float lateralSlip) {
+    
+    float longitudinalGrip = 4.0f;
+    float lateralGrip      = 3.0f;
+    float driftStiffness   = 0.5f;
+    float tractionStiffness = 0.5f;
+    const float MAX_FORCE = 1000000.0f;
+    
+    float longForce = suspensionForce * longitudinalGrip * frictionCurve(longitudinalSlip, tractionStiffness);
+    float latForce  = suspensionForce * lateralGrip * frictionCurve(lateralSlip, driftStiffness);
+
+    longForce = clamp(longForce, -MAX_FORCE, MAX_FORCE);
+    latForce  = clamp(latForce,  -MAX_FORCE, MAX_FORCE);
+
+    if (suspensionForce > 1e-6f)
+    {
+        float maxForce = suspensionForce * 5.0f;
+        float lenSq = longForce * longForce + latForce * latForce;
+        if (lenSq > 1e-12f)
+        {
+            float len = sqrt(lenSq);
+            if (len > 1e-6f && len > maxForce)
+            {
+                float scale = maxForce / len;
+                longForce *= scale;
+                latForce  *= scale;
+            }
+        }
+    }
+    
+    *outLongitudinalForce = longForce;
+    *outLateralForce      = latForce;
+}
+
 /// Simulates a single raycast wheel, includes suspension and tyre models.
 class Wheel: Owner, NewtonRaycaster
 {
@@ -72,7 +118,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float invInertia = 1.0f;
-    float staticFrictionCoefficient = 0.98f;
+    float staticFrictionCoefficient = 0.02f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
     Quaternionf steering = Quaternionf.identity;
@@ -211,8 +257,6 @@ class Wheel: Owner, NewtonRaycaster
             slipAngle = 0.0f;
             slipRatio = 0.0f;
             
-            //angularAcceleration = 0.0f;
-            
             if (abs(torque) > 0.0f)
                 angularVelocity = torque / radius * invInertia * dt;
             else
@@ -264,19 +308,31 @@ class Wheel: Owner, NewtonRaycaster
             {
                 // Apply torque
                 angularAcceleration = torque / radius * invInertia;
-                angularVelocity = max2(angularVelocity, longitudinalSpeed / radius * invInertia);
+                angularVelocity = max2(angularVelocity, longitudinalSpeed / radius);
                 slipRatio = -12.8f;
             }
             else
             {
                 // Free spin
-                angularVelocity = longitudinalSpeed / radius * invInertia;
+                if (abs(longitudinalSpeed) > 0.01f)
+                    angularVelocity = longitudinalSpeed / radius;
+                else
+                    angularVelocity = 0.0f;
                 angularAcceleration = 0.0f;
                 slipRatio = 0.0f;
-                angularVelocity *= 0.99f;
             }
             
             slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));
+            
+            /*
+            float dynamicLateralFrictionForce = 0.0f;
+            tireFriction(
+                &longitudinalFrictionForce, 
+                &dynamicLateralFrictionForce,
+                normalForce,
+                slipRatio,
+                slipAngle);
+            */
             
             // Friction force
             float idleThreshold = 0.5f;
@@ -287,14 +343,17 @@ class Wheel: Owner, NewtonRaycaster
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, degtorad(camberAngle)) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
             longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
+            
             vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
         }
         
         angularVelocity += angularAcceleration * dt;
-        
-        roll += angularVelocity * dt;
-        roll = fmod(roll, 2.0f * PI);
+        if (abs(angularVelocity) > 0.01f)
+        {
+            roll += angularVelocity * dt;
+            roll = fmod(roll, 2.0f * PI);
+        }
         
         visualSuspensionLength += (suspension.length - visualSuspensionLength) * dt * visualSuspensionChangeSpeed;
     }
