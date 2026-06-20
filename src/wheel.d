@@ -118,7 +118,7 @@ class Wheel: Owner, NewtonRaycaster
     float angularVelocity = 0.0f;
     float roll = 0.0f;
     float invInertia = 1.0f;
-    float staticFrictionCoefficient = 0.02f;
+    float staticFrictionCoefficient = 0.5f; //0.02f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
     Quaternionf steering = Quaternionf.identity;
@@ -135,7 +135,7 @@ class Wheel: Owner, NewtonRaycaster
     PacejkaModel tyreModel;
     
     float visualSuspensionLength;
-    float visualSuspensionChangeSpeed = 5.0f;
+    float visualSuspensionChangeSpeed = 10.0f;
     
     float forcePoint = 0.0f;
     
@@ -335,7 +335,7 @@ class Wheel: Owner, NewtonRaycaster
             */
             
             // Friction force
-            float idleThreshold = 0.5f;
+            float idleThreshold = 1.0f;
             // speedFactor interpolates between static (0.0) and dynamic (1.0) friction
             float speedFactor = clamp(wheelSpeed / idleThreshold, 0.0f, 1.0f);
             float wheelLoad = vehicle.totalMass * load;
@@ -349,11 +349,18 @@ class Wheel: Owner, NewtonRaycaster
         }
         
         angularVelocity += angularAcceleration * dt;
+        
         if (abs(angularVelocity) > 0.01f)
         {
-            roll += angularVelocity * dt;
-            roll = fmod(roll, 2.0f * PI);
+            angularVelocity *= 0.9f;
         }
+        else
+        {
+            angularVelocity *= 0.1f;
+        }
+        
+        roll += angularVelocity * dt;
+        roll = fmod(roll, 2.0f * PI);
         
         visualSuspensionLength += (suspension.length - visualSuspensionLength) * dt * visualSuspensionChangeSpeed;
     }

@@ -145,6 +145,8 @@ class GameScene: Scene
     Array!Entity eWheels;
     Vehicle car;
     
+    TextureAsset aCarShadow;
+    
     TextureAsset aTexParticleDust;
     
     TextureAsset aEnvmap;
@@ -156,8 +158,8 @@ class GameScene: Scene
     Emitter emitterRight;
     
     bool headlightsPressed = false;
-    bool headlightsOn = false;
-    float headlightsEnergy = 5.0f;
+    bool headlightsOn = true;
+    float headlightsEnergy = 10.0f;
     Material headlightsMaterial;
     Light light1, light2, light1_vol, light2_vol;
     
@@ -217,7 +219,7 @@ class GameScene: Scene
     {
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
-        aEnvmap = addTextureAsset("data/envmaps/table_mountain_1_puresky_4k.hdr");
+        aEnvmap = addTextureAsset("data/envmaps/759-hdri-skies-com.hdr");
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
@@ -255,6 +257,8 @@ class GameScene: Scene
                 aWheels.append(aWheel);
             }
         }
+        
+        aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
         
@@ -310,37 +314,36 @@ class GameScene: Scene
     {
         environment.backgroundColor = Color4f(0.2f, 0.3f, 0.4f, 1.0f);
         environment.fogColor = environment.backgroundColor;
-        environment.fogStart = 0.0f;
-        environment.fogEnd = 400.0f;
+        environment.fogStart = 100.0f;
+        environment.fogEnd = 5000.0f;
         
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
         version(Windows) physicsWorld.loadPlugins(".");
         
         camera = addCamera();
-        camera.fov = 60.0f;
+        camera.fov = 50.0f;
         game.renderer.activeCamera = camera;
         
         sun = addLight(LightType.Sun);
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
-        sun.color = Color4f(1.0f, 0.8f, 0.8f, 1.0f);
+        sun.color = Color4f(1.0f, 0.5f, 0.1f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 5.0f;
-        sun.turn(-48.0f); //0.0f
-        sun.pitch(-15.0f); //-30.0f
+        sun.energy = 0.1f;
+        sun.turn(0.0f); //0.0f
+        sun.pitch(-7.0f); //-30.0f
         sun.scatteringEnabled = true;
         sun.scattering = 0.3f;
-        sun.mediumDensity = 0.05f;
+        sun.mediumDensity = 0.3f;
         sun.scatteringUseShadow = false;
         sun.scatteringMaxRandomStepOffset = 0.5f;
         environment.sun = sun;
         
         Texture cubemap = generateCubemap(1024, aEnvmap.texture, assetManager);
         Texture prefilteredCubemap = prefilterCubemap(1024, cubemap, assetManager);
-        //Delete(cubemap);
         
         environment.ambientMap = prefilteredCubemap;
         environment.ambientBRDF = game.deferredRenderer.brdf;
-        environment.ambientEnergy = 0.5f;
+        environment.ambientEnergy = 0.1f;
         
         auto eSky = addEntity();
         auto psync = New!PositionSync(eventManager, eSky, camera);
@@ -361,6 +364,7 @@ class GameScene: Scene
         foreach(node; aTrack.nodes)
         {
             useEntity(node.entity);
+            node.entity.dynamic = false;
         }
         foreach(mat; aTrack.materials)
         {
@@ -376,6 +380,21 @@ class GameScene: Scene
         eCar.position = Vector3f(0.0f, 0.65f, 0.0f);
         eCar.turn(90.0f);
         eCar.blurMask = 0.0f;
+        
+        auto eCarShadow = addEntity(eCar);
+        eCarShadow.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
+        eCarShadow.decal = true;
+        eCarShadow.castShadow = false;
+        eCarShadow.position = Vector3f(0.0f, 0.0f, 0.0f);
+        eCarShadow.material = addMaterial();
+        aCarShadow.texture.enableRepeat = false;
+        eCarShadow.material.baseColorTexture = aCarShadow.texture;
+        eCarShadow.material.blendMode = Transparent;
+        eCarShadow.material.depthWrite = false;
+        eCarShadow.material.useCulling = false;
+        eCarShadow.material.roughnessFactor = 1.0f;
+        eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f);
+        eCarShadow.dynamic = true;
         
         auto root = aCar.doc.root;
         
@@ -402,6 +421,7 @@ class GameScene: Scene
                     if (headlightsMaterialName.length)
                     {
                         headlightsMaterial = aChassis.material(headlightsMaterialName);
+                        headlightsMaterial.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
                         if (headlightsOn)
                             headlightsMaterial.emissionEnergy = headlightsEnergy;
                         else
@@ -513,42 +533,36 @@ class GameScene: Scene
         light1.volumeRadius = 10.0f;
         light1.energy = 30.0f;
         light1.spotOuterCutoff = 45.0f;
-        light1.position = Vector3f(-0.6f, 0.0f, 2.0f);
+        light1.position = Vector3f(-0.6f, 0.0f, 2.5f);
         light1.turn(180);
-        //light1.scatteringEnabled = true;
-        //light1.mediumDensity = 0.1f;
         
         light2 = addLight(LightType.Spot, eCar);
         light2.volumeRadius = 10.0f;
         light2.energy = 30.0f;
         light2.spotOuterCutoff = 45.0f;
-        light2.position = Vector3f(0.6f, 0.0f, 2.0f);
+        light2.position = Vector3f(0.6f, 0.0f, 2.5f);
         light2.turn(180);
-        //light2.scatteringEnabled = true;
-        //light2.mediumDensity = 0.1f;
         
-        /*
         light1_vol = addLight(LightType.AreaSphere, eCar);
         light1_vol.volumeRadius = 10.0f;
-        light1_vol.energy = 1.0f;
-        light1_vol.volumeRadius = 1.0f;
+        light1_vol.energy = 0.2f;
+        light1_vol.volumeRadius = 0.7f;
         light1_vol.scatteringEnabled = true;
         light1_vol.mediumDensity = 0.5f;
-        light1_vol.position = Vector3f(-0.65f, 0.2f, 1.9f);
+        light1_vol.position = Vector3f(-0.65f, 0.2f, 2.0f);
         
         light2_vol = addLight(LightType.AreaSphere, eCar);
         light2_vol.volumeRadius = 10.0f;
-        light2_vol.energy = 1.0f;
-        light2_vol.volumeRadius = 1.0f;
+        light2_vol.energy = 0.2f;
+        light2_vol.volumeRadius = 0.7f;
         light2_vol.scatteringEnabled = true;
         light2_vol.mediumDensity = 0.5f;
-        light2_vol.position = Vector3f(0.65f, 0.2f, 1.9f);
-        */
+        light2_vol.position = Vector3f(0.65f, 0.2f, 2.0f);
         
         light1.shining = headlightsOn;
         light2.shining = headlightsOn;
-        //light1_vol.shining = headlightsOn;
-        //light2_vol.shining = headlightsOn;
+        light1_vol.shining = headlightsOn;
+        light2_vol.shining = headlightsOn;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -607,7 +621,7 @@ class GameScene: Scene
         
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
-        audio.setVolume(ambientVoice, 0.1f * sfxVolume);
+        audio.setVolume(ambientVoice, sfxVolume);
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
@@ -636,7 +650,7 @@ class GameScene: Scene
         audio.update3dAudio();
         
         text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
-        text.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
+        text.color = Color4f(1.0f, 1.0f, 1.0f, 0.5f);
         auto eText = addEntityHUD();
         eText.drawable = text;
         eText.position = Vector3f(16.0f, 30.0f, 0.0f);
@@ -795,8 +809,8 @@ class GameScene: Scene
                 headlightsOn = !headlightsOn;
                 light1.shining = headlightsOn;
                 light2.shining = headlightsOn;
-                //light1_vol.shining = headlightsOn;
-                //light2_vol.shining = headlightsOn;
+                light1_vol.shining = headlightsOn;
+                light2_vol.shining = headlightsOn;
                 if (headlightsMaterial)
                 {
                     if (headlightsOn)
@@ -885,9 +899,9 @@ class GameScene: Scene
         physicsWorld.update(t.delta);
         
         // Cool effect
-        float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
-        camera.fov = lerp(40.0f, 60.0f, speedFactor);
-        game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
+        //float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
+        //camera.fov = lerp(40.0f, 60.0f, speedFactor);
+        //game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
         
         // Feed camera data to 3D listener
         audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);

@@ -2,7 +2,7 @@
     "name": "aston_martin_one77",
     "mass": 1530,
     "inertia": [2.0, 1.0, 4.8],
-    "centerOfMass": [0.0, 0.0, 0.1],
+    "centerOfMass": [0.0, 0.0, 0.0],
     "maxSteeringAngle": 45,
     "maxTorque": 650.0,
     "chassis": {
@@ -36,7 +36,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 1.0,
+                "lateralFriction": 1.8,
                 "longitudinalFriction": 1.0
             }
         },
@@ -54,7 +54,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 1.0,
+                "lateralFriction": 1.8,
                 "longitudinalFriction": 1.0
             }
         },
@@ -72,7 +72,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 0.7,
+                "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
             }
         },
@@ -90,7 +90,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 0.7,
+                "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
             }
         }

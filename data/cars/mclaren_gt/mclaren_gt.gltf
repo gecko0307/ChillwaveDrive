@@ -1264,12 +1264,12 @@
 		{
 			"emissiveFactor":[
 				1,
-				0.02410360984504223,
+				0.02,
 				0
 			],
 			"extensions":{
 				"KHR_materials_emissive_strength":{
-					"emissiveStrength":4
+					"emissiveStrength":5
 				},
 				"KHR_materials_specular":{
 					"specularFactor":0.05942875146865845
@@ -1289,13 +1289,13 @@
 			"name":"paint",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					1,
-					0.39880192279815674,
-					0,
+					1.0,
+					1.0,
+					1.0,
 					1
 				],
-				"metallicFactor":0,
-				"roughnessFactor":0.10000000149011612
+				"metallicFactor":1.0,
+				"roughnessFactor":0.5
 			}
 		},
 		{

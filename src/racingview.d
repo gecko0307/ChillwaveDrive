@@ -69,8 +69,8 @@ class RacingViewComponent: EntityComponent
     float mouseSensibility = 0.2f;
     float mouseZoomSensibility = 0.5f;
     
-    float turnStiffness = 0.1f;
-    float pitchStiffness = 0.1f;
+    float turnStiffness = 0.2f;
+    float pitchStiffness = 0.2f;
     float zoomStiffness = 0.1f;
 
     this(EventManager em, Entity e, Entity target)
