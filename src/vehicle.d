@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2025 Timur Gafarov
+Copyright (c) 2021-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -80,7 +80,7 @@ class Vehicle: EntityComponent
     // Drivetrain
     float[] gears = [3.23f, 2.19f, 1.71f, 1.39f, 1.16f, 0.93f];
     float reverseGear = -3.0f;
-    float[] upshiftRPM = [6500, 6500, 6500, 6500, 6500, 6500];
+    float[] upshiftRPM = [6000, 6000, 6000, 6000, 6000, 6000];
     float[] downshiftRPM = [0, 3000, 3000, 3000, 3000, 3000];
     uint gear = 0;
     float gearRatio = 0.0f;
@@ -371,7 +371,7 @@ class Vehicle: EntityComponent
         if (!accelerating && !brake)
         {
             Vector3f vel = chassisBody.velocity;
-            if (speed > 0.5f)
+            if (speed > 1.0f)
             {
                 float horizontalMovement = clamp(abs(dot(vel, lateralAxis)), 0.0f, 1.0f);
                 horizontalMovement = pow(horizontalMovement, 2.0f);
@@ -380,7 +380,7 @@ class Vehicle: EntityComponent
             }
             else
             {
-                chassisBody.velocity = vel * 0.9f;
+                chassisBody.velocity = vel * 0.95f;
             }
         }
         

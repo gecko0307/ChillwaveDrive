@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2025 Timur Gafarov
+Copyright (c) 2021-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -315,7 +315,7 @@ class Wheel: Owner, NewtonRaycaster
             {
                 // Free spin
                 if (abs(longitudinalSpeed) > 0.01f)
-                    angularVelocity = longitudinalSpeed / radius;
+                    angularVelocity = longitudinalSpeed / radius * 0.5f;
                 else
                     angularVelocity = 0.0f;
                 angularAcceleration = 0.0f;
@@ -349,15 +349,6 @@ class Wheel: Owner, NewtonRaycaster
         }
         
         angularVelocity += angularAcceleration * dt;
-        
-        if (abs(angularVelocity) > 0.01f)
-        {
-            angularVelocity *= 0.9f;
-        }
-        else
-        {
-            angularVelocity *= 0.1f;
-        }
         
         roll += angularVelocity * dt;
         roll = fmod(roll, 2.0f * PI);

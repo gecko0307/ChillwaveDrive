@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021-2025 Timur Gafarov
+Copyright (c) 2021-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -151,6 +151,9 @@ class GameScene: Scene
     
     TextureAsset aEnvmap;
     
+    TextureAsset aTachometerArrow;
+    TextureAsset aTachometer;
+    
     Light sun;
     
     ParticleSystem particleSystem;
@@ -174,6 +177,10 @@ class GameScene: Scene
     Color4f fogDay = Color4f(0.4f, 0.5f, 0.7f, 1.0f);
     Color4f fogSunset = Color4f(0.6f, 0.4f, 0.7f, 1.0f);
     Color4f fogNight = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+    
+    UIWidget tachometer;
+    UIWidget tachometerArrowPivot;
+    UIWidget tachometerArrow;
     
     UIWidget overlay;
 
@@ -220,6 +227,9 @@ class GameScene: Scene
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
         aEnvmap = addTextureAsset("data/envmaps/759-hdri-skies-com.hdr");
+        
+        aTachometer = addTextureAsset("data/ui/tachometer.png");
+        aTachometerArrow = addTextureAsset("data/ui/tachometer_arrow.png");
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
@@ -631,20 +641,20 @@ class GameScene: Scene
         engine2Voice = audio.play3d(sfxEngine2, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine2Voice, true);
         audio.set3dSourceMinMaxDistance(engine2Voice, 1.0f, 50.0f);
-        audio.setVolume(engine2Voice, sfxVolume);
+        audio.setVolume(engine2Voice, 0.0f);
         
         steerVoice = audio.play3d(sfxSteer, car.position.x, car.position.y, car.position.z);
         audio.setLooping(steerVoice, true);
         audio.set3dSourceMinMaxDistance(steerVoice, 1.0f, 50.0f);
-        audio.setVolume(steerVoice, sfxVolume);
+        audio.setVolume(steerVoice, 0.0f);
         
         wheelsVoice = audio.play3d(sfxWheels, car.position.x, car.position.y, car.position.z);
         audio.setLooping(wheelsVoice, true);
         audio.set3dSourceMinMaxDistance(wheelsVoice, 1.0f, 50.0f);
-        audio.setVolume(wheelsVoice, sfxVolume);
+        audio.setVolume(wheelsVoice, 0.0f);
         
         squealVoice = audio.play3d(sfxSqueal, car.position.x, car.position.y, car.position.z);
-        audio.setVolume(squealVoice, sfxVolume);
+        audio.setVolume(squealVoice, 0.0f);
         audio.setLooping(squealVoice, true);
         
         audio.update3dAudio();
@@ -654,6 +664,20 @@ class GameScene: Scene
         auto eText = addEntityHUD();
         eText.drawable = text;
         eText.position = Vector3f(16.0f, 30.0f, 0.0f);
+        
+        tachometerArrowPivot = addWidget!UIWidget();
+        
+        tachometerArrow = addWidget!UIWidget(tachometerArrowPivot);
+        tachometerArrow.width = 256;
+        tachometerArrow.height = 256;
+        tachometerArrow.x = -128;
+        tachometerArrow.y = -128;
+        tachometerArrow.background.material.baseColorTexture = aTachometerArrow.texture;
+        
+        tachometer = addWidget!UIWidget();
+        tachometer.width = 256;
+        tachometer.height = 256;
+        tachometer.background.material.baseColorTexture = aTachometer.texture;
         
         overlay = addWidget!UIWidget();
         overlay.backgroundFocusedColor = overlay.backgroundUnfocusedColor =
@@ -898,11 +922,6 @@ class GameScene: Scene
         
         physicsWorld.update(t.delta);
         
-        // Cool effect
-        //float speedFactor = clamp((speedKMH - 120.0f) / 80.0f, 0.0f, 1.0f);
-        //camera.fov = lerp(40.0f, 60.0f, speedFactor);
-        //game.postProcessingRenderer.radialBlurAmount = lerp(0.0f, 0.05f, speedFactor);
-        
         // Feed camera data to 3D listener
         audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);
         audio.set3dListenerAt(camera.directionAbsolute.x, camera.directionAbsolute.y, camera.directionAbsolute.z);
@@ -910,7 +929,18 @@ class GameScene: Scene
         audio.update3dAudio();
         
         updateText(speedKMH);
+        
+        tachometer.x = game.drawableWidth - 48 - 256;
+        tachometer.y = game.drawableHeight + 64 - 256;
+        
+        float tachometerTargetValue = lerp(-5.0f, 185.0f, clamp((car.rpm - 1000.0f) / 5000.0f, 0.0f, 1.0f));
+        tachometerValue += (tachometerTargetValue - tachometerValue) * 10.0f * t.delta;
+        tachometerArrowPivot.x = tachometer.x + 128;
+        tachometerArrowPivot.y = tachometer.y + 128;
+        tachometerArrowPivot.entity.rotation = rotationQuaternion!float(Axis.z, degtorad(tachometerValue));
     }
+    
+    float tachometerValue = 0.0f;
     
     float rpmFactor = 0.0f;
     
