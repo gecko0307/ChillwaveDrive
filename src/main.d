@@ -322,10 +322,10 @@ class GameScene: Scene
 
     override void afterLoad()
     {
-        environment.backgroundColor = Color4f(0.2f, 0.3f, 0.4f, 1.0f);
+        environment.backgroundColor = Color4f(0.1f, 0.05f, 0.1f, 1.0f);
         environment.fogColor = environment.backgroundColor;
-        environment.fogStart = 100.0f;
-        environment.fogEnd = 5000.0f;
+        environment.fogStart = 0.0f;
+        environment.fogEnd = 1000.0f;
         
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
         version(Windows) physicsWorld.loadPlugins(".");
