@@ -228,9 +228,6 @@ class GameScene: Scene
         
         aEnvmap = addTextureAsset("data/envmaps/759-hdri-skies-com.hdr");
         
-        aTachometer = addTextureAsset("data/ui/tachometer.png");
-        aTachometerArrow = addTextureAsset("data/ui/tachometer_arrow.png");
-        
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
         
@@ -271,6 +268,9 @@ class GameScene: Scene
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
         aTexParticleDust = addTextureAsset("data/particles/dust.png");
+        
+        aTachometer = addTextureAsset("data/ui/tachometer.png");
+        aTachometerArrow = addTextureAsset("data/ui/tachometer_arrow.png");
         
         // Sounds
         sfxEngine1 = Wav.create();
