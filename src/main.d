@@ -387,7 +387,7 @@ class GameScene: Scene
         
         // Car
         eCar = addEntity();
-        eCar.position = Vector3f(0.0f, 0.65f, 0.0f);
+        eCar.position = Vector3f(0.0f, 0.8f, 0.0f);
         eCar.turn(90.0f);
         eCar.blurMask = 0.0f;
         

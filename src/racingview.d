@@ -82,8 +82,50 @@ class RacingViewComponent: EntityComponent
         oldMouseX = eventManager.mouseX;
         oldMouseY = eventManager.mouseY;
         
+        target.updateTransformationBottomUp();
+        reset();
+    }
+    
+    void reset()
+    {
         targetDistance = minDistanceToTarget;
         smoothTargetDistance = targetDistance;
+        
+        turnAngle = targetTurnAngle;
+        pitchAngle = clamp(targetPitchAngle, degtorad(10.0f), degtorad(40.0f));
+        
+        Vector3f carDirection = target.direction;
+        carDirection = Vector3f(carDirection.x, 0.0f, carDirection.z).normalized;
+        float targetCarViewTurnAngle = -(atan2(carDirection.z, carDirection.x) - PI * 0.5f);
+        carViewTurnAngle = targetCarViewTurnAngle;
+        
+        Quaternionf carRotation =
+            rotationQuaternion(Vector3f(0, 1, 0), carViewTurnAngle);
+
+        Quaternionf mouseRotation =
+            rotationQuaternion(Vector3f(0, 1, 0), turnAngle) *
+            rotationQuaternion(Vector3f(1, 0, 0), pitchAngle);
+
+        Quaternionf finalRotation = carRotation * mouseRotation;
+        
+        Vector3f offset = finalRotation.rotate(Vector3f(0.0f, 0.0f, 1.0f)).normalized;
+        
+        Vector3f cameraPosition = target.position + offset * -targetDistance;
+        
+        Vector3f viewFrom = cameraPosition;
+        Vector3f viewTo = target.position + Vector3f(0, 1.0f, 0);
+        Vector3f viewDir = (viewTo - viewFrom).normalized;
+        Vector3f viewUp = Vector3f(0, 1, 0);
+        Vector3f viewRight = cross(viewDir, viewUp);
+        
+        Matrix4x4f trans = lookAtMatrix(viewFrom, viewTo, Vector3f(0, 1, 0));
+        
+        entity.transformation = trans.inverse;
+        entity.invTransformation = trans;
+        
+        entity.absoluteTransformation = entity.transformation;
+        entity.invAbsoluteTransformation = entity.invTransformation;
+        entity.prevAbsoluteTransformation = entity.prevTransformation;
     }
     
     void resetMouseInput()

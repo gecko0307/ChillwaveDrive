@@ -68,8 +68,8 @@
 					0.5,
 					1
 				],
-				"metallicFactor":0.9,
-				"roughnessFactor":0.5
+				"metallicFactor":1.0,
+				"roughnessFactor":0.3
 			}
 		},
 		{
