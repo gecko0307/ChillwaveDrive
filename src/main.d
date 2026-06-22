@@ -32,9 +32,13 @@ import std.conv;
 import std.meta;
 import std.math;
 import std.random;
+
 import dagon;
 import dagon.ext.newton;
+import dagon.ext.imgui;
+
 import soloud;
+
 import vehicle;
 import wheel;
 import racingview;
@@ -120,6 +124,123 @@ Vector3f jsonPropVector(JSONValue val, string name, Vector3f defaultValue)
         return defaultValue;
 }
 
+class ImGui: EventListener
+{
+    Application application;
+    GameScene gameScene;
+    
+    ImGuiContext* igContext;
+    ImGuiIO* io;
+    ImFont* font;
+    bool active = false;
+    
+    this(Application application, GameScene gameScene)
+    {
+        super(application.eventManager, application);
+        this.application = application;
+        
+        igContext = igCreateContext(null);
+        igSetCurrentContext(igContext);
+        io = igGetIO();
+        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
+        ImWchar[] ranges = [
+            0x0020, 0x00FF, // Basic Latin + Latin Supplement
+            0x0370, 0x03FF, // Greek
+            0x0400, 0x044F, // Cyrillic
+            0
+        ];
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/DroidSans.ttf", 16, null, 
+            ranges.ptr);
+        igStyleColorsDark(null);
+        ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
+        ImGuiOpenGLBackend.init("#version 400 core");
+        
+        this.gameScene = gameScene;
+    }
+    
+    void onProcessEvent(SDL_Event* event)
+    {
+        if (active)
+            ImGui_ImplSDL2_ProcessEvent(event);
+    }
+    
+    bool capturesMouse() @property
+    {
+        return active && io.WantCaptureMouse;
+    }
+    
+    bool capturesKeyboard() @property
+    {
+        return active && io.WantCaptureKeyboard;
+    }
+    
+    void update(Time t)
+    {
+        if (!active)
+            return;
+        
+        processEvents();
+        
+        ImGuiOpenGLBackend.new_frame();
+        ImGui_ImplSDL2_NewFrame();
+        igNewFrame();
+        
+        drawCarSettings();
+        
+        igRender();
+    }
+    
+    void drawCarSettings()
+    {
+        if (igBegin("Car settings", null, ImGuiWindowFlags.NoCollapse))
+        {
+            if (igCollapsingHeader("Paint"))
+            {
+                auto mat = gameScene.carPaintMaterial;
+                if (mat)
+                {
+                    igColorEdit4("Color", &mat.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
+                    igSliderFloat("Roughness", &mat.roughnessFactor, 0.0f, 1.0f, "%.3f");
+                    igSliderFloat("Metallic", &mat.metallicFactor, 0.0f, 1.0f, "%.3f");
+                }
+            }
+            
+            if (igCollapsingHeader("Suspension"))
+            {
+                igSliderFloat("Max length", &gameScene.suspensionMaxLength, 0.0f, 1.0f, "%.3f");
+                igSliderFloat("Stiffness", &gameScene.suspensionStiffness, 0.0f, 100000.0f, "%.0f");
+                igSliderFloat("Damping", &gameScene.suspensionDamping, 0.0f, 10000.0f, "%.3f");
+                
+                foreach(wheel; gameScene.car.wheels)
+                {
+                    wheel.suspension.maxLength = gameScene.suspensionMaxLength;
+                    wheel.suspension.stiffness = gameScene.suspensionStiffness;
+                    wheel.suspension.damping = gameScene.suspensionDamping;
+                }
+            }
+            
+            if (igCollapsingHeader("Tyre"))
+            {
+                igSliderFloat("Friction", &gameScene.tyreLateralFriction, 0.0f, 3.0f, "%.3f");
+                
+                foreach(wheel; gameScene.car.wheels)
+                {
+                    wheel.lateralDynamicFrictionCoefficient = gameScene.tyreLateralFriction;
+                }
+            }
+            
+            igEnd();
+        }
+    }
+    
+    void render()
+    {
+        if (active)
+            ImGuiOpenGLBackend.render_draw_data(igGetDrawData());
+    }
+}
+
 class GameScene: Scene
 {
     FontAsset aFontDroidSans14;
@@ -130,7 +251,6 @@ class GameScene: Scene
     GLTFAsset aTrack;
     
     Camera camera;
-    //VehicleViewComponent vehicleView;
     RacingViewComponent vehicleView;
     
     NewtonPhysicsWorld physicsWorld;
@@ -144,6 +264,8 @@ class GameScene: Scene
     Entity eCar;
     Array!Entity eWheels;
     Vehicle car;
+    
+    Material carPaintMaterial;
     
     TextureAsset aCarShadow;
     
@@ -208,6 +330,12 @@ class GameScene: Scene
     float sfxVolume = 0.5f;
     
     int lastMouseX, lastMouseY;
+    
+    float suspensionMaxLength = 0.3f;
+    float suspensionStiffness = 100.0f;
+    float suspensionDamping = 10.0f;
+    
+    float tyreLateralFriction;
 
     this(VehicleDemoGame game)
     {
@@ -456,6 +584,8 @@ class GameScene: Scene
                     chassisShape = New!NewtonCompoundShape(hitboxShapes.data, physicsWorld);
                 }
             }
+            
+            carPaintMaterial = aChassis.material("paint");
         }
         
         if (aWindows)
@@ -492,9 +622,9 @@ class GameScene: Scene
                 float facing = jsonPropFloat(wheel, "facing", -1.0f);
                 
                 Vector3f suspensionPosition = Vector3f(-0.75f, 0.2f, +1.35f);
-                float suspensionMaxLength = 0.3f;
-                float suspensionStiffness = 100.0f;
-                float suspensionDamping = 10.0f;
+                suspensionMaxLength = 0.3f;
+                suspensionStiffness = 100.0f;
+                suspensionDamping = 10.0f;
                 
                 if ("suspension" in wheel.asObject)
                 {
@@ -505,7 +635,7 @@ class GameScene: Scene
                     suspensionDamping = jsonPropFloat(suspension, "damping", suspensionDamping);
                 }
                 
-                float tyreLateralFriction = 0.75f;
+                tyreLateralFriction = 0.75f;
                 float tyreLongitudinalFriction = 1.0f;
                 
                 if ("tyre" in wheel.asObject)
@@ -621,12 +751,10 @@ class GameScene: Scene
             lastMouseX = eventManager.mouseX;
             lastMouseY = eventManager.mouseY;
             vehicleView.resetMouseInput();
-            eventManager.showCursor(false);
         }
         else
         {
             vehicleView.active = false;
-            eventManager.showCursor(true);
         }
         
         auto ambientVoice = audio.play(sfxAmbient);
@@ -701,11 +829,17 @@ class GameScene: Scene
             if (vehicleView.active)
             {
                 vehicleView.active = false;
-                eventManager.showCursor(true);
+                game.ui.active = true;
                 eventManager.setMouse(lastMouseX, lastMouseY);
             }
             else
-                game.exit();
+            {
+                lastMouseX = eventManager.mouseX;
+                lastMouseY = eventManager.mouseY;
+                vehicleView.active = true;
+                vehicleView.resetMouseInput();
+                game.ui.active = false;
+            }
         }
         else if (key == KEY_M)
         {
@@ -728,11 +862,6 @@ class GameScene: Scene
     
     override void onMouseButtonDown(int button)
     {
-        lastMouseX = eventManager.mouseX;
-        lastMouseY = eventManager.mouseY;
-        vehicleView.active = true;
-        vehicleView.resetMouseInput();
-        eventManager.showCursor(false);
     }
     
     override void onMouseButtonUp(int button)
@@ -938,6 +1067,8 @@ class GameScene: Scene
         tachometerArrowPivot.x = tachometer.x + 128;
         tachometerArrowPivot.y = tachometer.y + 128;
         tachometerArrowPivot.entity.rotation = rotationQuaternion!float(Axis.z, degtorad(tachometerValue));
+        
+        eventManager.showCursor(!vehicleView.active);
     }
     
     float tachometerValue = 0.0f;
@@ -957,32 +1088,35 @@ class GameScene: Scene
 
 class VehicleDemoGame: Game
 {
+    ImGui ui;
     Soloud audio;
+    
+    GameScene racingScene;
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
         audio = Soloud.create();
         audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
-        currentScene = New!GameScene(this);
+        racingScene = New!GameScene(this);
+        currentScene = racingScene;
         
-        /*
-        int num = SDL_NumJoysticks();
-        for (int i = 0; i < num; i++) {
-            logInfo(i, ": ", SDL_JoystickNameForIndex(i).to!string);
-        }
-        SDL_Joystick* wheel = SDL_JoystickOpen(1);
-        if (wheel is null) {
-            logInfo("Joystick open error: ", SDL_GetError().to!string);
-        }
-        SDL_JoystickEventState(SDL_ENABLE);
-        SDL_JoystickType type = SDL_JoystickGetType(wheel);
-        logInfo("Type: ", type);
-        logInfo("SDL_JOYSTICK_TYPE_WHEEL: ", SDL_JOYSTICK_TYPE_WHEEL);
-        char[33] guidStr;
-        SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(wheel), guidStr.ptr, guidStr.length);
-        logInfo("GUID: ", guidStr);
-        */
+        ui = New!ImGui(this, racingScene);
+        
+        eventManager.onProcessEvent = &ui.onProcessEvent;
+    }
+    
+    override void onUpdate(Time t)
+    {
+        super.onUpdate(t);
+        ui.update(t);
+        //currentScene.focused = !ui.capturesMouse;
+    }
+    
+    override void onRender()
+    {
+        super.onRender();
+        ui.render();
     }
 }
 
@@ -991,13 +1125,15 @@ void main(string[] args)
     //enableMemoryProfiler = true;
     
     import loader = bindbc.loader.sharedlib;
-    NewtonSupport sup = loadNewton();
+    NewtonSupport newtonSupport = loadNewton();
     foreach(info; loader.errors)
     {
         writeln(info.error.to!string, " ", info.message.to!string);
     }
     
     loadSoloud();
+    
+    ImGuiSupport imguiSupport = loadImGui();
     
     VehicleDemoGame game = New!VehicleDemoGame(1280, 720, false, "Chillwave Drive", args);
     game.run();
