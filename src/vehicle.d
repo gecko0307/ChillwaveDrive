@@ -368,20 +368,13 @@ class Vehicle: EntityComponent
                 clutch = 0.0f;
         }
         
+        Vector3f vel = chassisBody.velocity;
         if (!accelerating && !brake)
         {
-            Vector3f vel = chassisBody.velocity;
-            if (speed > 1.0f)
-            {
-                float horizontalMovement = clamp(abs(dot(vel, lateralAxis)), 0.0f, 1.0f);
-                horizontalMovement = pow(horizontalMovement, 2.0f);
-                float drag = lerp(0.997f, 0.999f, horizontalMovement);
-                chassisBody.velocity = vel * drag;
-            }
-            else
-            {
+            if (speed <= 1.0f)
                 chassisBody.velocity = vel * 0.95f;
-            }
+            else if (speed <= 20.0f)
+                chassisBody.velocity = vel * lerp(0.99f, 0.999f, clamp(speed / 20.0f, 0.0f, 1.0f));
         }
         
         chassisBody.update(t.delta);
