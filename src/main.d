@@ -220,6 +220,7 @@ class ImGui: EventListener
                 }
             }
             
+            /*
             if (igCollapsingHeader("Tyre"))
             {
                 igSliderFloat("Friction", &gameScene.tyreLateralFriction, 0.0f, 3.0f, "%.3f");
@@ -229,6 +230,7 @@ class ImGui: EventListener
                     wheel.lateralDynamicFrictionCoefficient = gameScene.tyreLateralFriction;
                 }
             }
+            */
             
             igEnd();
         }
@@ -335,7 +337,7 @@ class GameScene: Scene
     float suspensionStiffness = 100.0f;
     float suspensionDamping = 10.0f;
     
-    float tyreLateralFriction;
+    //float tyreLateralFriction;
 
     this(VehicleDemoGame game)
     {
@@ -635,7 +637,7 @@ class GameScene: Scene
                     suspensionDamping = jsonPropFloat(suspension, "damping", suspensionDamping);
                 }
                 
-                tyreLateralFriction = 0.75f;
+                float tyreLateralFriction = 0.75f;
                 float tyreLongitudinalFriction = 1.0f;
                 
                 if ("tyre" in wheel.asObject)
