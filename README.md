@@ -1,9 +1,15 @@
 # Chillwave Drive
-Driving game demo using [Dagon engine](https://github.com/gecko0307/dagon) with realistic graphics and simcade raycast car physics (on top of the Newton Game Dynamics engine), including the famous Pacejka '94 tyre model. The simulator tries to stay both realistic and easy to control via keyboard or gamepad. Not all features of a real car are simulated yet.
+Work-in-progress vehicle simulator based on [Dagon engine](https://github.com/gecko0307/dagon) with realistic graphics. It tries to stay both realistic and easy to control via keyboard or gamepad.
 
-Updated version implements engine and drivetrain simulation, includes support for rear-wheel drive and features McLaren GT model. Car parameters are loaded from a JSON file, the actual chassis and wheel models are stored in glTF.
+## About the Project
 
-[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)](https://blog.pixperfect.online/wp-content/uploads/2025/12/chillwave_drive_twilight.jpg)
+Chillwave Drive implements its own wheel dynamics and friction model. When driving, dynamic friction (longitudinal and lateral) is applied based on the Pacejka '98 formulas, while when stopped, static friction is applied to prevent the car from sliding sideways on a slope.
+
+AI-controlled cars are supported. Fairly accurate and stable path following algorithm is implemented, based on the Pure Pursuit method, as well as basic recovery mode. Opponents are capable of drifting, and the AI ​​can be configured to simulate different driving styles, from "proper" urban driving to risky and aggressive.
+
+The demo supports both keyboard and controller controls (I recommend an Xbox controller or similar controller with smooth trigger action). Sounds and music are included. The audio engine is SoLoud.
+
+[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-1.jpg)
 
 ## Controls
 
