@@ -132,6 +132,7 @@ class ImGui: EventListener
                 }
             }
             
+            /*
             if (igCollapsingHeader("Suspension"))
             {
                 igSliderFloat("Max length", &gameScene.suspensionMaxLength, 0.0f, 1.0f, "%.3f");
@@ -146,7 +147,6 @@ class ImGui: EventListener
                 }
             }
             
-            /*
             if (igCollapsingHeader("Tyre"))
             {
                 igSliderFloat("Friction", &gameScene.tyreLateralFriction, 0.0f, 3.0f, "%.3f");
