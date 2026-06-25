@@ -31,7 +31,7 @@ import std.math;
 import dlib.math.utils;
 
 /**
- * Pacejka '94 (Magic Formula) tyre friction model
+ * Pacejka '94 (Magic Formula) tyre friction model.
  */
 struct PacejkaModel
 {

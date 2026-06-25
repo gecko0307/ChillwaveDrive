@@ -47,7 +47,7 @@ Vector3f boxInertia(Vector3f halfSize, float mass)
 
 enum GasolineDensity = 0.74f;
 
-/// Simulates a simple vehicle with an arbitrary number of wheels.
+/// Simulates a wheeled vehicle with a combustion engine.
 class Vehicle: EntityComponent
 {
     NewtonPhysicsWorld world;
@@ -130,6 +130,8 @@ class Vehicle: EntityComponent
         sprungMass = totalMass - unsprungMass;
         
         gearRatio = gears[0];
+        
+        this.chassisBody.linearDamping = 0.0f;
     }
     
     ~this()
@@ -369,13 +371,21 @@ class Vehicle: EntityComponent
         }
         
         Vector3f vel = chassisBody.velocity;
-        if (!accelerating && !brake)
+        
+        if (!accelerating)
         {
-            if (speed <= 1.0f)
+            float airResistanceCoeff = 0.004f;
+            float dynamicDamping = airResistanceCoeff * speed;
+            if (dynamicDamping < 0.01f) dynamicDamping = 0.01f;
+            chassisBody.linearDamping = dynamicDamping;
+            
+            if (speed <= 5.0f)
+                chassisBody.velocity = vel * 0.99f;
+            else if (speed <= 1.0f)
                 chassisBody.velocity = vel * 0.95f;
-            else if (speed <= 20.0f)
-                chassisBody.velocity = vel * lerp(0.99f, 0.999f, clamp(speed / 20.0f, 0.0f, 1.0f));
         }
+        else
+            chassisBody.linearDamping = 0.1045f;
         
         chassisBody.update(t.delta);
 
@@ -407,5 +417,12 @@ class Vehicle: EntityComponent
     }
 }
 
-float rpmFromAngularVelocity(float omega) { return omega * 60.0f / (2.0f * PI); }
-float angularVelocityFromRpm(float rpm) { return rpm * 2.0f * PI / 60.0f; }
+float rpmFromAngularVelocity(float omega)
+{
+    return omega * 60.0f / (2.0f * PI);
+}
+
+float angularVelocityFromRpm(float rpm)
+{
+    return rpm * 2.0f * PI / 60.0f;
+}

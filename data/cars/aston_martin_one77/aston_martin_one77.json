@@ -4,7 +4,7 @@
     "inertia": [2.0, 1.0, 4.8],
     "centerOfMass": [0.0, 0.0, 0.0],
     "maxSteeringAngle": 45,
-    "maxTorque": 650.0,
+    "maxTorque": 650,
     "chassis": {
         "model": "data/cars/aston_martin_one77/aston_martin_one77.gltf",
         "hitboxes": [
@@ -28,7 +28,7 @@
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -4,
+            "camberAngle": -2,
             "suspension": {
                 "position": [-0.92, 0.43, 1.5],
                 "maxLength": 0.55,
@@ -36,7 +36,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 1.8,
+                "lateralFriction": 1.7,
                 "longitudinalFriction": 1.0
             }
         },
@@ -46,7 +46,7 @@
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": -4,
+            "camberAngle": -2,
             "suspension": {
                 "position": [0.92, 0.43, 1.5],
                 "maxLength": 0.55,
@@ -54,7 +54,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 1.8,
+                "lateralFriction": 1.7,
                 "longitudinalFriction": 1.0
             }
         },
@@ -64,7 +64,7 @@
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
-            "camberAngle": -1,
+            "camberAngle": 0,
             "suspension": {
                 "position": [-0.92, 0.43, -1.45],
                 "maxLength": 0.55,
@@ -72,7 +72,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 1.4,
+                "lateralFriction": 1.2,
                 "longitudinalFriction": 1.0
             }
         },
@@ -82,7 +82,7 @@
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
-            "camberAngle": -1,
+            "camberAngle": 0,
             "suspension": {
                 "position": [0.92, 0.43, -1.45],
                 "maxLength": 0.55,
@@ -90,7 +90,7 @@
                 "damping": 5000
             },
             "tyre": {
-                "lateralFriction": 1.4,
+                "lateralFriction": 1.2,
                 "longitudinalFriction": 1.0
             }
         }

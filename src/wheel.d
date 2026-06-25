@@ -47,52 +47,6 @@ struct Suspension
     float lengthPrev;
 }
 
-float frictionCurve(float slip, float stiffness)
-{
-    float x = slip * stiffness;
-    x = clamp(x, -1.0f, 1.0f);
-    return tanh(x);
-}
-
-void tireFriction(
-        float* outLongitudinalForce,
-        float* outLateralForce, 
-        float suspensionForce,
-        float longitudinalSlip,
-        float lateralSlip) {
-    
-    float longitudinalGrip = 4.0f;
-    float lateralGrip      = 3.0f;
-    float driftStiffness   = 0.5f;
-    float tractionStiffness = 0.5f;
-    const float MAX_FORCE = 1000000.0f;
-    
-    float longForce = suspensionForce * longitudinalGrip * frictionCurve(longitudinalSlip, tractionStiffness);
-    float latForce  = suspensionForce * lateralGrip * frictionCurve(lateralSlip, driftStiffness);
-
-    longForce = clamp(longForce, -MAX_FORCE, MAX_FORCE);
-    latForce  = clamp(latForce,  -MAX_FORCE, MAX_FORCE);
-
-    if (suspensionForce > 1e-6f)
-    {
-        float maxForce = suspensionForce * 5.0f;
-        float lenSq = longForce * longForce + latForce * latForce;
-        if (lenSq > 1e-12f)
-        {
-            float len = sqrt(lenSq);
-            if (len > 1e-6f && len > maxForce)
-            {
-                float scale = maxForce / len;
-                longForce *= scale;
-                latForce  *= scale;
-            }
-        }
-    }
-    
-    *outLongitudinalForce = longForce;
-    *outLateralForce      = latForce;
-}
-
 /// Simulates a single raycast wheel, includes suspension and tyre models.
 class Wheel: Owner, NewtonRaycaster
 {
@@ -121,6 +75,8 @@ class Wheel: Owner, NewtonRaycaster
     float staticFrictionCoefficient = 0.5f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
+    float brakeSlipRatio = 2.0f;
+    
     Quaternionf steering = Quaternionf.identity;
     bool brake = false;
     
@@ -295,14 +251,12 @@ class Wheel: Owner, NewtonRaycaster
             
             longitudinalSpeed = dot(wheelVelocity, forwardAxis);
             
-            //logInfo(torque);
-            
             if (brake)
             {
                 // Block the wheel
                 angularAcceleration = 0.0f;
                 angularVelocity = 0.0f;
-                slipRatio = 50.0f;
+                slipRatio = brakeSlipRatio;
             }
             else if (abs(torque) > 0.0f)
             {
@@ -323,16 +277,6 @@ class Wheel: Owner, NewtonRaycaster
             }
             
             slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));
-            
-            /*
-            float dynamicLateralFrictionForce = 0.0f;
-            tireFriction(
-                &longitudinalFrictionForce, 
-                &dynamicLateralFrictionForce,
-                normalForce,
-                slipRatio,
-                slipAngle);
-            */
             
             // Friction force
             float idleThreshold = 1.0f;
