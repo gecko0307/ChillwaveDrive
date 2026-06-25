@@ -3,11 +3,9 @@ Work-in-progress vehicle simulator based on [Dagon Engine](https://github.com/ge
 
 ## About the Project
 
-Chillwave Drive implements its own wheel dynamics and friction model. When driving, dynamic friction (longitudinal and lateral) is applied based on the Pacejka '98 formulas, while when stopped, static friction is applied to prevent the car from sliding sideways on a slope.
+Chillwave Drive is written in [D language](https://dlang.org). The game implements its own wheel dynamics and friction model. When driving, dynamic friction (longitudinal and lateral) is applied based on the Pacejka '98 formulas, while when stopped, static friction is applied to prevent the car from sliding sideways on a slope.
 
 AI-controlled cars are supported. Fairly accurate and stable path following algorithm is implemented, based on the Pure Pursuit method, as well as basic recovery mode. Opponents are capable of drifting, and the AI ​​can be configured to simulate different driving styles, from "proper" urban driving to risky and aggressive.
-
-The demo supports both keyboard and controller controls (I recommend an Xbox controller or similar controller with smooth trigger action). Sounds and music are included. The audio engine is SoLoud.
 
 [![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-1.jpg)
 
