@@ -1,5 +1,5 @@
 # Chillwave Drive
-Work-in-progress vehicle simulator based on [Dagon engine](https://github.com/gecko0307/dagon) with realistic graphics. It tries to stay both realistic and easy to control via keyboard or gamepad.
+Work-in-progress vehicle simulator based on [Dagon Engine](https://github.com/gecko0307/dagon) and [Newton Game Dynamics](https://github.com/madeapps/newton-dynamics). It tries to stay both realistic and easy to control via keyboard or gamepad.
 
 ## About the Project
 
