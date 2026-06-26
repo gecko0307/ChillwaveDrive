@@ -257,6 +257,9 @@ class GameScene: Scene
     float suspensionStiffness = 100.0f;
     float suspensionDamping = 10.0f;
     
+    Entity eText;
+    Entity eText2;
+    
     Vector3f[] waypoints = 
     [
         Vector3f(0.0, 0.0, -0.0),
@@ -355,6 +358,8 @@ class GameScene: Scene
     
     Autopilot autopilot;
     Autopilot autopilot2;
+    
+    bool raceStarted = false;
 
     this(VehicleDemoGame game)
     {
@@ -665,9 +670,16 @@ class GameScene: Scene
         
         text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
         text.color = Color4f(1.0f, 1.0f, 1.0f, 0.5f);
-        auto eText = addEntityHUD();
+        eText = addEntityHUD();
         eText.drawable = text;
         eText.position = Vector3f(16.0f, 30.0f, 0.0f);
+        eText.visible = false;
+        
+        auto text2 = New!TextLine(aFontDroidSans14.font, "Press Enter to start the race", assetManager);
+        text2.color = Color4f(1.0f, 1.0f, 1.0f, 0.5f);
+        eText2 = addEntityHUD();
+        eText2.drawable = text2;
+        eText2.position = Vector3f(16.0f, 30.0f, 0.0f);
         
         tachometerArrowPivot = addWidget!UIWidget();
         
@@ -730,7 +742,17 @@ class GameScene: Scene
         }
         else if (key == KEY_RETURN)
         {
-            
+            if (!raceStarted)
+            {
+                raceStarted = true;
+                eText2.visible = false;
+                autopilot.start();
+                autopilot2.start();
+            }
+        }
+        else if (key == KEY_F5)
+        {
+            eText.visible = !eText.visible;
         }
     }
     

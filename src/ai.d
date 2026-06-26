@@ -50,6 +50,7 @@ class Autopilot: Owner
     float steeringForce = 10.0f;
     float maxLateralAcceleration = 5.0f;
     
+    bool isIdle = true;
     bool isRecovering = false;
     double stuckTimer = 0.0;
     double recoveryTimer = 0.0;
@@ -63,8 +64,24 @@ class Autopilot: Owner
         this.car = controlledCar;
     }
     
+    void start()
+    {
+        isIdle = false;
+    }
+    
+    void stop()
+    {
+        isIdle = true;
+    }
+    
     void update(Time t)
     {
+        if (isIdle)
+        {
+            car.idle();
+            return;
+        }
+        
         Vector3f carPosition = car.position;
         Vector3f carDirection = car.longitudinalAxis;
         float carSpeed = car.speed;
