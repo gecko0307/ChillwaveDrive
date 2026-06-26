@@ -1,5 +1,5 @@
 # Chillwave Drive
-Work-in-progress vehicle simulator based on [Dagon Engine](https://github.com/gecko0307/dagon) and [Newton Game Dynamics](https://github.com/madeapps/newton-dynamics). It tries to stay both realistic and easy to control via keyboard or gamepad.
+Work-in-progress simcade racing game based on [Dagon Engine](https://github.com/gecko0307/dagon) and [Newton Game Dynamics](https://github.com/madeapps/newton-dynamics). It tries to stay both realistic and easy to control via keyboard or gamepad.
 
 ## About the Project
 
@@ -27,5 +27,4 @@ Xbox controller is recommended.
 ## Credits
 
 - [McLaren GT by carmodifier](https://sketchfab.com/3d-models/2020-mclaren-gt-9e436ba9d4924b719552f1889a5a6d87), available under CC BY-NC
-- [Golden Gate Hills HDRI by Dimitrios Savva and Jarod Guest](https://polyhaven.com/a/golden_gate_hills), available under CC0
 - Music: ["Stellar Escape" by Prigida](https://uppbeat.io/track/prigida/stellar-escape) (from Uppbeat).
