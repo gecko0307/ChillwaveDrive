@@ -138,10 +138,10 @@ class Autopilot: Owner
         else
             currentSegmentIndex = 0; // Looping the index when crossing the finish line
 
-        return findLookaheadPointRing(carPosition, lookaheadDistance, currentSegmentIndex);
+        return findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
     }
     
-    Vector3f findLookaheadPointRing(Vector3f carPosition, float lookaheadDist, size_t currentSegmentIndex)
+    Vector3f findLookaheadPoint(Vector3f carPosition, float lookaheadDist, size_t currentSegmentIndex)
     {
         if (waypoints.length < 2)
             return carPosition;

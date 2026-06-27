@@ -575,6 +575,7 @@ class GameScene: Scene
         autopilot.maxSpeed = 30.0f;
         autopilot.maxLateralAcceleration = 12.0f;
         autopilot.maxSegmentsToSearch = 7;
+        autopilot.steeringForce = 15.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
         autopilot2 = New!Autopilot(car3.vehicle, this);
@@ -582,6 +583,7 @@ class GameScene: Scene
         autopilot2.maxSpeed = 31.0f;
         autopilot2.maxLateralAcceleration = 12.0f;
         autopilot2.maxSegmentsToSearch = 7;
+        autopilot2.steeringForce = 10.0f;
         
         /*
         auto eParticles = addEntity();
