@@ -205,7 +205,6 @@ class Car: Owner
     Material carPaintMaterial;
     
     bool headlightsOn = true;
-    bool brakelightsOn = false;
     float headlightsEnergy = 10.0f;
     float brakelightsEnergy = 5.0f;
     Material headlightsMaterial;
@@ -231,7 +230,7 @@ class Car: Owner
         
         brakelightsMaterial = scene.addMaterial();
         brakelightsMaterial.emissionFactor = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
-        if (brakelightsOn)
+        if (headlightsOn)
             brakelightsMaterial.emissionEnergy = brakelightsEnergy;
         else
             brakelightsMaterial.emissionEnergy = 0.0f;
@@ -251,11 +250,12 @@ class Car: Owner
             eCarShadow.material = scene.addMaterial();
             asset.shadowTexture.enableRepeat = false;
             eCarShadow.material.baseColorTexture = asset.shadowTexture;
+            eCarShadow.material.roughnessFactor = 1.0f;
             eCarShadow.material.blendMode = Transparent;
             eCarShadow.material.depthWrite = false;
             eCarShadow.material.useCulling = false;
             eCarShadow.material.outputColor = true;
-            eCarShadow.material.outputPBR = false;
+            eCarShadow.material.outputPBR = true;
             eCarShadow.material.outputNormal = false;
             eCarShadow.material.outputEmission = false;
             eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f);
@@ -457,11 +457,6 @@ class Car: Owner
         }
     }
     
-    void togglebrakelights()
-    {
-        brakelightsOn = !brakelightsOn;
-    }
-    
     void update(Time t)
     {
         // Rotate wheels
@@ -478,14 +473,14 @@ class Car: Owner
             if (vehicle.brake)
                 brakeHysteresis = true;
             
-            if (vehicle.brake || brakeHysteresis || brakelightsOn)
+            if (vehicle.brake || brakeHysteresis || headlightsOn)
                 brakelightsMaterial.emissionEnergy = brakelightsEnergy;
             else
                 brakelightsMaterial.emissionEnergy = 0.0f;
             
             if (brakeHysteresis)
             {
-                if (brakeHysteresisTimer < 1.0f)
+                if (brakeHysteresisTimer < 0.5f)
                     brakeHysteresisTimer += t.delta;
                 else
                 {

@@ -44,6 +44,7 @@ import wheel;
 import car;
 import racingview;
 import ai;
+import weather;
 
 float normalizeInRange(float x, float xmin, float xmax)
 {
@@ -121,7 +122,7 @@ class ImGui: EventListener
     {
         if (igBegin("Car settings", null, ImGuiWindowFlags.NoCollapse))
         {
-            if (igCollapsingHeader("Paint"))
+            if (igCollapsingHeader("Paint", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 auto mat = gameScene.car.carPaintMaterial;
                 if (mat)
@@ -182,6 +183,8 @@ class GameScene: Scene
     RacingViewComponent vehicleView;
     
     NewtonPhysicsWorld physicsWorld;
+    
+    TextureAsset aRain;
     
     CarAsset mclaren;
     
@@ -362,6 +365,14 @@ class GameScene: Scene
     Autopilot autopilot2;
     
     bool raceStarted = false;
+    
+    Entity eSky;
+    
+    Rain rain;
+    Entity eRain;
+    float skyCleanupTimer = 0.0f;
+    int skyCleanupMode = 0;
+    float nextCleanupDuration = 10.0f;
 
     this(VehicleDemoGame game)
     {
@@ -416,6 +427,8 @@ class GameScene: Scene
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
         aEnvmap = addTextureAsset("data/envmaps/shudu_lake_4k.hdr");
+        
+        aRain = addTextureAsset("data/particles/rain.png");
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
@@ -499,12 +512,12 @@ class GameScene: Scene
         
         sun = addLight(LightType.Sun);
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
-        sun.color = Color4f(1.0f, 0.5f, 0.1f, 1.0f);
+        sun.color = Color4f(1.0f, 0.9f, 0.8f, 1.0f);
         sun.shadowEnabled = true;
         sun.energy = 0.0f;
-        sun.turn(0.0f); //0.0f
-        sun.pitch(-7.0f); //-30.0f
-        sun.scatteringEnabled = false;
+        sun.turn(-35.0f); //0.0f
+        sun.pitch(-15.0f); //-30.0f
+        sun.scatteringEnabled = true;
         sun.scattering = 0.3f;
         sun.mediumDensity = 0.3f;
         sun.scatteringUseShadow = false;
@@ -516,9 +529,9 @@ class GameScene: Scene
         
         environment.ambientMap = prefilteredCubemap;
         environment.ambientBRDF = game.deferredRenderer.brdf;
-        environment.ambientEnergy = 0.1f;
+        environment.ambientEnergy = 0.05f;
         
-        auto eSky = addEntity();
+        eSky = addEntity();
         auto psync = New!PositionSync(eventManager, eSky, camera);
         eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
@@ -636,6 +649,22 @@ class GameScene: Scene
         emitterLeft.emitting = false;
         eParticlesLeft.castShadow = false;
         eParticlesLeft.visible = true;
+        
+        rain = New!Rain(assetManager);
+        rain.size = Vector3f(4.0f, 4.0f, 4.0f);
+        rain.velocity = Vector3f(0.0f, -30.0f, 0.0f);
+        eRain = addEntity();
+        eRain.drawable = rain;
+        eRain.material = addMaterial();
+        eRain.material.baseColorTexture = aRain.texture;
+        eRain.material.blendMode = Transparent;
+        eRain.material.opacity = 0.05f;
+        eRain.material.shadeless = true;
+        eRain.material.emissionEnergy = 1.0f;
+        eRain.material.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        eRain.material.useCulling = false;
+        eRain.material.depthWrite = false;
+        eRain.gbufferMask = 0.0f;
         
         vehicleView = New!RacingViewComponent(eventManager, camera, car.eCar);
         if (game.isWindowFocused)
@@ -959,6 +988,59 @@ class GameScene: Scene
         else emitterRight.emitting = false;
         
         physicsWorld.update(t.delta);
+        
+        Vector3f camPos = camera.positionAbsolute;
+        rain.spawnPosition = Vector3f(
+            camPos.x,
+            camPos.y + 2.0f,
+            camPos.z
+        );
+        rain.update(t);
+        
+        if (skyCleanupMode == 0)
+        {
+            if (sun.energy < 0.5f)
+                sun.energy += t.delta * 0.2f;
+            else
+                sun.energy = 0.5f;
+            
+            if (environment.ambientEnergy < 0.1f)
+                environment.ambientEnergy += t.delta * 0.05f;
+            else
+                environment.ambientEnergy = 0.1f;
+            
+            if (skyCleanupTimer < nextCleanupDuration)
+                skyCleanupTimer += t.delta;
+            else
+            {
+                skyCleanupMode = 1;
+                skyCleanupTimer = 0.0f;
+                nextCleanupDuration = uniform(10.0f, 40.0f);
+            }
+        }
+        else if (skyCleanupMode == 1)
+        {
+            if (sun.energy > 0.0f)
+                sun.energy -= t.delta * 0.2f;
+            else
+                sun.energy = 0.0f;
+            
+            if (environment.ambientEnergy > 0.05f)
+                environment.ambientEnergy -= t.delta * 0.05f;
+            else
+                environment.ambientEnergy = 0.05f;
+            
+            if (skyCleanupTimer < nextCleanupDuration)
+                skyCleanupTimer += t.delta;
+            else
+            {
+                skyCleanupMode = 0;
+                skyCleanupTimer = 0.0f;
+                nextCleanupDuration = uniform(10.0f, 40.0f);
+            }
+        }
+        
+        eSky.material.emissionEnergy = environment.ambientEnergy;
         
         // Feed camera data to 3D listener
         audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);
