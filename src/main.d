@@ -772,6 +772,7 @@ class GameScene: Scene
         else if (key == KEY_F5)
         {
             eText.visible = !eText.visible;
+            eText2.visible = false;
         }
     }
     
@@ -900,7 +901,7 @@ class GameScene: Scene
         audio.set3dSourcePosition(engine1Voice, car.position.x, car.position.y, car.position.z);
         float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
         rpmFactor += (newRpmFactor - rpmFactor) * 0.9f;
-        float engineSoundSpeed = lerp(1.0f, 1.8f, rpmFactor);
+        float engineSoundSpeed = lerp(0.7f, 1.8f, rpmFactor);
         audio.setRelativePlaySpeed(engine1Voice, engineSoundSpeed);
         
         audio.set3dSourcePosition(engine2Voice, car.position.x, car.position.y, car.position.z);
