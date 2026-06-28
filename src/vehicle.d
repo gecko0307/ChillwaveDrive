@@ -72,6 +72,7 @@ class Vehicle: EntityComponent
     float rpm = 0.0f;
     float engineInertia = 15.0f;
     float throttle = 0.0f; // 0.0f..1.0f
+    float popping = 0.0f;
     
     // Clutch
     float clutchCurve = 3.0f;
@@ -80,7 +81,7 @@ class Vehicle: EntityComponent
     // Drivetrain
     float[] gears = [3.23f, 2.19f, 1.71f, 1.39f, 1.16f, 0.93f];
     float reverseGear = -3.0f;
-    float[] upshiftRPM = [6000, 6000, 6000, 6000, 6000, 6000];
+    float[] upshiftRPM = [5500, 5500, 5500, 5500, 5500, 5500];
     float[] downshiftRPM = [0, 3000, 3000, 3000, 3000, 3000];
     uint gear = 0;
     float gearRatio = 0.0f;
@@ -343,6 +344,8 @@ class Vehicle: EntityComponent
                 gear++;
                 gearRatio = gears[gear];
                 clutch = 0.5f;
+                if (rpm >= 3000)
+                    popping = 1.5f;
             }
             
             clutch += t.delta;
@@ -360,6 +363,8 @@ class Vehicle: EntityComponent
                 gear--;
                 gearRatio = gears[gear];
                 clutch = 0.5f;
+                if (rpm >= 2000)
+                    popping = 1.0f;
             }
         }
         
@@ -414,6 +419,9 @@ class Vehicle: EntityComponent
         }
         
         movementDirection = (dot(velocity.normalized, longitudinalAxis) < 0.0f)? -1.0f : 1.0f;
+        
+        if (popping > 0.0f)
+            popping -= t.delta;
     }
 }
 

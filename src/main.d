@@ -235,6 +235,7 @@ class GameScene: Scene
     Wav sfxSteer;
     Wav sfxWheels;
     Wav sfxSqueal;
+    Wav sfxPopping;
     Wav[2] sfxSuspension;
     Wav[2] sfxHit;
     Wav sfxCamera;
@@ -245,6 +246,7 @@ class GameScene: Scene
     int steerVoice;
     int wheelsVoice;
     int squealVoice;
+    int poppingVoice;
     int hitVoice;
     int suspVoice;
     
@@ -458,6 +460,10 @@ class GameScene: Scene
         sfxSuspension[1].load("data/sounds/suspension2.wav");
         sfxSuspension[1].set3dDistanceDelay(true);
         
+        sfxPopping = Wav.create();
+        sfxPopping.load("data/sounds/muffler_pop.mp3");
+        sfxPopping.set3dDistanceDelay(true);
+        
         sfxHit[0] = Wav.create();
         sfxHit[0].load("data/sounds/hit1.wav");
         sfxHit[0].set3dDistanceDelay(true);
@@ -488,7 +494,7 @@ class GameScene: Scene
         version(Windows) physicsWorld.loadPlugins(".");
         
         camera = addCamera();
-        camera.fov = 50.0f;
+        camera.fov = 42.0f;
         game.renderer.activeCamera = camera;
         
         sun = addLight(LightType.Sun);
@@ -673,6 +679,11 @@ class GameScene: Scene
         squealVoice = audio.play3d(sfxSqueal, car.position.x, car.position.y, car.position.z);
         audio.setVolume(squealVoice, 0.0f);
         audio.setLooping(squealVoice, true);
+        
+        poppingVoice = audio.play3d(sfxPopping, car.position.x, car.position.y, car.position.z);
+        audio.setVolume(poppingVoice, 0.0f);
+        audio.setLooping(poppingVoice, true);
+        audio.set3dSourceMinMaxDistance(poppingVoice, 1.0f, 50.0f);
         
         audio.update3dAudio();
         
@@ -895,8 +906,11 @@ class GameScene: Scene
         audio.set3dSourcePosition(engine2Voice, car.position.x, car.position.y, car.position.z);
         float engine2SoundSpeed = lerp(0.5f, 1.0f, rpmFactor);
         audio.setRelativePlaySpeed(engine2Voice, engineSoundSpeed);
-        float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor * rpmFactor);
+        float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor);
         audio.setVolume(engine2Voice, sfxVolume * engine2Volume);
+        
+        // Popping
+        audio.setVolume(poppingVoice, sfxVolume * car.vehicle.popping * 3.0f);
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
