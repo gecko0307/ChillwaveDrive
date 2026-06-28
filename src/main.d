@@ -477,7 +477,7 @@ class GameScene: Scene
         sfxCamera.set3dDistanceDelay(true);
         
         sfxAmbient = WavStream.create();
-        sfxAmbient.load("data/sounds/ambient.mp3");
+        sfxAmbient.load("data/sounds/rain.mp3");
         
         music = WavStream.create();
         music.load("data/music/stellar_escape.mp3");
@@ -650,11 +650,9 @@ class GameScene: Scene
             vehicleView.active = false;
         }
         
-        /*
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
-        audio.setVolume(ambientVoice, sfxVolume);
-        */
+        audio.setVolume(ambientVoice, 2.0f * sfxVolume);
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
@@ -901,7 +899,7 @@ class GameScene: Scene
         audio.set3dSourcePosition(engine1Voice, car.position.x, car.position.y, car.position.z);
         float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
         rpmFactor += (newRpmFactor - rpmFactor) * 0.9f;
-        float engineSoundSpeed = lerp(0.7f, 1.8f, rpmFactor);
+        float engineSoundSpeed = lerp(0.9f, 2.0f, rpmFactor); //1.8f;
         audio.setRelativePlaySpeed(engine1Voice, engineSoundSpeed);
         
         audio.set3dSourcePosition(engine2Voice, car.position.x, car.position.y, car.position.z);

@@ -205,9 +205,15 @@ class Car: Owner
     Material carPaintMaterial;
     
     bool headlightsOn = true;
+    bool brakelightsOn = false;
     float headlightsEnergy = 10.0f;
+    float brakelightsEnergy = 5.0f;
     Material headlightsMaterial;
+    Material brakelightsMaterial;
     Light light1, light2, light1_vol, light2_vol;
+    
+    float brakeHysteresisTimer = 0.0f;
+    bool brakeHysteresis = false;
     
     this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, Owner owner)
     {
@@ -216,9 +222,23 @@ class Car: Owner
         carPaintMaterial = scene.addMaterial();
         carPaintMaterial.roughnessFactor = 0.01f;
         
+        headlightsMaterial = scene.addMaterial();
+        headlightsMaterial.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        if (headlightsOn)
+            headlightsMaterial.emissionEnergy = headlightsEnergy;
+        else
+            headlightsMaterial.emissionEnergy = 0.0f;
+        
+        brakelightsMaterial = scene.addMaterial();
+        brakelightsMaterial.emissionFactor = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
+        if (brakelightsOn)
+            brakelightsMaterial.emissionEnergy = brakelightsEnergy;
+        else
+            brakelightsMaterial.emissionEnergy = 0.0f;
+        
         eCar = scene.addEntity();
-        eCar.position = position; //Vector3f(0.0f, 0.8f, 0.0f);
-        eCar.turn(turnAngle); //90.0f
+        eCar.position = position;
+        eCar.turn(turnAngle);
         eCar.blurMask = 0.0f;
         
         if (asset.shadowTexture)
@@ -260,14 +280,32 @@ class Car: Owner
                     string headlightsMaterialName = jsonPropString(materials, "headlights", "");
                     if (headlightsMaterialName.length)
                     {
-                        headlightsMaterial = asset.aChassis.material(headlightsMaterialName);
-                        headlightsMaterial.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-                        if (headlightsOn)
-                            headlightsMaterial.emissionEnergy = headlightsEnergy;
-                        else
-                            headlightsMaterial.emissionEnergy = 0.0f;
+                        auto m = asset.aChassis.material(headlightsMaterialName);
+                        foreach(ref primitive; chassisGeometry.instancedPrimitives.data)
+                        {
+                            if (primitive.geometry.material is m)
+                                primitive.material = headlightsMaterial;
+                        }
                     }
                 }
+                else
+                    logWarning("\"headlights\" material not specified");
+                
+                if ("brakelights" in materials.asObject)
+                {
+                    string brakelightsMaterialName = jsonPropString(materials, "brakelights", "");
+                    if (brakelightsMaterialName.length)
+                    {
+                        auto m = asset.aChassis.material(brakelightsMaterialName);
+                        foreach(ref primitive; chassisGeometry.instancedPrimitives.data)
+                        {
+                            if (primitive.geometry.material is m)
+                                primitive.material = brakelightsMaterial;
+                        }
+                    }
+                }
+                else
+                    logWarning("\"brakelights\" material not specified");
             }
             
             if ("hitboxes" in chassis)
@@ -286,6 +324,8 @@ class Car: Owner
                     chassisShape = New!NewtonCompoundShape(hitboxShapes.data, physicsWorld);
                 }
             }
+            else
+                logWarning("\"hitboxes\" not specified");
             
             auto paintMaterial = asset.aChassis.material("paint");
             if (paintMaterial)
@@ -417,6 +457,11 @@ class Car: Owner
         }
     }
     
+    void togglebrakelights()
+    {
+        brakelightsOn = !brakelightsOn;
+    }
+    
     void update(Time t)
     {
         // Rotate wheels
@@ -427,6 +472,28 @@ class Car: Owner
         }
         
         vehicle.update(t);
+        
+        if (brakelightsMaterial)
+        {
+            if (vehicle.brake)
+                brakeHysteresis = true;
+            
+            if (vehicle.brake || brakeHysteresis || brakelightsOn)
+                brakelightsMaterial.emissionEnergy = brakelightsEnergy;
+            else
+                brakelightsMaterial.emissionEnergy = 0.0f;
+            
+            if (brakeHysteresis)
+            {
+                if (brakeHysteresisTimer < 1.0f)
+                    brakeHysteresisTimer += t.delta;
+                else
+                {
+                    brakeHysteresisTimer = 0.0f;
+                    brakeHysteresis = false;
+                }
+            }
+        }
     }
     
     Vector3f position()

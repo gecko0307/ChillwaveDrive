@@ -18,7 +18,8 @@
             }
         ],
         "materials": {
-            "headlights": "Lights_Front"
+            "headlights": "Lights_Front",
+            "brakelights": "Lights_Back"
         }
     },
     "windows": {

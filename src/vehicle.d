@@ -229,6 +229,9 @@ class Vehicle: EntityComponent
     {
         accelerating = false;
         brake = false;
+        
+        if (popping == 0.0f && rpm >= 4000)
+            popping = 1.5f;
     }
     
     void steer(float input)
@@ -344,8 +347,6 @@ class Vehicle: EntityComponent
                 gear++;
                 gearRatio = gears[gear];
                 clutch = 0.5f;
-                if (rpm >= 3000)
-                    popping = 1.5f;
             }
             
             clutch += t.delta;
@@ -363,8 +364,6 @@ class Vehicle: EntityComponent
                 gear--;
                 gearRatio = gears[gear];
                 clutch = 0.5f;
-                if (rpm >= 2000)
-                    popping = 1.0f;
             }
         }
         
@@ -422,6 +421,8 @@ class Vehicle: EntityComponent
         
         if (popping > 0.0f)
             popping -= t.delta;
+        else
+            popping = 0.0f;
     }
 }
 

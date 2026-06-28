@@ -349,7 +349,7 @@ class Autopilot: Owner
     {
         // TODO: make configurable
         const float STUCK_SPEED_THRESHOLD = 0.5f; // Speed ​​below which we consider the car to be stationary (m/s)
-        const float STUCK_TIME_TRIGGER = 1.5f;    // How many seconds do we wait before reversing
+        const float STUCK_TIME_TRIGGER = 0.5f;    // How many seconds do we wait before reversing
         const float RECOVERY_DURATION = 2.0f;     // How many seconds to reverse
 
         // Step 1: detect the stuck
