@@ -413,7 +413,7 @@ class GameScene: Scene
     {
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
-        aEnvmap = addTextureAsset("data/envmaps/759-hdri-skies-com.hdr");
+        aEnvmap = addTextureAsset("data/envmaps/shudu_lake_4k.hdr");
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
@@ -495,10 +495,10 @@ class GameScene: Scene
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
         sun.color = Color4f(1.0f, 0.5f, 0.1f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 0.1f;
+        sun.energy = 0.0f;
         sun.turn(0.0f); //0.0f
         sun.pitch(-7.0f); //-30.0f
-        sun.scatteringEnabled = true;
+        sun.scatteringEnabled = false;
         sun.scattering = 0.3f;
         sun.mediumDensity = 0.3f;
         sun.scatteringUseShadow = false;
@@ -567,9 +567,11 @@ class GameScene: Scene
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);
+        car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
         
         // Opponent cars
         car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
+        car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
         autopilot = New!Autopilot(car2.vehicle, this);
         autopilot.waypoints = waypoints;
         autopilot.maxSpeed = 30.0f;
@@ -578,6 +580,7 @@ class GameScene: Scene
         autopilot.steeringForce = 15.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
+        car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
         autopilot2 = New!Autopilot(car3.vehicle, this);
         autopilot2.waypoints = waypoints;
         autopilot2.maxSpeed = 31.0f;
@@ -585,7 +588,6 @@ class GameScene: Scene
         autopilot2.maxSegmentsToSearch = 7;
         autopilot2.steeringForce = 10.0f;
         
-        /*
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
         
@@ -593,12 +595,13 @@ class GameScene: Scene
         auto mParticlesDust = addMaterial();
         mParticlesDust.baseColorTexture = aTexParticleDust.texture;
         mParticlesDust.blendMode = Transparent;
+        mParticlesDust.shadeless = true;
         mParticlesDust.depthWrite = false;
         mParticlesDust.sun = sun;
         mParticlesDust.opacity = 0.2f;
         mParticlesDust.useShadows = true;
 
-        auto eParticlesRight = addEntity(eCar);
+        auto eParticlesRight = addEntity(car.eCar);
         emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
         eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.8f);
         emitterRight.minLifetime = 1.0f;
@@ -609,10 +612,11 @@ class GameScene: Scene
         emitterRight.maxInitialSpeed = 0.2f;
         emitterRight.scaleStep = Vector2f(2, 2);
         emitterRight.material = mParticlesDust;
+        emitterRight.emitting = false;
         eParticlesRight.castShadow = false;
         eParticlesRight.visible = true;
 
-        auto eParticlesLeft = addEntity(eCar);
+        auto eParticlesLeft = addEntity(car.eCar);
         emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
         eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.8f);
         emitterLeft.minLifetime = 1.0f;
@@ -623,9 +627,9 @@ class GameScene: Scene
         emitterLeft.maxInitialSpeed = 0.2f;
         emitterLeft.scaleStep = Vector2f(2, 2);
         emitterLeft.material = mParticlesDust;
+        emitterLeft.emitting = false;
         eParticlesLeft.castShadow = false;
         eParticlesLeft.visible = true;
-        */
         
         vehicleView = New!RacingViewComponent(eventManager, camera, car.eCar);
         if (game.isWindowFocused)
@@ -640,9 +644,11 @@ class GameScene: Scene
             vehicleView.active = false;
         }
         
+        /*
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
         audio.setVolume(ambientVoice, sfxVolume);
+        */
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
@@ -932,14 +938,12 @@ class GameScene: Scene
             }
         }
         
-        // Dust particles (TODO)
-        /*
+        // Dust particles
         bool makingDust = lateralSlip > 0.0f || car.brake;
         if (makingDust && car.vehicle.wheels[2].onGround) emitterLeft.emitting = true;
         else emitterLeft.emitting = false;
         if (makingDust && car.vehicle.wheels[3].onGround) emitterRight.emitting = true;
         else emitterRight.emitting = false;
-        */
         
         physicsWorld.update(t.delta);
         

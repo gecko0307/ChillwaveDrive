@@ -122,6 +122,62 @@ struct CarAsset
     }
 }
 
+struct GLTFInstancedPrimitive
+{
+    GLTFMeshPrimitive geometry;
+    Material material;
+}
+
+class GLTFGeometryInstance: Owner, Drawable
+{
+    Array!GLTFInstancedPrimitive instancedPrimitives;
+    
+    this(GLTFAsset asset, Owner owner)
+    {
+        super(owner);
+        
+        foreach(mesh; asset.meshes.data)
+        {
+            foreach(primitive; mesh.primitives)
+            {
+                auto prInstance = GLTFInstancedPrimitive(primitive, null);
+                instancedPrimitives.append(prInstance);
+            }
+        }
+    }
+    
+    ~this()
+    {
+        instancedPrimitives.free();
+    }
+    
+    void render(GraphicsState* state)
+    {
+        GraphicsState newState = *state;
+        foreach(primitive; instancedPrimitives)
+        {
+            auto geom = primitive.geometry;
+            
+            if (primitive.material)
+                primitive.material.bind(&newState);
+            else if (geom.material)
+                geom.material.bind(&newState);
+
+            newState.shader.bindParameters(&newState);
+
+            geom.render(&newState);
+
+            newState.shader.unbindParameters(&newState);
+
+            if (primitive.material)
+                primitive.material.unbind(&newState);
+            else if (geom.material)
+                geom.material.unbind(&newState);
+
+        }
+    }
+}
+
 class Car: Owner
 {
     /// Underlying vehicle physics model.
@@ -143,6 +199,9 @@ class Car: Owner
     Array!Entity eWheels;
     
     ///
+    GLTFGeometryInstance chassisGeometry;
+    
+    ///
     Material carPaintMaterial;
     
     bool headlightsOn = true;
@@ -154,8 +213,8 @@ class Car: Owner
     {
         super(owner);
         
-        //carPaintMaterial = scene.addMaterial();
-        //carPaintMaterial.roughnessFactor = 0.01f;
+        carPaintMaterial = scene.addMaterial();
+        carPaintMaterial.roughnessFactor = 0.01f;
         
         eCar = scene.addEntity();
         eCar.position = position; //Vector3f(0.0f, 0.8f, 0.0f);
@@ -175,7 +234,10 @@ class Car: Owner
             eCarShadow.material.blendMode = Transparent;
             eCarShadow.material.depthWrite = false;
             eCarShadow.material.useCulling = false;
-            eCarShadow.material.roughnessFactor = 1.0f;
+            eCarShadow.material.outputColor = true;
+            eCarShadow.material.outputPBR = false;
+            eCarShadow.material.outputNormal = false;
+            eCarShadow.material.outputEmission = false;
             eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f);
             eCarShadow.dynamic = true;
         }
@@ -186,12 +248,8 @@ class Car: Owner
         {
             auto chassis = root.asObject["chassis"].asObject;
             
-            auto dg = New!DrawableGroup(scene.assetManager);
-            foreach(mesh; asset.aChassis.meshes.data)
-            {
-                dg.add(mesh);
-            }
-            eCar.drawable = dg;
+            chassisGeometry = New!GLTFGeometryInstance(asset.aChassis, this);
+            eCar.drawable = chassisGeometry;
             
             if ("materials" in chassis)
             {
@@ -229,22 +287,15 @@ class Car: Owner
                 }
             }
             
-            carPaintMaterial = asset.aChassis.material("paint");
-            
-            /*
             auto paintMaterial = asset.aChassis.material("paint");
             if (paintMaterial)
             {
-                foreach(mesh; asset.aChassis.meshes.data)
+                foreach(ref primitive; chassisGeometry.instancedPrimitives.data)
                 {
-                    foreach(meshPrimitive; mesh.primitives)
-                    {
-                        if (meshPrimitive.material is paintMaterial)
-                            meshPrimitive.material = carPaintMaterial;
-                    }
+                    if (primitive.geometry.material is paintMaterial)
+                        primitive.material = carPaintMaterial;
                 }
             }
-            */
         }
         
         if (asset.aWindows)
@@ -343,74 +394,8 @@ class Car: Owner
         light2.position = Vector3f(0.6f, 0.0f, 2.5f);
         light2.turn(180);
         
-        /*
-        light1_vol = scene.addLight(LightType.AreaSphere, eCar);
-        light1_vol.volumeRadius = 10.0f;
-        light1_vol.energy = 0.2f;
-        light1_vol.volumeRadius = 0.7f;
-        light1_vol.scatteringEnabled = true;
-        light1_vol.mediumDensity = 0.5f;
-        light1_vol.position = Vector3f(-0.65f, 0.2f, 2.0f);
-        
-        light2_vol = scene.addLight(LightType.AreaSphere, eCar);
-        light2_vol.volumeRadius = 10.0f;
-        light2_vol.energy = 0.2f;
-        light2_vol.volumeRadius = 0.7f;
-        light2_vol.scatteringEnabled = true;
-        light2_vol.mediumDensity = 0.5f;
-        light2_vol.position = Vector3f(0.65f, 0.2f, 2.0f);
-        */
-        
         light1.shining = headlightsOn;
         light2.shining = headlightsOn;
-        
-        /*
-        light1_vol.shining = headlightsOn;
-        light2_vol.shining = headlightsOn;
-        */
-        
-        // TODO
-        /*
-        auto eParticles = addEntity();
-        particleSystem = New!ParticleSystem(eventManager, eParticles);
-        
-        // Dust particle systems
-        auto mParticlesDust = addMaterial();
-        mParticlesDust.baseColorTexture = aTexParticleDust.texture;
-        mParticlesDust.blendMode = Transparent;
-        mParticlesDust.depthWrite = false;
-        mParticlesDust.sun = sun;
-        mParticlesDust.opacity = 0.2f;
-        mParticlesDust.useShadows = true;
-
-        auto eParticlesRight = addEntity(eCar);
-        emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
-        eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.8f);
-        emitterRight.minLifetime = 1.0f;
-        emitterRight.maxLifetime = 3.0f;
-        emitterRight.minSize = 0.5f;
-        emitterRight.maxSize = 1.0f;
-        emitterRight.minInitialSpeed = 0.2f;
-        emitterRight.maxInitialSpeed = 0.2f;
-        emitterRight.scaleStep = Vector2f(2, 2);
-        emitterRight.material = mParticlesDust;
-        eParticlesRight.castShadow = false;
-        eParticlesRight.visible = true;
-
-        auto eParticlesLeft = addEntity(eCar);
-        emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
-        eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.8f);
-        emitterLeft.minLifetime = 1.0f;
-        emitterLeft.maxLifetime = 3.0f;
-        emitterLeft.minSize = 0.5f;
-        emitterLeft.maxSize = 1.0f;
-        emitterLeft.minInitialSpeed = 0.2f;
-        emitterLeft.maxInitialSpeed = 0.2f;
-        emitterLeft.scaleStep = Vector2f(2, 2);
-        emitterLeft.material = mParticlesDust;
-        eParticlesLeft.castShadow = false;
-        eParticlesLeft.visible = true;
-        */
     }
     
     ~this()
@@ -423,8 +408,6 @@ class Car: Owner
         headlightsOn = !headlightsOn;
         light1.shining = headlightsOn;
         light2.shining = headlightsOn;
-        //light1_vol.shining = headlightsOn;
-        //light2_vol.shining = headlightsOn;
         if (headlightsMaterial)
         {
             if (headlightsOn)
