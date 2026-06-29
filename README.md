@@ -7,7 +7,9 @@ Chillwave Drive is written in [D language](https://dlang.org). The game implemen
 
 AI-controlled cars are supported. Fairly accurate and stable path following algorithm is implemented, based on the Pure Pursuit method, as well as basic recovery mode. Opponents are capable of drifting, and the AI ​​can be configured to simulate different driving styles, from "proper" urban driving to risky and aggressive.
 
-[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-1.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-1.jpg)
+[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-2.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-2.jpg)
+
+Currently I'm working on the race logics, weather effects, and car description format.
 
 ## Controls
 
@@ -23,6 +25,17 @@ AI-controlled cars are supported. Fairly accurate and stable path following algo
 - Escape - exit.
 
 Xbox controller is recommended.
+
+## TODO List
+
+- [x] Vehicle physics
+- [x] Sounds
+- [x] AI
+- [ ] Race logics
+- [ ] Game UI, main menu
+- [ ] Car selection
+- [ ] Track selection
+- [ ] Championship logics
 
 ## Credits
 
