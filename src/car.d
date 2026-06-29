@@ -186,10 +186,19 @@ class Car: Owner
     ///
     NewtonCompoundShape chassisShape;
     
+    ///
     float mass;
+    
+    ///
     Vector3f inertia;
+    
+    ///
     float suspensionMaxLength = 0.3f;
+    
+    ///
     float suspensionStiffness = 100.0f;
+    
+    ///
     float suspensionDamping = 10.0f;
     
     /// 
@@ -204,14 +213,31 @@ class Car: Owner
     ///
     Material carPaintMaterial;
     
+    ///
     bool headlightsOn = true;
-    float headlightsEnergy = 10.0f;
-    float brakelightsEnergy = 5.0f;
-    Material headlightsMaterial;
-    Material brakelightsMaterial;
-    Light light1, light2, light1_vol, light2_vol;
     
+    ///
+    float headlightsEnergy = 10.0f;
+    
+    ///
+    float brakelightsEnergy = 5.0f;
+    
+    ///
+    Material headlightsMaterial;
+    
+    ///
+    Material brakelightsMaterial;
+    
+    ///
+    Light light1;
+    
+    ///
+    Light light2;
+    
+    ///
     float brakeHysteresisTimer = 0.0f;
+    
+    ///
     bool brakeHysteresis = false;
     
     this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, Owner owner)
@@ -271,42 +297,9 @@ class Car: Owner
             chassisGeometry = New!GLTFGeometryInstance(asset.aChassis, this);
             eCar.drawable = chassisGeometry;
             
-            if ("materials" in chassis)
-            {
-                auto materials = chassis["materials"];
-                
-                if ("headlights" in materials.asObject)
-                {
-                    string headlightsMaterialName = jsonPropString(materials, "headlights", "");
-                    if (headlightsMaterialName.length)
-                    {
-                        auto m = asset.aChassis.material(headlightsMaterialName);
-                        foreach(ref primitive; chassisGeometry.instancedPrimitives.data)
-                        {
-                            if (primitive.geometry.material is m)
-                                primitive.material = headlightsMaterial;
-                        }
-                    }
-                }
-                else
-                    logWarning("\"headlights\" material not specified");
-                
-                if ("brakelights" in materials.asObject)
-                {
-                    string brakelightsMaterialName = jsonPropString(materials, "brakelights", "");
-                    if (brakelightsMaterialName.length)
-                    {
-                        auto m = asset.aChassis.material(brakelightsMaterialName);
-                        foreach(ref primitive; chassisGeometry.instancedPrimitives.data)
-                        {
-                            if (primitive.geometry.material is m)
-                                primitive.material = brakelightsMaterial;
-                        }
-                    }
-                }
-                else
-                    logWarning("\"brakelights\" material not specified");
-            }
+            makeChassisMaterialUnique(asset.aChassis, asset.aCar, "paint", chassisGeometry, carPaintMaterial);
+            makeChassisMaterialUnique(asset.aChassis, asset.aCar, "headlights", chassisGeometry, headlightsMaterial);
+            makeChassisMaterialUnique(asset.aChassis, asset.aCar, "brakelights", chassisGeometry, brakelightsMaterial);
             
             if ("hitboxes" in chassis)
             {
@@ -326,16 +319,6 @@ class Car: Owner
             }
             else
                 logWarning("\"hitboxes\" not specified");
-            
-            auto paintMaterial = asset.aChassis.material("paint");
-            if (paintMaterial)
-            {
-                foreach(ref primitive; chassisGeometry.instancedPrimitives.data)
-                {
-                    if (primitive.geometry.material is paintMaterial)
-                        primitive.material = carPaintMaterial;
-                }
-            }
         }
         
         if (asset.aWindows)
@@ -441,6 +424,50 @@ class Car: Owner
     ~this()
     {
         eWheels.free();
+    }
+    
+    bool makeChassisMaterialUnique(GLTFAsset carModel, JSONAsset carConfig, string matType, GLTFGeometryInstance geomInstance, Material replaceWith)
+    {
+        auto root = carConfig.doc.root;
+        
+        JSONObject chassis;
+        if ("chassis" in root.asObject)
+            chassis = root.asObject["chassis"].asObject;
+        else
+        {
+            logWarning("\"chassis\" object not specified");
+            return false;
+        }
+        
+        if ("materials" in chassis)
+        {
+            auto materials = chassis["materials"];
+            if (matType in materials.asObject)
+            {
+                string matName = jsonPropString(materials, matType, "");
+                if (matName.length)
+                {
+                    auto m = carModel.material(matName);
+                    foreach(ref primitive; geomInstance.instancedPrimitives.data)
+                    {
+                        if (primitive.geometry.material is m)
+                            primitive.material = replaceWith;
+                    }
+                }
+            }
+            else
+            {
+                logWarning("\"", matType, "\" material not specified");
+                return false;
+            }
+        }
+        else
+        {
+            logWarning("\"materials\" not specified");
+            return false;
+        }
+        
+        return true;
     }
     
     void toggleHeadlights()

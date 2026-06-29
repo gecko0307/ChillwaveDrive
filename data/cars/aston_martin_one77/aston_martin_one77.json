@@ -16,7 +16,9 @@
                 "size": [1.54, 0.492, 2.39],
                 "position": [0.0, 0.479246, -0.839547]
             }
-        ]
+        ],
+        "materials": {
+        }
     },
     "windows": {
         "model": "data/cars/aston_martin_one77/aston_martin_one77_windows.gltf"

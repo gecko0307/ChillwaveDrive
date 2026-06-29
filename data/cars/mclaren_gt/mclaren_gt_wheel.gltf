@@ -66,13 +66,13 @@
 			"name":"wheel",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					0.2,
-					0.2,
-					0.2,
+					0.05,
+					0.05,
+					0.05,
 					1
 				],
 				"metallicFactor":0,
-				"roughnessFactor":0.9
+				"roughnessFactor":0.15
 			}
 		}
 	],

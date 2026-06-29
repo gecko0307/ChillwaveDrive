@@ -18,6 +18,7 @@
             }
         ],
         "materials": {
+            "paint": "paint",
             "headlights": "Lights_Front",
             "brakelights": "Lights_Back"
         }
