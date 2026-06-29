@@ -34,6 +34,31 @@ import dagon;
 import dagon.ext.newton;
 import wheel;
 
+struct GroundMaterial
+{
+    float grip;
+}
+
+class Ground: Owner
+{
+    Array!GroundMaterial materials;
+    
+    this(Owner owner)
+    {
+        super(owner);
+    }
+    
+    ~this()
+    {
+        materials.free();
+    }
+    
+    void addMaterial(GroundMaterial m)
+    {
+        materials.append(m);
+    }
+}
+
 Vector3f boxInertia(Vector3f halfSize, float mass)
 {
     float x2 = halfSize.x * halfSize.x;
@@ -92,6 +117,8 @@ class Vehicle: EntityComponent
     Array!Wheel wheels;
     float wheelbase = 0.0f;
     bool stopped = true;
+    float drag = 0.004f;
+    float damping = 0.05f;
     
     // Control
     float maxSteeringAngle = 45.0f;
@@ -101,6 +128,9 @@ class Vehicle: EntityComponent
     bool accelerating = false;
     bool brake = false;
     float movementDirection = 0.0f;
+    
+    // Ground
+    Ground ground;
     
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
@@ -401,11 +431,9 @@ class Vehicle: EntityComponent
         
         Vector3f vel = chassisBody.velocity;
         
-        // Air drag is not physically correct!
         if (!accelerating)
         {
-            float airResistanceCoeff = 0.004f;
-            float dynamicDamping = airResistanceCoeff * speed;
+            float dynamicDamping = drag * speed;
             if (dynamicDamping < 0.01f) dynamicDamping = 0.01f;
             chassisBody.linearDamping = dynamicDamping;
             
@@ -415,7 +443,7 @@ class Vehicle: EntityComponent
                 chassisBody.velocity = vel * 0.95f;
         }
         else
-            chassisBody.linearDamping = 0.05f;
+            chassisBody.linearDamping = damping;
         
         chassisBody.update(t.delta);
 

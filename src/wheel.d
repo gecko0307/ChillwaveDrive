@@ -95,6 +95,8 @@ class Wheel: Owner, NewtonRaycaster
     
     float forcePoint = 0.0f;
     
+    long groundMaterialIndex = -1;
+    
     this(Vector3f position, float facing, Vehicle vehicle)
     {
         super(vehicle);
@@ -147,12 +149,13 @@ class Wheel: Owner, NewtonRaycaster
         tyreModel.b13 = 0.0f;    // Curvature shift (-1..+1)
     }
     
-    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t)
+    float onRayHit(NewtonRigidBody nbody, Vector3f hitPoint, Vector3f hitNormal, float t, long id)
     {
         if (t < closestHitRayParam)
         {
             groundPosition = hitPoint;
             groundNormal = hitNormal;
+            groundMaterialIndex = id;
             closestHitRayParam = t;
             return t;
         }
@@ -164,6 +167,7 @@ class Wheel: Owner, NewtonRaycaster
     
     bool raycast(Vector3f pstart, Vector3f pend)
     {
+        groundMaterialIndex = -1;
         closestHitRayParam = 1.0f;
         vehicle.world.raycast(pstart, pend, this);
         groundPosition = pstart + (pend - pstart).normalized * maxRayDistance * closestHitRayParam;
@@ -250,6 +254,18 @@ class Wheel: Owner, NewtonRaycaster
             
             float tyreSpeed = angularVelocity * radius;
             
+            if (vehicle.ground && groundMaterialIndex >= 0)
+            {
+                if (groundMaterialIndex < vehicle.ground.materials.length)
+                {
+                    grip = vehicle.ground.materials[groundMaterialIndex].grip;
+                }
+                else
+                {
+                    grip = 1.0f;
+                }
+            }
+            
             if (brake)
             {
                 // Block the wheel
@@ -292,7 +308,7 @@ class Wheel: Owner, NewtonRaycaster
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
             
             float physicalSlipSign = (tyreSpeed - longitudinalSpeed) >= 0.0f ? 1.0f : -1.0f;
-            float frictionTorque = abs(longitudinalFrictionForce) * radius;
+            float frictionTorque = abs(longitudinalFrictionForce) * grip * radius;
             angularAcceleration -= physicalSlipSign * (frictionTorque * invInertia);
         }
         

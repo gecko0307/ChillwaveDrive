@@ -238,6 +238,8 @@ class GameScene: Scene
     Wav sfxSteer;
     Wav sfxWheels;
     Wav sfxSqueal;
+    Wav sfxSkid;
+    Wav sfxSlip;
     Wav sfxPopping;
     Wav[2] sfxSuspension;
     Wav[2] sfxHit;
@@ -249,9 +251,11 @@ class GameScene: Scene
     int steerVoice;
     int wheelsVoice;
     int squealVoice;
+    int skidVoice;
     int poppingVoice;
     int hitVoice;
     int suspVoice;
+    int slipVoice;
     
     float musicVolume = 0.5f;
     float sfxVolume = 0.5f;
@@ -465,6 +469,14 @@ class GameScene: Scene
         sfxSqueal.load("data/sounds/squeal.wav");
         sfxSqueal.set3dDistanceDelay(true);
         
+        sfxSkid = Wav.create();
+        sfxSkid.load("data/sounds/skid.wav");
+        sfxSkid.set3dDistanceDelay(true);
+        
+        sfxSlip = Wav.create();
+        sfxSlip.load("data/sounds/gravel.mp3");
+        sfxSlip.set3dDistanceDelay(true);
+        
         sfxSuspension[0] = Wav.create();
         sfxSuspension[0].load("data/sounds/suspension1.wav");
         sfxSuspension[0].set3dDistanceDelay(true);
@@ -552,14 +564,20 @@ class GameScene: Scene
             useEntity(node.entity);
             node.entity.dynamic = false;
         }
-        foreach(mat; aTrack.materials)
-        {
-            mat.useCulling = false;
-        }
         
         auto eTrack = addEntity();
         auto trackShape = New!NewtonMeshShape(aTrack, physicsWorld);
         eTrack.makeStaticBody(physicsWorld, trackShape);
+        
+        Ground ground = New!Ground(this);
+        foreach(i, mat; aTrack.materials)
+        {
+            mat.useCulling = false;
+            float grip = 1.0f;
+            if (i == 1) // grass
+                grip = 0.9f;
+            ground.addMaterial(GroundMaterial(grip));
+        }
         
         // Waypoints visuals
         /*
@@ -587,10 +605,12 @@ class GameScene: Scene
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);
+        car.vehicle.ground = ground;
         car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
         
         // Opponent cars
         car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
+        car2.vehicle.ground = ground;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
         autopilot = New!Autopilot(car2.vehicle, this);
         autopilot.waypoints = waypoints;
@@ -600,6 +620,7 @@ class GameScene: Scene
         autopilot.steeringForce = 15.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
+        car3.vehicle.ground = ground;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
         autopilot2 = New!Autopilot(car3.vehicle, this);
         autopilot2.waypoints = waypoints;
@@ -623,7 +644,7 @@ class GameScene: Scene
 
         auto eParticlesRight = addEntity(car.eCar);
         emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
-        eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.8f);
+        eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.5f);
         emitterRight.minLifetime = 1.0f;
         emitterRight.maxLifetime = 3.0f;
         emitterRight.minSize = 0.5f;
@@ -638,7 +659,7 @@ class GameScene: Scene
 
         auto eParticlesLeft = addEntity(car.eCar);
         emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
-        eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.8f);
+        eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.5f);
         emitterLeft.minLifetime = 1.0f;
         emitterLeft.maxLifetime = 3.0f;
         emitterLeft.minSize = 0.5f;
@@ -707,6 +728,14 @@ class GameScene: Scene
         squealVoice = audio.play3d(sfxSqueal, car.position.x, car.position.y, car.position.z);
         audio.setVolume(squealVoice, 0.0f);
         audio.setLooping(squealVoice, true);
+        
+        skidVoice = audio.play3d(sfxSkid, car.position.x, car.position.y, car.position.z);
+        audio.setVolume(skidVoice, 0.0f);
+        audio.setLooping(skidVoice, true);
+        
+        slipVoice = audio.play3d(sfxSlip, car.position.x, car.position.y, car.position.z);
+        audio.setVolume(slipVoice, 0.0f);
+        audio.setLooping(slipVoice, true);
         
         poppingVoice = audio.play3d(sfxPopping, car.position.x, car.position.y, car.position.z);
         audio.setVolume(poppingVoice, 0.0f);
@@ -877,6 +906,8 @@ class GameScene: Scene
     
     float steeringInputPrev = 0.0f;
     
+    float gravelVolume = 0.0f;
+    
     override void onUpdate(Time t)
     {
         // Update AI
@@ -946,8 +977,38 @@ class GameScene: Scene
         float longitudinalSlip = car.longitudinalSlip;
         float squealVolume = clamp(lateralSlip, 0.0f, 1.0f);
         if (car.brake) squealVolume = clamp((speedKMH - 30.0f) / 30.0f, 0.0f, 1.0f);
-        audio.setVolume(squealVoice, sfxVolume * squealVolume * 0.8f);
+        float skidVolume = clamp(lateralSlip, 0.0f, 1.0f);
+        float squealCoef = 1.0f;
+        float slipSpeedFactor = clamp((speedKMH - 5.0f) / 5.0f, 0.0f, 1.0f);
+        if (car.vehicle.wheels[0].groundMaterialIndex == 1 ||
+            car.vehicle.wheels[1].groundMaterialIndex == 1 ||
+            car.vehicle.wheels[2].groundMaterialIndex == 1 ||
+            car.vehicle.wheels[3].groundMaterialIndex == 1)
+        {
+            squealCoef = 0.0f;
+            audio.set3dSourcePosition(slipVoice, car.position.x, car.position.y, car.position.z);
+            audio.setRelativePlaySpeed(slipVoice, slipSpeedFactor);
+            if (gravelVolume < 1.0f)
+                gravelVolume += 4.0f * t.delta;
+            else
+                gravelVolume = 1.0f;
+            car.vehicle.drag = 0.3f;
+            car.vehicle.damping = 0.3f;
+        }
+        else
+        {
+            if (gravelVolume > 0.0f)
+                gravelVolume -= 4.0f * t.delta;
+            else
+                gravelVolume = 0.0f;
+            car.vehicle.drag = 0.004f;
+            car.vehicle.damping = 0.05f;
+        }
+        audio.setVolume(squealVoice, sfxVolume * squealVolume * 0.8f * squealCoef);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
+        audio.setVolume(skidVoice, sfxVolume * 0.5f * skidVolume);
+        audio.set3dSourcePosition(skidVoice, car.position.x, car.position.y, car.position.z);
+        audio.setVolume(slipVoice, 0.5f * gravelVolume * slipSpeedFactor);
         
         // Wheels sound
         float wheelsVolume = 0.0f;
@@ -982,7 +1043,10 @@ class GameScene: Scene
         }
         
         // Dust particles
-        bool makingDust = lateralSlip > 0.0f || car.brake;
+        bool makingDust =
+            lateralSlip > 0.0f || car.brake ||
+            ((car.vehicle.wheels[2].groundMaterialIndex == 1 ||
+            car.vehicle.wheels[3].groundMaterialIndex == 1) && !car.vehicle.stopped);
         if (makingDust && car.vehicle.wheels[2].onGround) emitterLeft.emitting = true;
         else emitterLeft.emitting = false;
         if (makingDust && car.vehicle.wheels[3].onGround) emitterRight.emitting = true;
