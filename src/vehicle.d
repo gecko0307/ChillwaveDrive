@@ -231,7 +231,7 @@ class Vehicle: EntityComponent
         brake = false;
         
         if (popping == 0.0f && rpm >= 4000)
-            popping = 1.0f;
+            popping = 0.5f;
     }
     
     void steer(float input)

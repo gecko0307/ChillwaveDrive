@@ -658,7 +658,7 @@ class GameScene: Scene
         eRain.material = addMaterial();
         eRain.material.baseColorTexture = aRain.texture;
         eRain.material.blendMode = Transparent;
-        eRain.material.opacity = 0.05f;
+        eRain.material.opacity = 0.02f;
         eRain.material.shadeless = true;
         eRain.material.emissionEnergy = 1.0f;
         eRain.material.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1015,7 +1015,7 @@ class GameScene: Scene
             {
                 skyCleanupMode = 1;
                 skyCleanupTimer = 0.0f;
-                nextCleanupDuration = uniform(10.0f, 40.0f);
+                nextCleanupDuration = uniform(30.0f, 60.0f);
             }
         }
         else if (skyCleanupMode == 1)
@@ -1025,10 +1025,10 @@ class GameScene: Scene
             else
                 sun.energy = 0.0f;
             
-            if (environment.ambientEnergy > 0.05f)
+            if (environment.ambientEnergy > 0.07f)
                 environment.ambientEnergy -= t.delta * 0.05f;
             else
-                environment.ambientEnergy = 0.05f;
+                environment.ambientEnergy = 0.07f;
             
             if (skyCleanupTimer < nextCleanupDuration)
                 skyCleanupTimer += t.delta;
@@ -1036,7 +1036,7 @@ class GameScene: Scene
             {
                 skyCleanupMode = 0;
                 skyCleanupTimer = 0.0f;
-                nextCleanupDuration = uniform(10.0f, 40.0f);
+                nextCleanupDuration = uniform(5.0f, 15.0f);
             }
         }
         
