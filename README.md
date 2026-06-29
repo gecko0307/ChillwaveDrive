@@ -35,7 +35,7 @@ Xbox controller is recommended.
 - [ ] Game UI, main menu
 - [ ] Car selection
 - [ ] Track selection
-- [ ] Championship logics
+- [ ] Tournament logics
 
 ## Credits
 
