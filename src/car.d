@@ -45,7 +45,6 @@ class JSONAsset: Asset
 
     ~this()
     {
-        //release();
         if (doc)
         {
             Delete(doc);
@@ -58,9 +57,6 @@ class JSONAsset: Asset
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         str = String(istrm);
-        //logInfo(str);
-        //logInfo(str.length);
-        //doc = New!JSONDocument(str);
         return true;
     }
     

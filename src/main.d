@@ -583,6 +583,7 @@ class GameScene: Scene
         lookaheadMarker.position = waypoints[1] + Vector3f(0.0f, 1.0f, 0.0f);
         */
         
+        
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);

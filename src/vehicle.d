@@ -90,6 +90,8 @@ class Vehicle: EntityComponent
     
     // Wheels
     Array!Wheel wheels;
+    float wheelbase = 0.0f;
+    bool stopped = true;
     
     // Control
     float maxSteeringAngle = 45.0f;
@@ -145,7 +147,23 @@ class Vehicle: EntityComponent
         Wheel wheel = New!Wheel(suspensionPosition, facing, this);
         wheel.radius = radius;
         wheels.append(wheel);
+        calcWheelbase();
         return wheel;
+    }
+    
+    void calcWheelbase()
+    {
+        float minWheelZ = 0.0f;
+        float maxWheelZ = 0.0f;
+        foreach(w; wheels)
+        {
+            float wheelZ = w.position.z;
+            if (wheelZ > 0.0f && wheelZ > maxWheelZ)
+                maxWheelZ = wheelZ;
+            else if (wheelZ < 0.0f && wheelZ < minWheelZ)
+                minWheelZ = wheelZ;
+        }
+        wheelbase = abs(minWheelZ) + abs(maxWheelZ);
     }
     
     void setInertia(float mass, Vector3f itertia)
@@ -206,8 +224,11 @@ class Vehicle: EntityComponent
     
     void accelerate(float direction, float throttle)
     {
-        brake = (movementDirection < 0.0f && direction > 0.0f) ||
-                (movementDirection > 0.0f && direction < 0.0f);
+        if (!stopped)
+            brake = (movementDirection < 0.0f && direction > 0.0f) ||
+                    (movementDirection > 0.0f && direction < 0.0f);
+        else
+            brake = false;
         
         if (!brake)
         {
@@ -318,11 +339,15 @@ class Vehicle: EntityComponent
         
         float carSpeed = speedKMH();
         
+        stopped = carSpeed < 1.0f;
+        
         float transmissionRatio = abs(gearRatio) * finalDriveRatio * drivetrainEfficiency;
         
         float effectiveClutch = pow(clutch, clutchCurve);
         float effectiveRadius = wheels[3].radius;
-        float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
+        //float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
+        float rpmWheel = (carSpeed / 3.6f) * 60.0f / (2.0f * PI * effectiveRadius);
+        
         float rpmClutch = rpmWheel * transmissionRatio;
         float rpmFree = lerp(rpmIdle, rpmMax, throttle);
         rpm = lerp(rpmIdle, max3(rpmIdle, (rpmFree - rpmClutch) / engineInertia, rpmClutch), effectiveClutch);
@@ -376,6 +401,7 @@ class Vehicle: EntityComponent
         
         Vector3f vel = chassisBody.velocity;
         
+        // Air drag is not physically correct!
         if (!accelerating)
         {
             float airResistanceCoeff = 0.004f;
@@ -389,7 +415,7 @@ class Vehicle: EntityComponent
                 chassisBody.velocity = vel * 0.95f;
         }
         else
-            chassisBody.linearDamping = 0.1045f;
+            chassisBody.linearDamping = 0.05f;
         
         chassisBody.update(t.delta);
 

@@ -39,7 +39,6 @@ class Autopilot: Owner
     Vector3f[] waypoints;
     
     Vehicle car;
-    float wheelbase = 2.67f;
     float lookaheadDistance = 30.0f;
     
     // A visibility window of forward segments.
@@ -89,7 +88,7 @@ class Autopilot: Owner
         targetPoint = calcTargetPoint(carPosition);
         
         curvature = 0.0f;
-        float steeringAngle = calculateSteeringAngle(carPosition, carDirection, targetPoint, wheelbase, curvature);
+        float steeringAngle = calculateSteeringAngle(carPosition, carDirection, targetPoint, car.wheelbase, curvature);
         
         float maxSteeringAngle = degtorad(car.maxSteeringAngle);
         steeringInput = steeringForce * clamp(steeringAngle, -maxSteeringAngle, maxSteeringAngle) / maxSteeringAngle;

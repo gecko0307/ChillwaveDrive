@@ -75,7 +75,7 @@ class Wheel: Owner, NewtonRaycaster
     float staticFrictionCoefficient = 0.5f;
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
-    float brakeSlipRatio = 2.0f;
+    float grip = 1.0f;
     
     Quaternionf steering = Quaternionf.identity;
     bool brake = false;
@@ -172,7 +172,7 @@ class Wheel: Owner, NewtonRaycaster
     
     void update(double dt)
     {
-        invInertia = 1.0f / (mass * radius * radius);
+        invInertia = 1.0f / (0.5f * mass * radius * radius);
         
         camberAngle = clamp(camberAngle, -4.0f, 4.0f);
         
@@ -195,7 +195,6 @@ class Wheel: Owner, NewtonRaycaster
         }
         
         float suspToGround = distance(suspPosition, groundPosition);
-        
         Vector3f forcePosition = groundPosition + Vector3f(0.0f, forcePoint, 0.0f);
         
         if (!hitGround || (suspToGround > suspension.maxLength + radius)) // wheel is in air
@@ -212,11 +211,12 @@ class Wheel: Owner, NewtonRaycaster
             
             slipAngle = 0.0f;
             slipRatio = 0.0f;
+            angularAcceleration = 0.0f;
             
             if (abs(torque) > 0.0f)
-                angularVelocity = torque / radius * invInertia * dt;
+                angularVelocity += (torque * invInertia) * dt;
             else
-                angularVelocity *= 0.99f; // drag
+                angularVelocity *= 0.95f;
             
             Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(suspPosition);
             longitudinalSpeed = dot(wheelVelocity, forwardAxis);
@@ -233,66 +233,68 @@ class Wheel: Owner, NewtonRaycaster
             suspension.length = clamp(suspToGround - radius, suspension.minLength, suspension.maxLength);
             suspension.compression = max2(suspension.restLength - suspension.length, 0.0f);
             
-            // Normal force
             float springForce = suspension.compression * suspension.stiffness;
-            float compressionSpeed = suspension.lengthPrev - suspension.length;
-            float dampingForce = (compressionSpeed * suspension.damping) / dt;
+            float compressionSpeed = (suspension.lengthPrev - suspension.length) / dt;
+            float dampingForce = compressionSpeed * suspension.damping;
             float suspensionForce = springForce + dampingForce;
-            vehicle.chassisBody.addForceAtPos(groundNormal * suspensionForce, suspPosition);
-            float unsprungMass = vehicle.unsprungMass / cast(float)vehicle.wheels.length;
-            normalForce = suspensionForce + unsprungMass * 9.81f;
             
-            float chassisSpeed = vehicle.speed;
-            Vector3f chassisVelocity = vehicle.velocity;
+            vehicle.chassisBody.addForceAtPos(groundNormal * suspensionForce, suspPosition);
+            
+            float unsprungMass = vehicle.unsprungMass / cast(float)vehicle.wheels.length;
+            normalForce = max2(suspensionForce + unsprungMass * 9.81f, 0.0f);
+            
             Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float wheelSpeed = wheelVelocity.length;
             float lateralSpeed = dot(wheelVelocity, sideAxis);
-            float longitudinalDir = (dot(vehicle.chassisBody.velocity.normalized, forwardAxis) > 0.0f) ? 1.0f : -1.0f;
-            
             longitudinalSpeed = dot(wheelVelocity, forwardAxis);
+            
+            float tyreSpeed = angularVelocity * radius;
             
             if (brake)
             {
                 // Block the wheel
                 angularAcceleration = 0.0f;
                 angularVelocity = 0.0f;
-                slipRatio = brakeSlipRatio;
+                tyreSpeed = 0.0f;
+                slipRatio = (tyreSpeed - longitudinalSpeed) / max2(abs(longitudinalSpeed), 0.01f) * 100.0f;
             }
             else if (abs(torque) > 0.0f)
             {
                 // Apply torque
                 angularAcceleration = torque / radius * invInertia;
-                angularVelocity = max2(angularVelocity, longitudinalSpeed / radius);
-                slipRatio = -12.8f;
+                angularVelocity += angularAcceleration * dt;
+                float denominator = max2(abs(longitudinalSpeed), 0.00001f);
+                slipRatio = (tyreSpeed - longitudinalSpeed) / denominator * 100.0f;
             }
             else
             {
                 // Free spin
+                angularAcceleration = 0.0f;
                 if (abs(longitudinalSpeed) > 0.01f)
                     angularVelocity = longitudinalSpeed / radius * 0.5f;
                 else
                     angularVelocity = 0.0f;
-                angularAcceleration = 0.0f;
                 slipRatio = 0.0f;
             }
             
+            slipRatio = clamp(slipRatio, -100.0f, 100.0f);
             slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));
             
-            // Friction force
             float idleThreshold = 1.0f;
-            // speedFactor interpolates between static (0.0) and dynamic (1.0) friction
             float speedFactor = clamp(wheelSpeed / idleThreshold, 0.0f, 1.0f);
             float wheelLoad = vehicle.totalMass * load;
             float staticLateralFrictionForce = lateralSpeed / dt * wheelLoad * staticFrictionCoefficient;
             float dynamicLateralFrictionForce = tyreModel.lateralForce(normalForce, slipAngle, degtorad(camberAngle)) * lateralDynamicFrictionCoefficient;
             lateralFrictionForce = lerp(staticLateralFrictionForce, dynamicLateralFrictionForce, speedFactor);
-            longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient;
+            longitudinalFrictionForce = tyreModel.longitudinalForce(normalForce, slipRatio) * longitudinalDynamicFrictionCoefficient * grip;
             
-            vehicle.chassisBody.addForceAtPos(-forwardAxis * longitudinalDir * longitudinalFrictionForce, forcePosition);
+            vehicle.chassisBody.addForceAtPos(forwardAxis * longitudinalFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
+            
+            float physicalSlipSign = (tyreSpeed - longitudinalSpeed) >= 0.0f ? 1.0f : -1.0f;
+            float frictionTorque = abs(longitudinalFrictionForce) * radius;
+            angularAcceleration -= physicalSlipSign * (frictionTorque * invInertia);
         }
-        
-        angularVelocity += angularAcceleration * dt;
         
         roll += angularVelocity * dt;
         roll = fmod(roll, 2.0f * PI);
