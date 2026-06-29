@@ -14,7 +14,6 @@ Currently I'm working on the race logics, weather effects, and car description f
 ## Controls
 
 - Mouse - rotate the camera
-- LMB - lock/unlock camera control
 - RMB - take a screenshot
 - W / Right trigger - accelerate
 - S / Left trigger - brake/reverse
@@ -22,7 +21,7 @@ Currently I'm working on the race logics, weather effects, and car description f
 - D / Left stick +X - steer right
 - L - toggle headlights
 - M - play/stop background music
-- Escape - exit.
+- Escape - car editing mode.
 
 Xbox controller is recommended.
 
