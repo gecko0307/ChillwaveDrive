@@ -319,7 +319,8 @@
 				"baseColorTexture":{
 					"index":2
 				},
-				"metallicFactor":0
+				"metallicFactor":0,
+				"roughnessFactor":0.949999988079071
 			}
 		},
 		{
@@ -332,6 +333,7 @@
 				"baseColorTexture":{
 					"index":4
 				},
+				"metallicFactor":0,
 				"metallicRoughnessTexture":{
 					"index":5
 				}
@@ -523,8 +525,8 @@
 		},
 		{
 			"mimeType":"image/webp",
-			"name":"asphalt1_metallic-asphalt1_roughness",
-			"uri":"asphalt1_metallic-asphalt1_roughness.webp"
+			"name":"asphalt1_roughness",
+			"uri":"asphalt1_roughness.webp"
 		},
 		{
 			"mimeType":"image/webp",
@@ -643,7 +645,7 @@
 		{
 			"bufferView":12,
 			"componentType":5126,
-			"count":10763,
+			"count":12912,
 			"max":[
 				290.00018310546875,
 				4.841001033782959,
@@ -659,13 +661,13 @@
 		{
 			"bufferView":13,
 			"componentType":5126,
-			"count":10763,
+			"count":12912,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":14,
 			"componentType":5126,
-			"count":10763,
+			"count":12912,
 			"type":"VEC2"
 		},
 		{
@@ -818,74 +820,74 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":129156,
+			"byteLength":154944,
 			"byteOffset":567492,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":129156,
-			"byteOffset":696648,
+			"byteLength":154944,
+			"byteOffset":722436,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":86104,
-			"byteOffset":825804,
+			"byteLength":103296,
+			"byteOffset":877380,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":38736,
-			"byteOffset":911908,
+			"byteOffset":980676,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":103296,
-			"byteOffset":950644,
+			"byteOffset":1019412,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":103296,
-			"byteOffset":1053940,
+			"byteOffset":1122708,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":68864,
-			"byteOffset":1157236,
+			"byteOffset":1226004,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":25824,
-			"byteOffset":1226100,
+			"byteOffset":1294868,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":154944,
-			"byteOffset":1251924,
+			"byteOffset":1320692,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":154944,
-			"byteOffset":1406868,
+			"byteOffset":1475636,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":103296,
-			"byteOffset":1561812,
+			"byteOffset":1630580,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":38736,
-			"byteOffset":1665108,
+			"byteOffset":1733876,
 			"target":34963
 		}
 	],
@@ -897,7 +899,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":1703844,
+			"byteLength":1772612,
 			"uri":"racetrack.bin"
 		}
 	]

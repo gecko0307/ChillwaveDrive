@@ -36,12 +36,12 @@
             "camberAngle": -2,
             "suspension": {
                 "position": [-0.85, 0.38, 1.25],
-                "maxLength": 0.55,
-                "stiffness": 40000,
-                "damping": 5000
+                "maxLength": 0.48,
+                "stiffness": 90000,
+                "damping": 10000
             },
             "tyre": {
-                "lateralFriction": 1.7,
+                "lateralFriction": 1.8,
                 "longitudinalFriction": 1.0
             }
         },
@@ -54,12 +54,12 @@
             "camberAngle": -2,
             "suspension": {
                 "position": [0.85, 0.38, 1.25],
-                "maxLength": 0.55,
-                "stiffness": 40000,
-                "damping": 5000
+                "maxLength": 0.48,
+                "stiffness": 90000,
+                "damping": 10000
             },
             "tyre": {
-                "lateralFriction": 1.7,
+                "lateralFriction": 1.8,
                 "longitudinalFriction": 1.0
             }
         },
@@ -72,12 +72,12 @@
             "camberAngle": 0,
             "suspension": {
                 "position": [-0.85, 0.45, -1.42],
-                "maxLength": 0.55,
-                "stiffness": 40000,
-                "damping": 5000
+                "maxLength": 0.48,
+                "stiffness": 90000,
+                "damping": 10000
             },
             "tyre": {
-                "lateralFriction": 1.2,
+                "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
             }
         },
@@ -90,12 +90,12 @@
             "camberAngle": 0,
             "suspension": {
                 "position": [0.85, 0.45, -1.42],
-                "maxLength": 0.55,
-                "stiffness": 40000,
-                "damping": 5000
+                "maxLength": 0.48,
+                "stiffness": 90000,
+                "damping": 10000
             },
             "tyre": {
-                "lateralFriction": 1.2,
+                "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
             }
         }
