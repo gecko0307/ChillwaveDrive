@@ -41,6 +41,8 @@ class Autopilot: Owner
     Vehicle car;
     float lookaheadDistance = 30.0f;
     
+    bool active = true;
+    
     // A visibility window of forward segments.
     size_t maxSegmentsToSearch = 30;
     
@@ -75,6 +77,9 @@ class Autopilot: Owner
     
     void update(Time t)
     {
+        if (!active)
+            return;
+        
         if (isIdle)
         {
             car.idle();
@@ -349,7 +354,7 @@ class Autopilot: Owner
         // TODO: make configurable
         const float STUCK_SPEED_THRESHOLD = 0.75f; // Speed ​​below which we consider the car to be stationary (m/s)
         const float STUCK_TIME_TRIGGER = 0.5f;    // How many seconds do we wait before reversing
-        const float RECOVERY_DURATION = 2.0f;     // How many seconds to reverse
+        const float RECOVERY_DURATION = 3.0f;     // How many seconds to reverse
 
         // Step 1: detect the stuck
         if (!isRecovering)
@@ -392,6 +397,7 @@ class Autopilot: Owner
             // TODO: steering
             // We don't just need to drive backwards, but also steer in the opposite direction
             // from the target point to turn the rear of the car into the open space.
+            car.manualSteer(-1.0f);
 
             return true;
         }

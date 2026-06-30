@@ -33,6 +33,7 @@ import std.math;
 import dagon;
 import dagon.ext.newton;
 import wheel;
+import arb;
 
 struct GroundMaterial
 {
@@ -119,6 +120,7 @@ class Vehicle: EntityComponent
     bool stopped = true;
     float drag = 0.004f;
     float damping = 0.05f;
+    Array!AntiRollBar antiRollBars;
     
     // Control
     float maxSteeringAngle = 45.0f;
@@ -170,6 +172,7 @@ class Vehicle: EntityComponent
     ~this()
     {
         wheels.free();
+        antiRollBars.free();
     }
     
     Wheel addWheel(Vector3f suspensionPosition, float radius, float facing)
@@ -194,6 +197,14 @@ class Vehicle: EntityComponent
                 minWheelZ = wheelZ;
         }
         wheelbase = abs(minWheelZ) + abs(maxWheelZ);
+    }
+    
+    AntiRollBar addAntiRollBar(Wheel wLeft, Wheel wRight, float stiffness)
+    {
+        AntiRollBar antiRollBar = New!AntiRollBar(wLeft, wRight, this);
+        antiRollBar.stiffness = stiffness;
+        antiRollBars.append(antiRollBar);
+        return antiRollBar;
     }
     
     void setInertia(float mass, Vector3f itertia)
@@ -352,6 +363,11 @@ class Vehicle: EntityComponent
     
     override void update(Time t)
     {
+        foreach(antiRollBar; antiRollBars)
+        {
+            antiRollBar.update(t);
+        }
+        
         float ackermann = 5.0f;
         float steeringAngleInner = maxSteeringAngle * steeringInput;
         float steeringAngleOuter = (maxSteeringAngle - ackermann) * steeringInput;

@@ -367,6 +367,7 @@ class GameScene: Scene
     
     Autopilot autopilot;
     Autopilot autopilot2;
+    Autopilot autopilot3;
     
     bool raceStarted = false;
     
@@ -607,27 +608,40 @@ class GameScene: Scene
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);
         car.vehicle.ground = ground;
         car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
+        //car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 30000.0f);
+        //car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 30000.0f);
+        autopilot = New!Autopilot(car.vehicle, this);
+        autopilot.waypoints = waypoints;
+        autopilot.maxSpeed = 40.0f;
+        autopilot.maxLateralAcceleration = 10.0f;
+        autopilot.maxSegmentsToSearch = 7;
+        autopilot.steeringForce = 12.0f;
+        autopilot.active = false;
         
         // Opponent cars
         car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
         car2.vehicle.ground = ground;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
-        autopilot = New!Autopilot(car2.vehicle, this);
-        autopilot.waypoints = waypoints;
-        autopilot.maxSpeed = 40.0f;
-        autopilot.maxLateralAcceleration = 12.0f;
-        autopilot.maxSegmentsToSearch = 7;
-        autopilot.steeringForce = 15.0f;
+        //car2.vehicle.addAntiRollBar(car2.vehicle.wheels[0], car2.vehicle.wheels[1], 30000.0f);
+        //car2.vehicle.addAntiRollBar(car2.vehicle.wheels[2], car2.vehicle.wheels[3], 30000.0f);
+        autopilot2 = New!Autopilot(car2.vehicle, this);
+        autopilot2.waypoints = waypoints;
+        autopilot2.maxSpeed = 40.0f;
+        autopilot2.maxLateralAcceleration = 10.0f;
+        autopilot2.maxSegmentsToSearch = 7;
+        autopilot2.steeringForce = 12.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
         car3.vehicle.ground = ground;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
-        autopilot2 = New!Autopilot(car3.vehicle, this);
-        autopilot2.waypoints = waypoints;
-        autopilot2.maxSpeed = 40.0f;
-        autopilot2.maxLateralAcceleration = 12.0f;
-        autopilot2.maxSegmentsToSearch = 7;
-        autopilot2.steeringForce = 15.0f;
+        //car3.vehicle.addAntiRollBar(car3.vehicle.wheels[0], car3.vehicle.wheels[1], 30000.0f);
+        //car3.vehicle.addAntiRollBar(car3.vehicle.wheels[2], car3.vehicle.wheels[3], 30000.0f);
+        autopilot3 = New!Autopilot(car3.vehicle, this);
+        autopilot3.waypoints = waypoints;
+        autopilot3.maxSpeed = 40.0f;
+        autopilot3.maxLateralAcceleration = 10.0f;
+        autopilot3.maxSegmentsToSearch = 7;
+        autopilot3.steeringForce = 12.0f;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -816,6 +830,10 @@ class GameScene: Scene
                 audio.setVolume(musicVoice, musicVolume);
             }
         }
+        else if (key == KEY_P)
+        {
+            autopilot.active = !autopilot.active;
+        }
         else if (key == KEY_RETURN)
         {
             if (!raceStarted)
@@ -824,6 +842,7 @@ class GameScene: Scene
                 eText2.visible = false;
                 autopilot.start();
                 autopilot2.start();
+                autopilot3.start();
             }
         }
         else if (key == KEY_F5)
@@ -913,30 +932,33 @@ class GameScene: Scene
         // Update AI
         autopilot.update(t);
         //lookaheadMarker.position = autopilot.targetPoint + Vector3f(0.0f, 1.0f, 0.0f);
-        
         autopilot2.update(t);
+        autopilot3.update(t);
         
-        // Car controls
-        if (inputManager.getButton("forward")) // || joystickForward
-            car.vehicle.accelerate(1.0f, 2.0f * t.delta);
-        else if (inputManager.getButton("back")) // || joystickBack
-            car.vehicle.accelerate(-1.0f, 2.0f * t.delta);
-        else if (triggerForward > 0.0f)
-            car.vehicle.accelerate(1.0f, triggerForward);
-        else if (triggerBackward > 0.0f)
-            car.vehicle.accelerate(-1.0f, triggerBackward);
-        else
-            car.vehicle.idle();
-        
-        carEngineSoundSpeed = lerp(1.0f, 1.5f, car.throttle);
-        
-        if (car.vehicle.arcadeSteering)
+        if (!autopilot.active)
         {
-            float axis = inputManager.getAxis("horizontal");
-            car.vehicle.steer(-axis * 5.0f * t.delta);
+            // Car controls
+            if (inputManager.getButton("forward")) // || joystickForward
+                car.vehicle.accelerate(1.0f, 2.0f * t.delta);
+            else if (inputManager.getButton("back")) // || joystickBack
+                car.vehicle.accelerate(-1.0f, 2.0f * t.delta);
+            else if (triggerForward > 0.0f)
+                car.vehicle.accelerate(1.0f, triggerForward);
+            else if (triggerBackward > 0.0f)
+                car.vehicle.accelerate(-1.0f, triggerBackward);
+            else
+                car.vehicle.idle();
+            
+            carEngineSoundSpeed = lerp(1.0f, 1.5f, car.throttle);
+            
+            if (car.vehicle.arcadeSteering)
+            {
+                float axis = inputManager.getAxis("horizontal");
+                car.vehicle.steer(-axis * 5.0f * t.delta);
+            }
+            else
+                car.vehicle.manualSteer(joystickSteer);
         }
-        else
-            car.vehicle.manualSteer(joystickSteer);
         
         // Headlights on/off
         if (inputManager.getButton("headlights"))
@@ -949,6 +971,8 @@ class GameScene: Scene
         }
         else
             headlightsPressed = false;
+        
+        carEngineSoundSpeed = lerp(1.0f, 1.5f, car.throttle);
         
         car.update(t);
         car2.update(t);

@@ -60,6 +60,7 @@ class Wheel: Owner, NewtonRaycaster
     float camberAngle = 0.0f;
     float facing = 0.0f;
     float normalForce = 0.0f;
+    float arbForce = 0.0f;
     float lateralFrictionForce = 0.0f;
     float staticLateralFrictionForce = 0.0f;
     float longitudinalFrictionForce = 0.0f;
@@ -218,9 +219,9 @@ class Wheel: Owner, NewtonRaycaster
             angularAcceleration = 0.0f;
             
             if (abs(torque) > 0.0f)
-                angularVelocity += (torque * invInertia) * dt;
+                angularVelocity += torque * invInertia * dt;
             else
-                angularVelocity *= 0.95f;
+                angularVelocity *= 0.95f; // angular drag
             
             Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(suspPosition);
             longitudinalSpeed = dot(wheelVelocity, forwardAxis);
@@ -240,7 +241,8 @@ class Wheel: Owner, NewtonRaycaster
             float springForce = suspension.compression * suspension.stiffness;
             float compressionSpeed = (suspension.lengthPrev - suspension.length) / dt;
             float dampingForce = compressionSpeed * suspension.damping;
-            float suspensionForce = springForce + dampingForce;
+            float suspensionForce = springForce + dampingForce + arbForce;
+            arbForce = 0.0f;
             
             vehicle.chassisBody.addForceAtPos(groundNormal * suspensionForce, suspPosition);
             
