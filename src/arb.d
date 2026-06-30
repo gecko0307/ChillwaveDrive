@@ -35,8 +35,6 @@ class AntiRollBar: Owner
     Wheel wheelLeft;
     Wheel wheelRight;
     float stiffness = 10000.0f;
-    float damping = 5000.0f;
-    float compressionDeltaPrev = 0.0f;
     
     this(Wheel wLeft, Wheel wRight, Owner owner)
     {
@@ -49,14 +47,8 @@ class AntiRollBar: Owner
     void update(Time t)
     {
         float compressionDelta = wheelLeft.suspension.compression - wheelRight.suspension.compression;
-        
         float stabilizationForce = compressionDelta * stiffness;
-        
-        float dampingForce = 0.0f;
-        
-        wheelLeft.arbForce = stabilizationForce + dampingForce;
-        wheelRight.arbForce = -stabilizationForce + dampingForce;
-        
-        compressionDeltaPrev = compressionDelta;
+        wheelLeft.arbForce = stabilizationForce;
+        wheelRight.arbForce = -stabilizationForce;
     }
 }
