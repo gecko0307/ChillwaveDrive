@@ -45,6 +45,7 @@ import car;
 import racingview;
 import ai;
 import weather;
+import ground;
 
 float normalizeInRange(float x, float xmin, float xmax)
 {

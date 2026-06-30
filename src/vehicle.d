@@ -34,31 +34,7 @@ import dagon;
 import dagon.ext.newton;
 import wheel;
 import arb;
-
-struct GroundMaterial
-{
-    float grip;
-}
-
-class Ground: Owner
-{
-    Array!GroundMaterial materials;
-    
-    this(Owner owner)
-    {
-        super(owner);
-    }
-    
-    ~this()
-    {
-        materials.free();
-    }
-    
-    void addMaterial(GroundMaterial m)
-    {
-        materials.append(m);
-    }
-}
+import ground;
 
 Vector3f boxInertia(Vector3f halfSize, float mass)
 {
@@ -71,7 +47,7 @@ Vector3f boxInertia(Vector3f halfSize, float mass)
     return Vector3f(Ixx, Iyy, Izz);
 }
 
-enum GasolineDensity = 0.74f;
+enum GasolineDensity = 0.74f; // kg/litre
 
 /// Simulates a wheeled vehicle with a combustion engine.
 class Vehicle: EntityComponent
