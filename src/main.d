@@ -614,7 +614,7 @@ class GameScene: Scene
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
         autopilot = New!Autopilot(car2.vehicle, this);
         autopilot.waypoints = waypoints;
-        autopilot.maxSpeed = 30.0f;
+        autopilot.maxSpeed = 40.0f;
         autopilot.maxLateralAcceleration = 12.0f;
         autopilot.maxSegmentsToSearch = 7;
         autopilot.steeringForce = 15.0f;
@@ -624,10 +624,10 @@ class GameScene: Scene
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
         autopilot2 = New!Autopilot(car3.vehicle, this);
         autopilot2.waypoints = waypoints;
-        autopilot2.maxSpeed = 31.0f;
+        autopilot2.maxSpeed = 40.0f;
         autopilot2.maxLateralAcceleration = 12.0f;
         autopilot2.maxSegmentsToSearch = 7;
-        autopilot2.steeringForce = 10.0f;
+        autopilot2.steeringForce = 15.0f;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -1069,10 +1069,10 @@ class GameScene: Scene
             else
                 sun.energy = 0.5f;
             
-            if (environment.ambientEnergy < 0.1f)
+            if (environment.ambientEnergy < 0.11f)
                 environment.ambientEnergy += t.delta * 0.05f;
             else
-                environment.ambientEnergy = 0.1f;
+                environment.ambientEnergy = 0.11f;
             
             if (skyCleanupTimer < nextCleanupDuration)
                 skyCleanupTimer += t.delta;
@@ -1090,10 +1090,10 @@ class GameScene: Scene
             else
                 sun.energy = 0.0f;
             
-            if (environment.ambientEnergy > 0.07f)
+            if (environment.ambientEnergy > 0.08f)
                 environment.ambientEnergy -= t.delta * 0.05f;
             else
-                environment.ambientEnergy = 0.07f;
+                environment.ambientEnergy = 0.08f;
             
             if (skyCleanupTimer < nextCleanupDuration)
                 skyCleanupTimer += t.delta;
