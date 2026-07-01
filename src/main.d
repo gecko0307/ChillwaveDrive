@@ -625,10 +625,10 @@ class GameScene: Scene
         //car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 30000.0f);
         autopilot = New!Autopilot(car.vehicle, this);
         autopilot.waypoints = waypoints;
-        autopilot.maxSpeed = 40.0f;
+        autopilot.maxSpeed = 450f;
         autopilot.maxLateralAcceleration = 5.0f;
         autopilot.maxSegmentsToSearch = 7;
-        autopilot.steeringForce = 10.0f;
+        autopilot.steeringForce = 20.0f;
         autopilot.active = false;
         
         // Opponent cars
@@ -639,10 +639,10 @@ class GameScene: Scene
         //car2.vehicle.addAntiRollBar(car2.vehicle.wheels[2], car2.vehicle.wheels[3], 30000.0f);
         autopilot2 = New!Autopilot(car2.vehicle, this);
         autopilot2.waypoints = waypoints;
-        autopilot2.maxSpeed = 40.0f;
+        autopilot2.maxSpeed = 45.0f;
         autopilot2.maxLateralAcceleration = 5.0f;
         autopilot2.maxSegmentsToSearch = 7;
-        autopilot2.steeringForce = 10.0f;
+        autopilot2.steeringForce = 20.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
         car3.vehicle.ground = ground;
@@ -651,10 +651,10 @@ class GameScene: Scene
         //car3.vehicle.addAntiRollBar(car3.vehicle.wheels[2], car3.vehicle.wheels[3], 30000.0f);
         autopilot3 = New!Autopilot(car3.vehicle, this);
         autopilot3.waypoints = waypoints;
-        autopilot3.maxSpeed = 40.0f;
+        autopilot3.maxSpeed = 45.0f;
         autopilot3.maxLateralAcceleration = 5.0f;
         autopilot3.maxSegmentsToSearch = 7;
-        autopilot3.steeringForce = 10.0f;
+        autopilot3.steeringForce = 20.0f;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);

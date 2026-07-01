@@ -41,7 +41,7 @@
                 "damping": 8000
             },
             "tyre": {
-                "lateralFriction": 1.1,
+                "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
             }
         },
@@ -59,7 +59,7 @@
                 "damping": 8000
             },
             "tyre": {
-                "lateralFriction": 1.1,
+                "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
             }
         },
@@ -77,7 +77,7 @@
                 "damping": 8000
             },
             "tyre": {
-                "lateralFriction": 0.8,
+                "lateralFriction": 1.0,
                 "longitudinalFriction": 1.0
             }
         },
@@ -95,7 +95,7 @@
                 "damping": 8000
             },
             "tyre": {
-                "lateralFriction": 0.8,
+                "lateralFriction": 1.0,
                 "longitudinalFriction": 1.0
             }
         }
