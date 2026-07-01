@@ -94,8 +94,6 @@ class Vehicle: EntityComponent
     Array!Wheel wheels;
     float wheelbase = 0.0f;
     bool stopped = true;
-    float drag = 0.004f;
-    float damping = 0.05f;
     Array!AntiRollBar antiRollBars;
     
     // Control
@@ -109,6 +107,9 @@ class Vehicle: EntityComponent
     
     // Ground
     Ground ground;
+    
+    // Aerodynamics
+    float airDrag = 0.004f;
     
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
@@ -425,17 +426,15 @@ class Vehicle: EntityComponent
         
         if (!accelerating)
         {
-            float dynamicDamping = drag * speed;
-            if (dynamicDamping < 0.01f) dynamicDamping = 0.01f;
-            chassisBody.linearDamping = dynamicDamping;
+            float daming = airDrag * speed;
+            if (daming < 0.01f) daming = 0.01f;
+            chassisBody.linearDamping = daming;
             
-            if (speed <= 5.0f)
+            if (speed <= 10.0f)
                 chassisBody.velocity = vel * 0.99f;
             else if (speed <= 1.0f)
                 chassisBody.velocity = vel * 0.95f;
         }
-        else
-            chassisBody.linearDamping = damping;
         
         chassisBody.update(t.delta);
 

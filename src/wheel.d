@@ -77,6 +77,9 @@ class Wheel: Owner, NewtonRaycaster
     float lateralDynamicFrictionCoefficient = 1.0f;
     float longitudinalDynamicFrictionCoefficient = 1.0f;
     float grip = 1.0f;
+    float rollingResistanceC0 = 0.001f;
+    float rollingResistanceC1 = 0.001f;
+    float rollingResistanceC2 = 0.000f;
     
     Quaternionf steering = Quaternionf.identity;
     bool brake = false;
@@ -115,6 +118,7 @@ class Wheel: Owner, NewtonRaycaster
         
         visualSuspensionLength = suspension.maxLength;
         
+        /*
         tyreModel.a0 = 1.28f;    // Shape factor (1.4..1.8)
         tyreModel.a1 = -28.0f;   // Load influence on lateral friction coefficient, 1/kN (-80..+80)
         tyreModel.a2 = 1200.0f;  // Lateral friction coefficient (900..1700)
@@ -133,6 +137,7 @@ class Wheel: Owner, NewtonRaycaster
         tyreModel.a15 = 0.0f;    // Camber influence on lateral friction coefficient, 1/deg (-0.01..+0.01)
         tyreModel.a16 = 0.0f;    // Curvature change with camber (-0.1..+0.1)
         tyreModel.a17 = 0.0f;    // Curvature shift (-1..+1)
+        */
         
         tyreModel.b0 = 1.36f;    // Shape factor (1.4..1.8)
         tyreModel.b1 = -40.0f;   // Load influence on longitudinal friction coefficient, 1/kN (-80..+80)
@@ -253,6 +258,7 @@ class Wheel: Owner, NewtonRaycaster
             float wheelSpeed = wheelVelocity.length;
             float lateralSpeed = dot(wheelVelocity, sideAxis);
             longitudinalSpeed = dot(wheelVelocity, forwardAxis);
+            float absLongitudinalSpeed = abs(longitudinalSpeed);
             
             float tyreSpeed = angularVelocity * radius;
             
@@ -260,11 +266,18 @@ class Wheel: Owner, NewtonRaycaster
             {
                 if (groundMaterialIndex < vehicle.ground.materials.length)
                 {
-                    grip = vehicle.ground.materials[groundMaterialIndex].grip;
+                    auto m = &vehicle.ground.materials.data[groundMaterialIndex];
+                    grip = m.grip;
+                    rollingResistanceC0 = m.rollingResistanceC0;
+                    rollingResistanceC1 = m.rollingResistanceC1;
+                    rollingResistanceC2 = m.rollingResistanceC2;
                 }
                 else
                 {
                     grip = 1.0f;
+                    rollingResistanceC0 = 0.001f;
+                    rollingResistanceC1 = 0.001f;
+                    rollingResistanceC2 = 0.000f;
                 }
             }
             
@@ -274,21 +287,21 @@ class Wheel: Owner, NewtonRaycaster
                 angularAcceleration = 0.0f;
                 angularVelocity = 0.0f;
                 tyreSpeed = 0.0f;
-                slipRatio = (tyreSpeed - longitudinalSpeed) / max2(abs(longitudinalSpeed), 0.01f) * 100.0f;
+                slipRatio = (tyreSpeed - longitudinalSpeed) / max2(absLongitudinalSpeed, 0.01f) * 100.0f;
             }
             else if (abs(torque) > 0.0f)
             {
                 // Apply torque
                 angularAcceleration = torque / radius * invInertia;
                 angularVelocity += angularAcceleration * dt;
-                float denominator = max2(abs(longitudinalSpeed), 0.00001f);
+                float denominator = max2(absLongitudinalSpeed, 0.00001f);
                 slipRatio = (tyreSpeed - longitudinalSpeed) / denominator * 100.0f;
             }
             else
             {
                 // Free spin
                 angularAcceleration = 0.0f;
-                if (abs(longitudinalSpeed) > 0.01f)
+                if (absLongitudinalSpeed > 0.01f)
                     angularVelocity = longitudinalSpeed / radius * 0.5f;
                 else
                     angularVelocity = 0.0f;
@@ -296,7 +309,7 @@ class Wheel: Owner, NewtonRaycaster
             }
             
             slipRatio = clamp(slipRatio, -100.0f, 100.0f);
-            slipAngle = atan(lateralSpeed / max2(abs(longitudinalSpeed), 0.00001f));
+            slipAngle = atan(lateralSpeed / max2(absLongitudinalSpeed, 0.00001f));
             
             float idleThreshold = 1.0f;
             float speedFactor = clamp(wheelSpeed / idleThreshold, 0.0f, 1.0f);
@@ -308,6 +321,16 @@ class Wheel: Owner, NewtonRaycaster
             
             vehicle.chassisBody.addForceAtPos(forwardAxis * longitudinalFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
+            
+            // Rolling resistance
+            if (absLongitudinalSpeed > 0.1f)
+            {
+                float rrForce = normalForce * (
+                    rollingResistanceC0 +
+                    rollingResistanceC1 * absLongitudinalSpeed +
+                    rollingResistanceC2 * absLongitudinalSpeed * absLongitudinalSpeed);
+                vehicle.chassisBody.addForceAtPos(forwardAxis * rrForce * -sign(longitudinalSpeed), forcePosition);
+            }
             
             float physicalSlipSign = (tyreSpeed - longitudinalSpeed) >= 0.0f ? 1.0f : -1.0f;
             float frictionTorque = abs(longitudinalFrictionForce) * grip * radius;

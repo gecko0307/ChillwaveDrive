@@ -572,13 +572,25 @@ class GameScene: Scene
         eTrack.makeStaticBody(physicsWorld, trackShape);
         
         Ground ground = New!Ground(this);
+        GroundMaterial gm;
         foreach(i, mat; aTrack.materials)
         {
             mat.useCulling = false;
-            float grip = 1.0f;
             if (i == 1) // grass
-                grip = 0.9f;
-            ground.addMaterial(GroundMaterial(grip));
+            {
+                gm.grip = 0.9f;
+                gm.rollingResistanceC0 = 0.01f;
+                gm.rollingResistanceC1 = 0.01f;
+                gm.rollingResistanceC2 = 0.001f;
+            }
+            else
+            {
+                gm.grip = 1.0f;
+                gm.rollingResistanceC0 = 0.001f;
+                gm.rollingResistanceC1 = 0.001f;
+                gm.rollingResistanceC2 = 0.000f;
+            }
+            ground.addMaterial(gm);
         }
         
         // Waypoints visuals
@@ -614,9 +626,9 @@ class GameScene: Scene
         autopilot = New!Autopilot(car.vehicle, this);
         autopilot.waypoints = waypoints;
         autopilot.maxSpeed = 40.0f;
-        autopilot.maxLateralAcceleration = 10.0f;
+        autopilot.maxLateralAcceleration = 5.0f;
         autopilot.maxSegmentsToSearch = 7;
-        autopilot.steeringForce = 12.0f;
+        autopilot.steeringForce = 10.0f;
         autopilot.active = false;
         
         // Opponent cars
@@ -628,9 +640,9 @@ class GameScene: Scene
         autopilot2 = New!Autopilot(car2.vehicle, this);
         autopilot2.waypoints = waypoints;
         autopilot2.maxSpeed = 40.0f;
-        autopilot2.maxLateralAcceleration = 10.0f;
+        autopilot2.maxLateralAcceleration = 5.0f;
         autopilot2.maxSegmentsToSearch = 7;
-        autopilot2.steeringForce = 12.0f;
+        autopilot2.steeringForce = 10.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
         car3.vehicle.ground = ground;
@@ -640,9 +652,9 @@ class GameScene: Scene
         autopilot3 = New!Autopilot(car3.vehicle, this);
         autopilot3.waypoints = waypoints;
         autopilot3.maxSpeed = 40.0f;
-        autopilot3.maxLateralAcceleration = 10.0f;
+        autopilot3.maxLateralAcceleration = 5.0f;
         autopilot3.maxSegmentsToSearch = 7;
-        autopilot3.steeringForce = 12.0f;
+        autopilot3.steeringForce = 10.0f;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -1017,8 +1029,6 @@ class GameScene: Scene
                 gravelVolume += 4.0f * t.delta;
             else
                 gravelVolume = 1.0f;
-            car.vehicle.drag = 0.3f;
-            car.vehicle.damping = 0.3f;
         }
         else
         {
@@ -1026,8 +1036,6 @@ class GameScene: Scene
                 gravelVolume -= 4.0f * t.delta;
             else
                 gravelVolume = 0.0f;
-            car.vehicle.drag = 0.004f;
-            car.vehicle.damping = 0.05f;
         }
         audio.setVolume(squealVoice, sfxVolume * squealVolume * 0.8f * squealCoef);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
