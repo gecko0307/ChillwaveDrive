@@ -587,7 +587,7 @@ class GameScene: Scene
             {
                 gm.grip = 1.0f;
                 gm.rollingResistanceC0 = 0.001f;
-                gm.rollingResistanceC1 = 0.001f;
+                gm.rollingResistanceC1 = 0.0005f;
                 gm.rollingResistanceC2 = 0.000f;
             }
             ground.addMaterial(gm);
