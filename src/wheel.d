@@ -322,9 +322,9 @@ class Wheel: Owner, NewtonRaycaster
             vehicle.chassisBody.addForceAtPos(forwardAxis * longitudinalFrictionForce, forcePosition);
             vehicle.chassisBody.addForceAtPos(-sideAxis * lateralFrictionForce, forcePosition);
             
-            // Rolling resistance
             if (absLongitudinalSpeed > 0.1f)
             {
+                // SAE J2452 rolling resistance
                 float rrForce = normalForce * (
                     rollingResistanceC0 +
                     rollingResistanceC1 * absLongitudinalSpeed +
