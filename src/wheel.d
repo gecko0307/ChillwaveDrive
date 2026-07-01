@@ -118,7 +118,6 @@ class Wheel: Owner, NewtonRaycaster
         
         visualSuspensionLength = suspension.maxLength;
         
-        /*
         tyreModel.a0 = 1.28f;    // Shape factor (1.4..1.8)
         tyreModel.a1 = -28.0f;   // Load influence on lateral friction coefficient, 1/kN (-80..+80)
         tyreModel.a2 = 1200.0f;  // Lateral friction coefficient (900..1700)
@@ -137,7 +136,6 @@ class Wheel: Owner, NewtonRaycaster
         tyreModel.a15 = 0.0f;    // Camber influence on lateral friction coefficient, 1/deg (-0.01..+0.01)
         tyreModel.a16 = 0.0f;    // Curvature change with camber (-0.1..+0.1)
         tyreModel.a17 = 0.0f;    // Curvature shift (-1..+1)
-        */
         
         tyreModel.b0 = 1.36f;    // Shape factor (1.4..1.8)
         tyreModel.b1 = -40.0f;   // Load influence on longitudinal friction coefficient, 1/kN (-80..+80)

@@ -109,7 +109,7 @@ class Vehicle: EntityComponent
     Ground ground;
     
     // Aerodynamics
-    float airDrag = 0.001f;
+    float airDrag = 0.004f;
     
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
@@ -426,15 +426,15 @@ class Vehicle: EntityComponent
         
         if (!accelerating)
         {
-            float daming = airDrag * speed;
-            if (daming < 0.01f) daming = 0.01f;
-            chassisBody.linearDamping = daming;
+            float damping = airDrag * speed;
+            if (damping < 0.01f) damping = 0.01f;
+            chassisBody.linearDamping = damping;
             
-            //if (speed <= 5.0f)
-            //    chassisBody.velocity = vel * 0.98f;
             if (speed <= 2.0f)
                 chassisBody.velocity = vel * 0.95f;
         }
+        else
+            chassisBody.linearDamping = 0.01f;
         
         chassisBody.update(t.delta);
 
