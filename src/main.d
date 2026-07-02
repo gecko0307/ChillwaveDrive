@@ -579,9 +579,9 @@ class GameScene: Scene
             if (i == 1) // grass
             {
                 gm.grip = 0.9f;
-                gm.rollingResistanceC0 = 0.005f;
-                gm.rollingResistanceC1 = 0.001f;
-                gm.rollingResistanceC2 = 0.0005f;
+                gm.rollingResistanceC0 = 0.008f;
+                gm.rollingResistanceC1 = 0.002f;
+                gm.rollingResistanceC2 = 0.0008f;
             }
             else
             {
@@ -895,6 +895,8 @@ class GameScene: Scene
     
     override void onControllerAxisMotion(uint deviceIndex, int axis, float value)
     {
+        //logInfo("Controller ", deviceIndex, " axis ", axis, ": ", value);
+        
         if (axis == GA_TRIGGERRIGHT)
         {
             triggerForward = value;
