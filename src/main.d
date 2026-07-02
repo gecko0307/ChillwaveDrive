@@ -579,9 +579,9 @@ class GameScene: Scene
             if (i == 1) // grass
             {
                 gm.grip = 0.9f;
-                gm.rollingResistanceC0 = 0.01f;
-                gm.rollingResistanceC1 = 0.01f;
-                gm.rollingResistanceC2 = 0.001f;
+                gm.rollingResistanceC0 = 0.005f;
+                gm.rollingResistanceC1 = 0.001f;
+                gm.rollingResistanceC2 = 0.0005f;
             }
             else
             {
