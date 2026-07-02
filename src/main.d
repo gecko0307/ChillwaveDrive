@@ -623,10 +623,11 @@ class GameScene: Scene
         car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 2000.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 2000.0f);
+        car.vehicle.arcadeSteering = true;
         autopilot = New!Autopilot(car.vehicle, this);
         autopilot.waypoints = waypoints;
-        autopilot.maxSpeed = 45.0f;
-        autopilot.maxLateralAcceleration = 4.0f;
+        autopilot.maxSpeed = 55.0f;
+        autopilot.maxLateralAcceleration = 5.0f;
         autopilot.maxSegmentsToSearch = 7;
         autopilot.steeringForce = 10.0f;
         autopilot.active = false;
@@ -637,10 +638,11 @@ class GameScene: Scene
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[0], car2.vehicle.wheels[1], 2000.0f);
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[2], car2.vehicle.wheels[3], 2000.0f);
+        car2.vehicle.arcadeSteering = false;
         autopilot2 = New!Autopilot(car2.vehicle, this);
         autopilot2.waypoints = waypoints;
-        autopilot2.maxSpeed = 45.0f;
-        autopilot2.maxLateralAcceleration = 4.0f;
+        autopilot2.maxSpeed = 55.0f;
+        autopilot2.maxLateralAcceleration = 5.0f;
         autopilot2.maxSegmentsToSearch = 7;
         autopilot2.steeringForce = 10.0f;
         
@@ -649,10 +651,11 @@ class GameScene: Scene
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[0], car3.vehicle.wheels[1], 2000.0f);
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[2], car3.vehicle.wheels[3], 2000.0f);
+        car3.vehicle.arcadeSteering = false;
         autopilot3 = New!Autopilot(car3.vehicle, this);
         autopilot3.waypoints = waypoints;
-        autopilot3.maxSpeed = 45.0f;
-        autopilot3.maxLateralAcceleration = 4.0f;
+        autopilot3.maxSpeed = 55.0f;
+        autopilot3.maxLateralAcceleration = 5.0f;
         autopilot3.maxSegmentsToSearch = 7;
         autopilot3.steeringForce = 10.0f;
         
@@ -846,6 +849,7 @@ class GameScene: Scene
         else if (key == KEY_P)
         {
             autopilot.active = !autopilot.active;
+            car.vehicle.arcadeSteering = !car.vehicle.arcadeSteering;
         }
         else if (key == KEY_RETURN)
         {
