@@ -393,7 +393,8 @@ class Car: Owner
                 }
                 eWheel.drawable = dg;
                 eWheel.position = pWheel.localWheelPosition;
-                eWheel.blurMask = 0.0f;
+                eWheel.blurMask = 1.0f;
+                eWheel.blurMaxVelocity = 0.018f;
                 eWheels.append(eWheel);
             }
         }

@@ -1170,7 +1170,7 @@ class GameScene: Scene
     
     float rpmFactor = 0.0f;
     
-    char[100] txt;
+    char[1024] txt;
     void updateText(float speed)
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);

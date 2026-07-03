@@ -71,6 +71,7 @@ class Vehicle: EntityComponent
     float rpmPeakTorquePoint = 5500.0f;
     float rpmRedline = 8000.0f;
     float rpmMax = 8500.0f;
+    float rpmPrev = 0.0f;
     float rpm = 0.0f;
     float engineInertia = 15.0f;
     float throttle = 0.0f; // 0.0f..1.0f
@@ -89,6 +90,10 @@ class Vehicle: EntityComponent
     float gearRatio = 0.0f;
     float finalDriveRatio = 2.37f;
     float drivetrainEfficiency = 0.99f;
+    
+    // Exhaust system
+    float exhaustTemperature = 0.0f;
+    float exhaustUnburntFuel = 0.0f;
     
     // Wheels
     Array!Wheel wheels;
@@ -268,9 +273,6 @@ class Vehicle: EntityComponent
     {
         accelerating = false;
         brake = false;
-        
-        if (popping == 0.0f && rpm >= 4000)
-            popping = 0.75f;
     }
     
     void steer(float input)
@@ -368,21 +370,18 @@ class Vehicle: EntityComponent
         
         float effectiveClutch = pow(clutch, clutchCurve);
         float effectiveRadius = wheels[3].radius;
-        //float rpmWheel = carSpeed * 1000.0f / (60.0f * 2.0f * PI * effectiveRadius);
         float rpmWheel = (carSpeed / 3.6f) * 60.0f / (2.0f * PI * effectiveRadius);
         
         float rpmClutch = rpmWheel * transmissionRatio;
         float rpmFree = lerp(rpmIdle, rpmMax, throttle);
+        rpmPrev = rpm;
         rpm = lerp(rpmIdle, max3(rpmIdle, (rpmFree - rpmClutch) / engineInertia, rpmClutch), effectiveClutch);
         float engineTorque = engineTorqueCurve(rpm) * throttle;
         float axleTorque = sign(gearRatio) * engineTorque * effectiveClutch * transmissionRatio;
         
         foreach(w; wheels)
         {
-            if (accelerating)
-                w.torque = axleTorque * w.torqueSplitRatio;
-            else
-                w.torque = 0.0f;
+            w.torque = axleTorque * w.torqueSplitRatio;
             w.brake = brake;
             w.update(t.delta);
         }
@@ -397,7 +396,7 @@ class Vehicle: EntityComponent
                 clutch = 0.5f;
             }
             
-            clutch += t.delta;
+            clutch += 0.75f * t.delta;
             if (clutch > 1.0f)
                 clutch = 1.0f;
         }
@@ -413,11 +412,8 @@ class Vehicle: EntityComponent
                 gearRatio = gears[gear];
                 clutch = 0.5f;
             }
-        }
-        
-        if (brake)
-        {
-            clutch -= t.delta;
+            
+            clutch -= 0.1f * t.delta;
             if (clutch < 0.0f)
                 clutch = 0.0f;
         }
@@ -463,6 +459,38 @@ class Vehicle: EntityComponent
         }
         
         movementDirection = (dot(velocity.normalized, longitudinalAxis) < 0.0f)? -1.0f : 1.0f;
+        
+        if (accelerating)
+        {
+            // Engine is hot, build up heat
+            exhaustTemperature += 0.1f * t.delta;
+            if (exhaustTemperature > 1.0f)
+                exhaustTemperature = 1.0f;
+            // Gas is pressed, fuel is burning in cylinders, clear the exhaust fuel
+            exhaustUnburntFuel = 0.0f;
+        } 
+        else
+        {
+            // Player let go of gas! Cool the engine down
+            exhaustTemperature -= 0.05f * t.delta;
+            if (exhaustTemperature < 0.0f)
+                exhaustTemperature = 0.0f;
+
+            // If RPM is high enough, accumulate unburnt fuel in the exhaust
+            if (rpm > 4000)
+            {
+                // Build fuel on lift-off
+                exhaustUnburntFuel += t.delta;
+                if (exhaustUnburntFuel > 1.0f)
+                    exhaustUnburntFuel = 1.0f;
+            }
+        }
+        
+        if (exhaustUnburntFuel > 0.0f && exhaustTemperature > 0.4f)
+        {
+            popping = 0.75f;
+            exhaustUnburntFuel = 0.0f;
+        }
         
         if (popping > 0.0f)
             popping -= t.delta;
