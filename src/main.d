@@ -869,26 +869,7 @@ class GameScene: Scene
         }
         else if (key == KEY_ESCAPE)
         {
-            vehicleView.active = false;
-            if (!paused)
-            {
-                gameHUD.hide();
-                game.ui.active = true;
-                paused = true;
-                audio.setPauseAll(true);
-            }
-            else
-            {
-                vehicleView.turnAngle = fmod(vehicleView.turnAngle, 2.0f * PI);
-                vehicleView.pitchAngle = fmod(vehicleView.pitchAngle, 2.0f * PI);
-                vehicleView.targetTurnAngle = fmod(vehicleView.targetTurnAngle, 2.0f * PI);
-                vehicleView.targetPitchAngle = fmod(vehicleView.targetPitchAngle, 2.0f * PI);
-                gameHUD.show();
-                game.ui.active = false;
-                paused = false;
-                audio.setPauseAll(false);
-                viewResetTime = 0.0f;
-            }
+            togglePause();
         }
         else if (paused)
             return;
@@ -915,6 +896,38 @@ class GameScene: Scene
                 car2.raceStarted = true;
                 car3.raceStarted = true;
             }
+        }
+    }
+    
+    override void onControllerButtonDown(uint deviceIndex, int button)
+    {
+        if (button == GB_START)
+        {
+            togglePause();
+        }
+    }
+    
+    void togglePause()
+    {
+        vehicleView.active = false;
+        if (!paused)
+        {
+            gameHUD.hide();
+            game.ui.active = true;
+            paused = true;
+            audio.setPauseAll(true);
+        }
+        else
+        {
+            vehicleView.turnAngle = fmod(vehicleView.turnAngle, 2.0f * PI);
+            vehicleView.pitchAngle = fmod(vehicleView.pitchAngle, 2.0f * PI);
+            vehicleView.targetTurnAngle = fmod(vehicleView.targetTurnAngle, 2.0f * PI);
+            vehicleView.targetPitchAngle = fmod(vehicleView.targetPitchAngle, 2.0f * PI);
+            gameHUD.show();
+            game.ui.active = false;
+            paused = false;
+            audio.setPauseAll(false);
+            viewResetTime = 0.0f;
         }
     }
     
