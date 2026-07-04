@@ -20,6 +20,9 @@ class Track: Owner
     ///
     Array!GroundMaterial materials;
     
+    ///
+    uint numLaps = 3;
+    
     this(Owner owner)
     {
         super(owner);

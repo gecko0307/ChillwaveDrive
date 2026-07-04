@@ -237,7 +237,28 @@ class Car: Owner
     bool brakeHysteresis = false;
     
     ///
+    bool raceStarted = false;
+    
+    ///
+    bool finished = false;
+    
+    ///
     size_t trackSegmentIndex = 0;
+    
+    ///
+    uint laps = 0;
+    
+    ///
+    double raceTime = 0.0;
+    
+    ///
+    double lapTime = 0.0;
+    
+    ///
+    double bestLapTime = 0.0;
+    
+    ///
+    uint racePosition = 0;
     
     this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, Owner owner)
     {
@@ -517,7 +538,27 @@ class Car: Owner
             }
         }
         
+        if (raceStarted && !finished)
+        {
+            raceTime += t.delta;
+            lapTime += t.delta;
+        }
+        
+        size_t prevSegment = trackSegmentIndex;
         trackSegmentIndex = vehicle.track.getNearestSegmentIndex(trackSegmentIndex, vehicle.position);
+        if (trackSegmentIndex == 0 && prevSegment == vehicle.track.waypoints.length - 2)
+        {
+            if (!finished)
+            {
+                laps++;
+                if (laps == vehicle.track.numLaps)
+                    finished = true;
+                
+                if (lapTime < bestLapTime || bestLapTime == 0.0)
+                    bestLapTime = lapTime;
+                lapTime = 0.0;
+            }
+        }
     }
     
     Vector3f position()

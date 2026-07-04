@@ -32,6 +32,7 @@ import std.conv;
 import std.meta;
 import std.math;
 import std.random;
+import std.algorithm.sorting: sort;
 
 import dagon;
 import dagon.ext.newton;
@@ -270,6 +271,8 @@ class GameScene: Scene
     Entity eText;
     Entity eText2;
     
+    Track track;
+    
     Vector3f[] waypoints = 
     [
         Vector3f(0.0, 0.0, -0.0),
@@ -366,6 +369,8 @@ class GameScene: Scene
     
     Entity lookaheadMarker;
     
+    Car[] participants;
+    
     Autopilot autopilot;
     Autopilot autopilot2;
     Autopilot autopilot3;
@@ -390,6 +395,7 @@ class GameScene: Scene
     ~this()
     {
         mclaren.free();
+        Delete(participants);
     }
     
     void loadCarConfig(string filename, CarAsset* carAsset)
@@ -571,7 +577,7 @@ class GameScene: Scene
         auto trackShape = New!NewtonMeshShape(aTrack, physicsWorld);
         eTrack.makeStaticBody(physicsWorld, trackShape);
         
-        Track track = New!Track(this);
+        track = New!Track(this);
         track.waypoints = waypoints;
         GroundMaterial gm;
         foreach(i, mat; aTrack.materials)
@@ -616,6 +622,7 @@ class GameScene: Scene
         lookaheadMarker.position = waypoints[1] + Vector3f(0.0f, 1.0f, 0.0f);
         */
         
+        participants = New!(Car[])(3);
         
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
@@ -627,11 +634,12 @@ class GameScene: Scene
         car.vehicle.arcadeSteering = true;
         autopilot = New!Autopilot(car, this);
         autopilot.track = track;
-        autopilot.maxSpeed = 55.0f;
+        autopilot.maxSpeed = 40.0f;
         autopilot.maxLateralAcceleration = 5.0f;
         autopilot.maxSegmentsToSearch = 7;
         autopilot.steeringForce = 10.0f;
         autopilot.active = false;
+        participants[0] = car;
         
         // Opponent cars
         car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
@@ -642,10 +650,11 @@ class GameScene: Scene
         car2.vehicle.arcadeSteering = false;
         autopilot2 = New!Autopilot(car2, this);
         autopilot2.track = track;
-        autopilot2.maxSpeed = 55.0f;
+        autopilot2.maxSpeed = 40.0f;
         autopilot2.maxLateralAcceleration = 5.0f;
         autopilot2.maxSegmentsToSearch = 7;
         autopilot2.steeringForce = 10.0f;
+        participants[1] = car2;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
         car3.vehicle.track = track;
@@ -655,10 +664,11 @@ class GameScene: Scene
         car3.vehicle.arcadeSteering = false;
         autopilot3 = New!Autopilot(car3, this);
         autopilot3.track = track;
-        autopilot3.maxSpeed = 55.0f;
+        autopilot3.maxSpeed = 40.0f;
         autopilot3.maxLateralAcceleration = 5.0f;
         autopilot3.maxSegmentsToSearch = 7;
         autopilot3.steeringForce = 10.0f;
+        participants[2] = car3;
         
         auto eParticles = addEntity();
         particleSystem = New!ParticleSystem(eventManager, eParticles);
@@ -861,6 +871,10 @@ class GameScene: Scene
                 autopilot.start();
                 autopilot2.start();
                 autopilot3.start();
+                
+                car.raceStarted = true;
+                car2.raceStarted = true;
+                car3.raceStarted = true;
             }
         }
         else if (key == KEY_F5)
@@ -1153,6 +1167,12 @@ class GameScene: Scene
         audio.set3dListenerUp(camera.upAbsolute.x, camera.upAbsolute.y, camera.upAbsolute.z);
         audio.update3dAudio();
         
+        updateLeaderboard();
+        foreach (size_t i, ref car; participants)
+        {
+            car.racePosition = cast(uint)(i + 1);
+        }
+        
         updateText(speedKMH);
         
         tachometer.x = game.drawableWidth - 48 - 256;
@@ -1167,6 +1187,19 @@ class GameScene: Scene
         eventManager.showCursor(!vehicleView.active);
     }
     
+    void updateLeaderboard()
+    {
+        participants.sort!((a, b) {
+            if (a.finished && b.finished)
+                return a.raceTime < b.raceTime;
+            if (a.laps != b.laps) 
+                return a.laps > b.laps;
+            if (a.trackSegmentIndex != b.trackSegmentIndex) 
+                return a.trackSegmentIndex > b.trackSegmentIndex;
+            return false; 
+        });
+    }
+    
     float tachometerValue = 0.0f;
     
     float rpmFactor = 0.0f;
@@ -1176,8 +1209,17 @@ class GameScene: Scene
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);
         uint speedInt = cast(int)speed;
+        uint lapMin = cast(uint)(car.lapTime / 60.0);
+        uint lapSec = cast(uint)(car.lapTime) % 60;
+        uint lapMsec = cast(uint)((car.lapTime - cast(uint)car.lapTime) * 1000.0);
+        uint bestMin = cast(uint)(car.bestLapTime / 60.0);
+        uint bestSec = cast(uint)(car.bestLapTime) % 60;
+        uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
         //uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
-        uint n = sprintf(txt.ptr, "trackSegmentIndex: %llu ", car.trackSegmentIndex);
+        uint n = sprintf(txt.ptr, "lap: %u | position: %u | trackSegmentIndex: %llu | waypoints: %llu | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u",
+            min2(track.numLaps, car.laps + 1), car.racePosition,
+            car.trackSegmentIndex, track.waypoints.length,
+            lapMin, lapSec, lapMsec, bestMin, bestSec, bestMsec);
         string s = cast(string)txt[0..n];
         text.setText(s);
     }

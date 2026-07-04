@@ -98,6 +98,13 @@ class Autopilot: Owner
         if (!active || car is null || track is null)
             return;
         
+        if (car.finished)
+        {
+            isIdle = true;
+            // TODO: better parking mode
+            car.vehicle.manualSteer(0.05f);
+        }
+        
         if (isIdle)
         {
             car.vehicle.idle();
@@ -109,7 +116,6 @@ class Autopilot: Owner
         float carSpeed = car.vehicle.speed;
         
         currentSegmentIndex = car.trackSegmentIndex;
-        //track.getNearestSegmentIndex(currentSegmentIndex, carPosition);
         targetPoint = findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
         
         curvature = 0.0f;
