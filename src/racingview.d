@@ -192,7 +192,7 @@ class RacingViewComponent: EntityComponent
     
     override void onMouseWheel(int x, int y)
     {
-        if (!active || !mouseActive || !mouseGrab)
+        if (!mouseActive || !mouseGrab)
             return;
         
         float zoom = cast(float)y * mouseZoomSensibility;

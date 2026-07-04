@@ -730,17 +730,7 @@ class GameScene: Scene
         eRain.gbufferMask = 0.0f;
         
         vehicleView = New!RacingViewComponent(eventManager, camera, car.eCar);
-        if (game.isWindowFocused)
-        {
-            vehicleView.active = true;
-            lastMouseX = eventManager.mouseX;
-            lastMouseY = eventManager.mouseY;
-            vehicleView.resetMouseInput();
-        }
-        else
-        {
-            vehicleView.active = false;
-        }
+        vehicleView.active = false;
         
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
@@ -832,22 +822,11 @@ class GameScene: Scene
     
     override void onKeyDown(int key)
     {
-        if (key == KEY_ESCAPE)
+        // Global keys
+        if (key == KEY_F5)
         {
-            if (vehicleView.active)
-            {
-                vehicleView.active = false;
-                game.ui.active = true;
-                eventManager.setMouse(lastMouseX, lastMouseY);
-            }
-            else
-            {
-                lastMouseX = eventManager.mouseX;
-                lastMouseY = eventManager.mouseY;
-                vehicleView.active = true;
-                vehicleView.resetMouseInput();
-                game.ui.active = false;
-            }
+            eText.visible = !eText.visible;
+            eText2.visible = false;
         }
         else if (key == KEY_M)
         {
@@ -862,7 +841,27 @@ class GameScene: Scene
                 audio.setVolume(musicVoice, musicVolume);
             }
         }
-        else if (key == KEY_P)
+        else if (key == KEY_ESCAPE)
+        {
+            vehicleView.active = false;
+            if (!paused)
+            {
+                game.ui.active = true;
+                paused = true;
+                audio.setPauseAll(true);
+            }
+            else
+            {
+                game.ui.active = false;
+                paused = false;
+                audio.setPauseAll(false);
+            }
+        }
+        else if (paused)
+            return;
+        
+        // In-game keys
+        if (key == KEY_P)
         {
             autopilot.active = !autopilot.active;
             car.vehicle.arcadeSteering = !car.vehicle.arcadeSteering;
@@ -884,20 +883,35 @@ class GameScene: Scene
                 car3.raceStarted = true;
             }
         }
-        else if (key == KEY_F5)
-        {
-            eText.visible = !eText.visible;
-            eText2.visible = false;
-        }
     }
     
     override void onMouseButtonDown(int button)
     {
+        if (game.ui.capturesMouse)
+            return;
+        
+        if (button == MB_LEFT)
+        {
+            vehicleView.active = true;
+            lastMouseX = eventManager.mouseX;
+            lastMouseY = eventManager.mouseY;
+            vehicleView.resetMouseInput();
+            eventManager.showCursor(false);
+        }
     }
     
     override void onMouseButtonUp(int button)
     {
-        if (button == MB_RIGHT)
+        if (game.ui.capturesMouse)
+            return;
+        
+        if (button == MB_LEFT)
+        {
+            vehicleView.active = false;
+            eventManager.setMouse(lastMouseX, lastMouseY);
+            eventManager.showCursor(true);
+        }
+        else if (button == MB_RIGHT)
         {
             auto shotVoice = audio.play(sfxCamera);
             audio.setVolume(shotVoice, sfxVolume);
@@ -917,6 +931,8 @@ class GameScene: Scene
     
     override void onControllerAxisMotion(uint deviceIndex, int axis, float value)
     {
+        if (paused)
+            return;
         //logInfo("Controller ", deviceIndex, " axis ", axis, ": ", value);
         
         if (axis == GA_TRIGGERRIGHT)
@@ -1194,6 +1210,15 @@ class GameScene: Scene
         eventManager.showCursor(!vehicleView.active);
     }
     
+    override void onPauseUpdate(Time t)
+    {
+        ui.update(t);
+        overlay.update(t);
+        camera.update(t);
+        
+        eventManager.showCursor(!vehicleView.active);
+    }
+    
     void updateLeaderboard()
     {
         participants.sort!((a, b) {
@@ -1223,7 +1248,6 @@ class GameScene: Scene
         uint bestSec = cast(uint)(car.bestLapTime) % 60;
         uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
         //uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
-        //uint n = sprintf(txt.ptr, "lap: %u | position: %u | trackSegmentIndex: %llu | waypoints: %llu | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u",
         uint n = sprintf(txt.ptr, "lap: %u | position: %u | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u | Speed: %u km/h",
             min2(track.numLaps, car.laps + 1),
             car.racePosition,
