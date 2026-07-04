@@ -26,6 +26,8 @@ Currently I'm working on the race logics, weather effects, and car description f
 
 Xbox controller is recommended. Steering wheels are not supported yet.
 
+In the pause mode it is possible to customize car's appearance using the "Car settings" window.
+
 ## TODO List
 
 - [x] Vehicle physics
@@ -33,10 +35,10 @@ Xbox controller is recommended. Steering wheels are not supported yet.
 - [x] Opponents AI
 - [x] Road/ground material detection
 - [x] Race logic
-- [ ] Game UI, main menu
-- [ ] Car selection
-- [ ] Track selection
-- [ ] Tournament logic
+- [ ] Main menu
+- [ ] Car selection UI
+- [ ] Track selection UI
+- [ ] Custom cars
 
 ## Credits
 
