@@ -29,37 +29,55 @@ module ai;
 
 import std.math;
 import dagon;
-import vehicle;
+import car;
+import track;
 
 /**
  * AI that drives a given Vehicle along the path of waypoints.
  */
 class Autopilot: Owner
 {
-    Vector3f[] waypoints;
+    ///
+    Car car;
     
-    Vehicle car;
+    ///
+    Track track;
+    
+    ///
     float lookaheadDistance = 30.0f;
     
+    ///
     bool active = true;
     
     // A visibility window of forward segments.
-    size_t maxSegmentsToSearch = 30;
+    size_t maxSegmentsToSearch = 5; //30;
     
+    ///
     size_t currentSegmentIndex = 0;
+    
+    ///
     float maxSpeed = 50.0f;
+    
+    ///
     float steeringForce = 10.0f;
+    
+    ///
     float maxLateralAcceleration = 5.0f;
     
+    ///
     bool isIdle = true;
+    
+    ///
     bool isRecovering = false;
+    
+    ///
     double stuckTimer = 0.0;
     double recoveryTimer = 0.0;
     Vector3f targetPoint = Vector3f(0.0f, 0.0f, 0.0f);
     float curvature = 0.0f;
     float steeringInput = 0.0f;
     
-    this(Vehicle controlledCar, Owner owner)
+    this(Car controlledCar, Owner owner)
     {
         super(owner);
         this.car = controlledCar;
@@ -77,25 +95,27 @@ class Autopilot: Owner
     
     void update(Time t)
     {
-        if (!active)
+        if (!active || car is null || track is null)
             return;
         
         if (isIdle)
         {
-            car.idle();
+            car.vehicle.idle();
             return;
         }
         
-        Vector3f carPosition = car.position;
-        Vector3f carDirection = car.longitudinalAxis;
-        float carSpeed = car.speed;
+        Vector3f carPosition = car.vehicle.position;
+        Vector3f carDirection = car.vehicle.longitudinalAxis;
+        float carSpeed = car.vehicle.speed;
         
-        targetPoint = calcTargetPoint(carPosition);
+        currentSegmentIndex = car.trackSegmentIndex;
+        //track.getNearestSegmentIndex(currentSegmentIndex, carPosition);
+        targetPoint = findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
         
         curvature = 0.0f;
-        float steeringAngle = calculateSteeringAngle(carPosition, carDirection, targetPoint, car.wheelbase, curvature);
+        float steeringAngle = calculateSteeringAngle(carPosition, carDirection, targetPoint, car.vehicle.wheelbase, curvature);
         
-        float maxSteeringAngle = degtorad(car.maxSteeringAngle);
+        float maxSteeringAngle = degtorad(car.vehicle.maxSteeringAngle);
         steeringInput = steeringForce * clamp(steeringAngle, -maxSteeringAngle, maxSteeringAngle) / maxSteeringAngle;
         steeringInput = clamp(steeringInput, -1.0f, 1.0f);
         
@@ -105,52 +125,21 @@ class Autopilot: Owner
 
         if (!inRecovery)
         {
-            car.manualSteer(steeringInput);
+            car.vehicle.manualSteer(steeringInput);
             
             if (desiredThrottle >= 0.0f)
-                car.accelerate(1.0f, desiredThrottle);
+                car.vehicle.accelerate(1.0f, desiredThrottle);
             else
-                car.idle();
-                //car.accelerate(-1.0f, abs(desiredThrottle));
+                car.vehicle.idle();
         }
-    }
-    
-    Vector3f calcTargetPoint(Vector3f carPosition)
-    {
-        // Update the current segment (search for the closest point to the car within a small range).
-        // Limit the search to the vicinity of the old index so it doesn't jump to the finish line
-        size_t searchStart = (currentSegmentIndex > 2) ? currentSegmentIndex - 2 : 0;
-        size_t searchEnd = currentSegmentIndex + 5;
-        if (searchEnd >= waypoints.length) searchEnd = waypoints.length;
-
-        float minD = float.max;
-        size_t bestIdx = currentSegmentIndex;
-
-        for (size_t i = searchStart; i < searchEnd; ++i)
-        {
-            float distSq = (carPosition.x - waypoints[i].x)^^2 + (carPosition.z - waypoints[i].z)^^2; // псевдокод
-            if (distSq < minD)
-            {
-                minD = distSq;
-                bestIdx = i;
-            }
-        }
-        
-        // Segment index is the index of the starting point of the segment
-        if (bestIdx < waypoints.length - 1)
-            currentSegmentIndex = bestIdx;
-        else
-            currentSegmentIndex = 0; // Looping the index when crossing the finish line
-
-        return findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
     }
     
     Vector3f findLookaheadPoint(Vector3f carPosition, float lookaheadDist, size_t currentSegmentIndex)
     {
-        if (waypoints.length < 2)
+        if (track.waypoints.length < 2)
             return carPosition;
 
-        size_t numWaypoints = waypoints.length;
+        size_t numWaypoints = track.waypoints.length;
 
         Vector3f bestLookaheadPt;
         bool found = false;
@@ -162,8 +151,8 @@ class Autopilot: Owner
             size_t idx1 = (currentSegmentIndex + i) % numWaypoints;
             size_t idx2 = (currentSegmentIndex + i + 1) % numWaypoints;
 
-            Vector3f p1 = waypoints[idx1];
-            Vector3f p2 = waypoints[idx2];
+            Vector3f p1 = track.waypoints[idx1];
+            Vector3f p2 = track.waypoints[idx2];
 
             float dx = p2.x - p1.x;
             float dz = p2.z - p1.z;
@@ -175,6 +164,7 @@ class Autopilot: Owner
             float b = 2.0f * (fx * dx + fz * dz);
             float c = (fx * fx + fz * fz) - (lookaheadDist * lookaheadDist);
 
+            // Degenerate case, zero-length segment
             if (a == 0.0f) continue; 
 
             float discriminant = b * b - 4.0f * a * c;
@@ -216,12 +206,12 @@ class Autopilot: Owner
         // If an intersection is found in the visibility window, return it
         if (found) return bestLookaheadPt;
 
-        // Fallback. Extrapolate the point strictly from the current segment forward, without jumping backwards
+        // Fallback: extrapolate the point strictly from the current segment forward, without jumping backwards
         size_t idx1 = currentSegmentIndex % numWaypoints;
         size_t idx2 = (currentSegmentIndex + 1) % numWaypoints;
 
-        Vector3f p1 = waypoints[idx1];
-        Vector3f p2 = waypoints[idx2];
+        Vector3f p1 = track.waypoints[idx1];
+        Vector3f p2 = track.waypoints[idx2];
         
         float dx = p2.x - p1.x;
         float dz = p2.z - p1.z;
@@ -242,8 +232,8 @@ class Autopilot: Owner
                 // Move the remainder to the next segment in the loop
                 float remainingDist = (finalT - 1.0f) * segLength;
                 size_t nextIdx2 = (idx2 + 1) % numWaypoints;
-                Vector3f np1 = waypoints[idx2];
-                Vector3f np2 = waypoints[nextIdx2];
+                Vector3f np1 = track.waypoints[idx2];
+                Vector3f np2 = track.waypoints[nextIdx2];
                 float ndx = np2.x - np1.x;
                 float ndz = np2.z - np1.z;
                 float nSegLength = sqrt(ndx * ndx + ndz * ndz);
@@ -308,7 +298,7 @@ class Autopilot: Owner
     
     float controlVehicleAcceleration(float kappa, float maxSpeed)
     {
-        float currentSpeed = car.speed;
+        float currentSpeed = car.vehicle.speed;
         
         float targetSpeed = maxSpeed;
         float absKappa = abs(kappa);
@@ -392,12 +382,12 @@ class Autopilot: Owner
                 return false;
             }
 
-            car.accelerate(-1.0f, 0.7f);
+            car.vehicle.accelerate(-1.0f, 0.7f);
 
             // TODO: steering
             // We don't just need to drive backwards, but also steer in the opposite direction
             // from the target point to turn the rear of the car into the open space.
-            car.manualSteer(-1.0f);
+            car.vehicle.manualSteer(-1.0f);
 
             return true;
         }

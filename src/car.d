@@ -236,6 +236,9 @@ class Car: Owner
     ///
     bool brakeHysteresis = false;
     
+    ///
+    size_t trackSegmentIndex = 0;
+    
     this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, Owner owner)
     {
         super(owner);
@@ -513,6 +516,8 @@ class Car: Owner
                 }
             }
         }
+        
+        trackSegmentIndex = vehicle.track.getNearestSegmentIndex(trackSegmentIndex, vehicle.position);
     }
     
     Vector3f position()

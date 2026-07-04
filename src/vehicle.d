@@ -34,7 +34,7 @@ import dagon;
 import dagon.ext.newton;
 import wheel;
 import arb;
-import ground;
+import track;
 
 Vector3f boxInertia(Vector3f halfSize, float mass)
 {
@@ -110,8 +110,8 @@ class Vehicle: EntityComponent
     bool brake = false;
     float movementDirection = 0.0f;
     
-    // Ground
-    Ground ground;
+    // Current track
+    Track track;
     
     // Aerodynamics
     float airDrag = 0.004f;

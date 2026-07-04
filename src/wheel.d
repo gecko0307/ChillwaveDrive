@@ -260,11 +260,11 @@ class Wheel: Owner, NewtonRaycaster
             
             float tyreSpeed = angularVelocity * radius;
             
-            if (vehicle.ground && groundMaterialIndex >= 0)
+            if (vehicle.track && groundMaterialIndex >= 0)
             {
-                if (groundMaterialIndex < vehicle.ground.materials.length)
+                if (groundMaterialIndex < vehicle.track.materials.length)
                 {
-                    auto m = &vehicle.ground.materials.data[groundMaterialIndex];
+                    auto m = &vehicle.track.materials.data[groundMaterialIndex];
                     grip = m.grip;
                     rollingResistanceC0 = m.rollingResistanceC0;
                     rollingResistanceC1 = m.rollingResistanceC1;

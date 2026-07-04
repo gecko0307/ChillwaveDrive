@@ -45,7 +45,7 @@ import car;
 import racingview;
 import ai;
 import weather;
-import ground;
+import track;
 
 float normalizeInRange(float x, float xmin, float xmax)
 {
@@ -571,7 +571,8 @@ class GameScene: Scene
         auto trackShape = New!NewtonMeshShape(aTrack, physicsWorld);
         eTrack.makeStaticBody(physicsWorld, trackShape);
         
-        Ground ground = New!Ground(this);
+        Track track = New!Track(this);
+        track.waypoints = waypoints;
         GroundMaterial gm;
         foreach(i, mat; aTrack.materials)
         {
@@ -590,7 +591,7 @@ class GameScene: Scene
                 gm.rollingResistanceC1 = 0.0005f;
                 gm.rollingResistanceC2 = 0.000f;
             }
-            ground.addMaterial(gm);
+            track.addMaterial(gm);
         }
         
         // Waypoints visuals
@@ -619,13 +620,13 @@ class GameScene: Scene
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);
-        car.vehicle.ground = ground;
+        car.vehicle.track = track;
         car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 2000.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 2000.0f);
         car.vehicle.arcadeSteering = true;
-        autopilot = New!Autopilot(car.vehicle, this);
-        autopilot.waypoints = waypoints;
+        autopilot = New!Autopilot(car, this);
+        autopilot.track = track;
         autopilot.maxSpeed = 55.0f;
         autopilot.maxLateralAcceleration = 5.0f;
         autopilot.maxSegmentsToSearch = 7;
@@ -634,26 +635,26 @@ class GameScene: Scene
         
         // Opponent cars
         car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
-        car2.vehicle.ground = ground;
+        car2.vehicle.track = track;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[0], car2.vehicle.wheels[1], 2000.0f);
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[2], car2.vehicle.wheels[3], 2000.0f);
         car2.vehicle.arcadeSteering = false;
-        autopilot2 = New!Autopilot(car2.vehicle, this);
-        autopilot2.waypoints = waypoints;
+        autopilot2 = New!Autopilot(car2, this);
+        autopilot2.track = track;
         autopilot2.maxSpeed = 55.0f;
         autopilot2.maxLateralAcceleration = 5.0f;
         autopilot2.maxSegmentsToSearch = 7;
         autopilot2.steeringForce = 10.0f;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
-        car3.vehicle.ground = ground;
+        car3.vehicle.track = track;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[0], car3.vehicle.wheels[1], 2000.0f);
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[2], car3.vehicle.wheels[3], 2000.0f);
         car3.vehicle.arcadeSteering = false;
-        autopilot3 = New!Autopilot(car3.vehicle, this);
-        autopilot3.waypoints = waypoints;
+        autopilot3 = New!Autopilot(car3, this);
+        autopilot3.track = track;
         autopilot3.maxSpeed = 55.0f;
         autopilot3.maxLateralAcceleration = 5.0f;
         autopilot3.maxSegmentsToSearch = 7;
@@ -1175,7 +1176,8 @@ class GameScene: Scene
     {
         uint fps = cast(int)(1.0 / eventManager.deltaTime);
         uint speedInt = cast(int)speed;
-        uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
+        //uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
+        uint n = sprintf(txt.ptr, "trackSegmentIndex: %llu ", car.trackSegmentIndex);
         string s = cast(string)txt[0..n];
         text.setText(s);
     }
