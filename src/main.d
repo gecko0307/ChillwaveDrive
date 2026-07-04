@@ -72,6 +72,7 @@ class ImGui: EventListener
         igSetCurrentContext(igContext);
         io = igGetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags.NoMouseCursorChange;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         ImWchar[] ranges = [
             0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -227,6 +228,7 @@ class GameScene: Scene
     Color4f fogSunset = Color4f(0.6f, 0.4f, 0.7f, 1.0f);
     Color4f fogNight = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
     
+    UIWidget gameHUD;
     UIWidget tachometer;
     UIWidget tachometerArrowPivot;
     UIWidget tachometerArrow;
@@ -270,6 +272,9 @@ class GameScene: Scene
     
     Entity eText;
     Entity eText2;
+    
+    TextLine text;
+    TextLine textShadow;
     
     Track track;
     
@@ -526,10 +531,6 @@ class GameScene: Scene
         physicsWorld = New!NewtonPhysicsWorld(eventManager, assetManager);
         version(Windows) physicsWorld.loadPlugins(".");
         
-        camera = addCamera();
-        camera.fov = 42.0f;
-        game.renderer.activeCamera = camera;
-        
         sun = addLight(LightType.Sun);
         //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
         sun.color = Color4f(1.0f, 0.9f, 0.8f, 1.0f);
@@ -551,18 +552,7 @@ class GameScene: Scene
         environment.ambientBRDF = game.deferredRenderer.brdf;
         environment.ambientEnergy = 0.05f;
         
-        eSky = addEntity();
-        auto psync = New!PositionSync(eventManager, eSky, camera);
-        eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
-        eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
-        eSky.layer = EntityLayer.Background;
-        eSky.material = New!Material(assetManager);
-        eSky.material.depthWrite = false;
-        eSky.material.useCulling = false;
-        eSky.material.baseColorTexture = prefilteredCubemap;
-        eSky.material.linearColor = true;
-        eSky.material.emissionEnergy = environment.ambientEnergy;
-        eSky.gbufferMask = 0.0f;
+        
         
         // Track
         aTrack.markTransparentEntities();
@@ -729,6 +719,23 @@ class GameScene: Scene
         eRain.material.depthWrite = false;
         eRain.gbufferMask = 0.0f;
         
+        camera = addCamera();
+        camera.fov = 42.0f;
+        game.renderer.activeCamera = camera;
+        
+        eSky = addEntity();
+        auto psync = New!PositionSync(eventManager, eSky, camera);
+        eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
+        eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
+        eSky.layer = EntityLayer.Background;
+        eSky.material = New!Material(assetManager);
+        eSky.material.depthWrite = false;
+        eSky.material.useCulling = false;
+        eSky.material.baseColorTexture = prefilteredCubemap;
+        eSky.material.linearColor = true;
+        eSky.material.emissionEnergy = environment.ambientEnergy;
+        eSky.gbufferMask = 0.0f;
+        
         vehicleView = New!RacingViewComponent(eventManager, camera, car.eCar);
         vehicleView.active = false;
         
@@ -775,20 +782,40 @@ class GameScene: Scene
         
         audio.update3dAudio();
         
-        text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
-        text.color = Color4f(1.0f, 1.0f, 1.0f, 0.5f);
         eText = addEntityHUD();
-        eText.drawable = text;
         eText.position = Vector3f(16.0f, 30.0f, 0.0f);
         eText.visible = false;
         
-        auto text2 = New!TextLine(aFontDroidSans14.font, "Press Enter to start the race", assetManager);
-        text2.color = Color4f(1.0f, 1.0f, 1.0f, 0.5f);
+        auto eTextShadow = addEntityHUD(eText);
+        textShadow = New!TextLine(aFontDroidSans14.font, "0", assetManager);
+        textShadow.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
+        eTextShadow.drawable = textShadow;
+        eTextShadow.position = Vector3f(1.0f, 1.0f, 0.0f);
+        eTextShadow.visible = false;
+        
+        auto eTextFg = addEntityHUD(eText);
+        text = New!TextLine(aFontDroidSans14.font, "0", assetManager);
+        text.color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        eTextFg.drawable = text;
+        eTextFg.visible = false;
+        
         eText2 = addEntityHUD();
-        eText2.drawable = text2;
         eText2.position = Vector3f(16.0f, 30.0f, 0.0f);
         
-        tachometerArrowPivot = addWidget!UIWidget();
+        auto text2Shadow = New!TextLine(aFontDroidSans14.font, "Press Enter to start the race", assetManager);
+        text2Shadow.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
+        auto eText2Shadow = addEntityHUD(eText2);
+        eText2Shadow.drawable = text2Shadow;
+        eText2Shadow.position = Vector3f(1.0f, 1.0f, 0.0f);
+        
+        auto text2 = New!TextLine(aFontDroidSans14.font, "Press Enter to start the race", assetManager);
+        text2.color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        auto eText2Fg = addEntityHUD(eText2);
+        eText2Fg.drawable = text2;
+        
+        gameHUD = addWidget!UIWidget();
+        
+        tachometerArrowPivot = addWidget!UIWidget(gameHUD);
         
         tachometerArrow = addWidget!UIWidget(tachometerArrowPivot);
         tachometerArrow.width = 256;
@@ -797,7 +824,7 @@ class GameScene: Scene
         tachometerArrow.y = -128;
         tachometerArrow.background.material.baseColorTexture = aTachometerArrow.texture;
         
-        tachometer = addWidget!UIWidget();
+        tachometer = addWidget!UIWidget(gameHUD);
         tachometer.width = 256;
         tachometer.height = 256;
         tachometer.background.material.baseColorTexture = aTachometer.texture;
@@ -818,15 +845,16 @@ class GameScene: Scene
         game.deferred.passLight.volumetricScatteringEnabled = false;
     }
     
-    TextLine text;
-    
     override void onKeyDown(int key)
     {
         // Global keys
         if (key == KEY_F5)
         {
-            eText.visible = !eText.visible;
-            eText2.visible = false;
+            if (eText.visible)
+                eText.hide();
+            else
+                eText.show();
+            eText2.hide();
         }
         else if (key == KEY_M)
         {
@@ -846,15 +874,18 @@ class GameScene: Scene
             vehicleView.active = false;
             if (!paused)
             {
+                gameHUD.hide();
                 game.ui.active = true;
                 paused = true;
                 audio.setPauseAll(true);
             }
             else
             {
+                gameHUD.show();
                 game.ui.active = false;
                 paused = false;
                 audio.setPauseAll(false);
+                viewResetTime = 0.0f;
             }
         }
         else if (paused)
@@ -871,8 +902,8 @@ class GameScene: Scene
             if (!raceStarted)
             {
                 raceStarted = true;
-                eText2.visible = false;
-                eText.visible = true;
+                eText2.hide();
+                eText.show();
                 
                 autopilot.start();
                 autopilot2.start();
@@ -892,11 +923,14 @@ class GameScene: Scene
         
         if (button == MB_LEFT)
         {
-            vehicleView.active = true;
-            lastMouseX = eventManager.mouseX;
-            lastMouseY = eventManager.mouseY;
-            vehicleView.resetMouseInput();
-            eventManager.showCursor(false);
+            if (paused)
+            {
+                vehicleView.active = true;
+                lastMouseX = eventManager.mouseX;
+                lastMouseY = eventManager.mouseY;
+                vehicleView.resetMouseInput();
+                //eventManager.showCursor(false);
+            }
         }
     }
     
@@ -907,9 +941,12 @@ class GameScene: Scene
         
         if (button == MB_LEFT)
         {
-            vehicleView.active = false;
-            eventManager.setMouse(lastMouseX, lastMouseY);
-            eventManager.showCursor(true);
+            if (paused)
+            {
+                vehicleView.active = false;
+                eventManager.setMouse(lastMouseX, lastMouseY);
+                //eventManager.showCursor(true);
+            }
         }
         else if (button == MB_RIGHT)
         {
@@ -984,6 +1021,8 @@ class GameScene: Scene
     
     float gravelVolume = 0.0f;
     
+    float speedKMH = 0.0f;
+    
     override void onUpdate(Time t)
     {
         // Update AI
@@ -1035,7 +1074,7 @@ class GameScene: Scene
         car2.update(t);
         car3.update(t);
         
-        float speedKMH = car.speedKMH();
+        speedKMH = car.speedKMH();
         
         // Engine sound
         audio.set3dSourcePosition(engine1Voice, car.position.x, car.position.y, car.position.z);
@@ -1196,6 +1235,21 @@ class GameScene: Scene
             car.racePosition = cast(uint)(i + 1);
         }
         
+        updateHUD(t);
+        
+        if (viewResetTime < 1.0f)
+            viewResetTime += 0.5f * t.delta;
+        else
+            viewResetTime = 1.0f;
+        vehicleView.targetTurnAngle = lerp(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
+        vehicleView.targetPitchAngle = lerp(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
+        vehicleView.targetDistance = lerp(vehicleView.targetDistance, vehicleView.minDistanceToTarget, viewResetTime);
+        
+        eventManager.showCursor(false);
+    }
+    
+    void updateHUD(Time t)
+    {
         updateText(speedKMH);
         
         tachometer.x = game.drawableWidth - 48 - 256;
@@ -1206,14 +1260,16 @@ class GameScene: Scene
         tachometerArrowPivot.x = tachometer.x + 128;
         tachometerArrowPivot.y = tachometer.y + 128;
         tachometerArrowPivot.entity.rotation = rotationQuaternion!float(Axis.z, degtorad(tachometerValue));
-        
-        eventManager.showCursor(!vehicleView.active);
     }
+    
+    float viewResetTime = 0.0f;
     
     override void onPauseUpdate(Time t)
     {
+        updateHUD(t);
+        
         ui.update(t);
-        overlay.update(t);
+        overlay.background.update(t);
         camera.update(t);
         
         eventManager.showCursor(!vehicleView.active);
@@ -1248,7 +1304,7 @@ class GameScene: Scene
         uint bestSec = cast(uint)(car.bestLapTime) % 60;
         uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
         //uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
-        uint n = sprintf(txt.ptr, "lap: %u | position: %u | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u | Speed: %u km/h",
+        uint n = sprintf(txt.ptr, "Lap: %u | Pos: %u | Lap time: %02u:%02u.%03u | Best time: %02u:%02u.%03u | Speed: %u km/h",
             min2(track.numLaps, car.laps + 1),
             car.racePosition,
             lapMin, lapSec, lapMsec,
@@ -1256,6 +1312,7 @@ class GameScene: Scene
             speedInt);
         string s = cast(string)txt[0..n];
         text.setText(s);
+        textShadow.setText(s);
     }
 }
 

@@ -53,10 +53,10 @@ class RacingViewComponent: EntityComponent
     
     float carViewTurnAngle = 0.0f;
     
-    float targetPitchAngle = degtorad(20.0f);
-    float pitchAngle = degtorad(20.0f);
+    float targetPitchAngle = degtorad(15.0f);
+    float pitchAngle = degtorad(15.0f);
     
-    float minDistanceToTarget = 5.0f;
+    float minDistanceToTarget = 6.0f;
     float maxDistanceToTarget = 20.0f;
     
     float targetDistance;
