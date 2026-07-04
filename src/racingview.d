@@ -40,6 +40,18 @@ float shortestAngleDelta(float from, float to)
     return delta;
 }
 
+float lerpAngle(float current, float target, float t)
+{
+    float difference = target - current;
+    float pi2 = 2.0f * PI;
+    difference = fmod(difference, pi2);
+    if (difference > PI)
+        difference -= pi2;
+    else if (difference < -PI)
+        difference += pi2;
+    return current + difference * t;
+}
+
 /// A third-person racing view component for the game camera.
 class RacingViewComponent: EntityComponent
 {
@@ -148,7 +160,8 @@ class RacingViewComponent: EntityComponent
         }
         
         targetTurnAngle += turnDelta;
-        turnAngle += (targetTurnAngle - turnAngle) * turnStiffness;
+        float delta = shortestAngleDelta(turnAngle, targetTurnAngle);
+        turnAngle += delta * turnStiffness;
         
         targetPitchAngle += pitchDelta;
         targetPitchAngle = clamp(targetPitchAngle, degtorad(10.0f), degtorad(40.0f));
@@ -157,7 +170,7 @@ class RacingViewComponent: EntityComponent
         Vector3f carDirection = target.direction;
         carDirection = Vector3f(carDirection.x, 0.0f, carDirection.z).normalized;
         float targetCarViewTurnAngle = -(atan2(carDirection.z, carDirection.x) - PI * 0.5f);
-        float delta = shortestAngleDelta(carViewTurnAngle, targetCarViewTurnAngle);
+        delta = shortestAngleDelta(carViewTurnAngle, targetCarViewTurnAngle);
         carViewTurnAngle += delta * 1.5f * time.delta;
         
         Quaternionf carRotation =

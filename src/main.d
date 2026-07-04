@@ -879,6 +879,10 @@ class GameScene: Scene
             }
             else
             {
+                vehicleView.turnAngle = fmod(vehicleView.turnAngle, 2.0f * PI);
+                vehicleView.pitchAngle = fmod(vehicleView.pitchAngle, 2.0f * PI);
+                vehicleView.targetTurnAngle = fmod(vehicleView.targetTurnAngle, 2.0f * PI);
+                vehicleView.targetPitchAngle = fmod(vehicleView.targetPitchAngle, 2.0f * PI);
                 gameHUD.show();
                 game.ui.active = false;
                 paused = false;
@@ -1236,8 +1240,8 @@ class GameScene: Scene
             viewResetTime += 0.5f * t.delta;
         else
             viewResetTime = 1.0f;
-        vehicleView.targetTurnAngle = lerp(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
-        vehicleView.targetPitchAngle = lerp(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
+        vehicleView.targetTurnAngle = lerpAngle(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
+        vehicleView.targetPitchAngle = lerpAngle(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
         vehicleView.targetDistance = lerp(vehicleView.targetDistance, vehicleView.minDistanceToTarget, viewResetTime);
         
         eventManager.showCursor(false);
