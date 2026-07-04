@@ -812,6 +812,11 @@ class GameScene: Scene
         tachometer.height = 256;
         tachometer.background.material.baseColorTexture = aTachometer.texture;
         
+        tachometer.x = game.drawableWidth - 48 - 256;
+        tachometer.y = game.drawableHeight + 64 - 256;
+        tachometerArrowPivot.x = tachometer.x + 128;
+        tachometerArrowPivot.y = tachometer.y + 128;
+        
         overlay = addWidget!UIWidget();
         overlay.backgroundFocusedColor = overlay.backgroundUnfocusedColor =
             Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -868,6 +873,8 @@ class GameScene: Scene
             {
                 raceStarted = true;
                 eText2.visible = false;
+                eText.visible = true;
+                
                 autopilot.start();
                 autopilot2.start();
                 autopilot3.start();
@@ -1216,10 +1223,13 @@ class GameScene: Scene
         uint bestSec = cast(uint)(car.bestLapTime) % 60;
         uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
         //uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
-        uint n = sprintf(txt.ptr, "lap: %u | position: %u | trackSegmentIndex: %llu | waypoints: %llu | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u",
-            min2(track.numLaps, car.laps + 1), car.racePosition,
-            car.trackSegmentIndex, track.waypoints.length,
-            lapMin, lapSec, lapMsec, bestMin, bestSec, bestMsec);
+        //uint n = sprintf(txt.ptr, "lap: %u | position: %u | trackSegmentIndex: %llu | waypoints: %llu | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u",
+        uint n = sprintf(txt.ptr, "lap: %u | position: %u | lap time: %02u:%02u.%03u | best time: %02u:%02u.%03u | Speed: %u km/h",
+            min2(track.numLaps, car.laps + 1),
+            car.racePosition,
+            lapMin, lapSec, lapMsec,
+            bestMin, bestSec, bestMsec,
+            speedInt);
         string s = cast(string)txt[0..n];
         text.setText(s);
     }
