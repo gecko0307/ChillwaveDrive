@@ -32,7 +32,7 @@ Xbox controller is recommended. Steering wheels are not supported yet.
 - [x] Sounds
 - [x] Opponents AI
 - [x] Road/ground material detection
-- [ ] Race logic
+- [x] Race logic
 - [ ] Game UI, main menu
 - [ ] Car selection
 - [ ] Track selection
