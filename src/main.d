@@ -552,8 +552,6 @@ class GameScene: Scene
         environment.ambientBRDF = game.deferredRenderer.brdf;
         environment.ambientEnergy = 0.05f;
         
-        
-        
         // Track
         aTrack.markTransparentEntities();
         useEntity(aTrack.rootEntity);
@@ -929,7 +927,6 @@ class GameScene: Scene
                 lastMouseX = eventManager.mouseX;
                 lastMouseY = eventManager.mouseY;
                 vehicleView.resetMouseInput();
-                //eventManager.showCursor(false);
             }
         }
     }
@@ -945,7 +942,6 @@ class GameScene: Scene
             {
                 vehicleView.active = false;
                 eventManager.setMouse(lastMouseX, lastMouseY);
-                //eventManager.showCursor(true);
             }
         }
         else if (button == MB_RIGHT)
@@ -970,7 +966,6 @@ class GameScene: Scene
     {
         if (paused)
             return;
-        //logInfo("Controller ", deviceIndex, " axis ", axis, ": ", value);
         
         if (axis == GA_TRIGGERRIGHT)
         {
