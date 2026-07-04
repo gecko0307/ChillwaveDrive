@@ -976,7 +976,7 @@ class GameScene: Scene
         autopilot2.update(t);
         autopilot3.update(t);
         
-        if (!autopilot.active)
+        if (raceStarted && !autopilot.active)
         {
             // Car controls
             if (inputManager.getButton("forward")) // || joystickForward
