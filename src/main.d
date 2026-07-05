@@ -313,6 +313,8 @@ class GameScene: Scene
     VehicleDemoGame game;
     Soloud audio;
     
+    LoadingScreen loadingScreen;
+    
     GLTFAsset aTrack;
     
     Camera camera;
@@ -528,6 +530,10 @@ class GameScene: Scene
         super(game);
         this.game = game;
         this.audio = game.audio;
+        
+        loadingScreen = New!LoadingScreen(game, this);
+        //loadingScreen.backgroundTexture = splashTextureAsset.texture;
+        loadingScreen.progressbarCentered = false;
     }
     
     ~this()
@@ -652,6 +658,15 @@ class GameScene: Scene
         
         music = WavStream.create();
         music.load("data/music/stellar_escape.mp3");
+    }
+    
+    override void onLoad(Time t, float progress)
+    {
+        loadingScreen.progressbar.position = Vector3f(
+            (game.drawableWidth - loadingScreen.progressbarWidth) * 0.5f,
+            game.drawableHeight - 40.0f, 0);
+        loadingScreen.update(t, progress);
+        loadingScreen.render();
     }
 
     override void afterLoad()
@@ -933,13 +948,15 @@ class GameScene: Scene
         eText2 = addEntityHUD();
         eText2.position = Vector3f(16.0f, 30.0f, 0.0f);
         
-        auto text2Shadow = New!TextLine(aFontDroidSans14.font, "Press Enter to start the race", assetManager);
+        string hintStr = "Press Enter/Start to start the race. Press Escape to customize your car";
+        
+        auto text2Shadow = New!TextLine(aFontDroidSans14.font, hintStr, assetManager);
         text2Shadow.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
         auto eText2Shadow = addEntityHUD(eText2);
         eText2Shadow.drawable = text2Shadow;
         eText2Shadow.position = Vector3f(1.0f, 1.0f, 0.0f);
         
-        auto text2 = New!TextLine(aFontDroidSans14.font, "Press Enter to start the race", assetManager);
+        auto text2 = New!TextLine(aFontDroidSans14.font, hintStr, assetManager);
         text2.color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         auto eText2Fg = addEntityHUD(eText2);
         eText2Fg.drawable = text2;
@@ -1016,19 +1033,7 @@ class GameScene: Scene
         else if (key == KEY_RETURN)
         {
             if (!raceStarted)
-            {
-                raceStarted = true;
-                eText2.hide();
-                eText.show();
-                
-                autopilot.start();
-                autopilot2.start();
-                autopilot3.start();
-                
-                car.raceStarted = true;
-                car2.raceStarted = true;
-                car3.raceStarted = true;
-            }
+                startRace();
         }
     }
     
@@ -1036,7 +1041,32 @@ class GameScene: Scene
     {
         if (button == GB_START)
         {
+            if (!paused && !raceStarted)
+                startRace();
+            else
+                togglePause();
+        }
+        else if (button == GB_BACK)
+        {
             togglePause();
+        }
+    }
+    
+    void startRace()
+    {
+        if (!raceStarted)
+        {
+            raceStarted = true;
+            eText2.hide();
+            eText.show();
+            
+            autopilot.start();
+            autopilot2.start();
+            autopilot3.start();
+            
+            car.raceStarted = true;
+            car2.raceStarted = true;
+            car3.raceStarted = true;
         }
     }
     
