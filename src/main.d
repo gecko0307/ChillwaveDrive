@@ -1504,7 +1504,7 @@ class GameScene: Scene
             foreach(wheel; car.vehicle.wheels)
             {
                 float fDelta = abs(wheel.normalForce - wheel.normalForcePrev);
-                if (fDelta > 1000.0f)
+                if (fDelta > 1200.0f)
                     lowFreq = max2(lowFreq, 0.5f);
             }
         }
