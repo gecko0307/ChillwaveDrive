@@ -148,6 +148,7 @@ class RacingViewComponent: EntityComponent
     }
     
     float controllerAxisX = 0.0f;
+    float controllerAxisY = 0.0f;
     
     override void onControllerAxisMotion(uint deviceIndex, int axis, float value)
     {
@@ -157,6 +158,13 @@ class RacingViewComponent: EntityComponent
                 controllerAxisX = value;
             else
                 controllerAxisX = 0.0f;
+        }
+        else if (axis == GA_RIGHTY)
+        {
+            if (abs(value) > 0.1f)
+                controllerAxisY = value;
+            else
+                controllerAxisY = 0.0f;
         }
     }
     
@@ -172,11 +180,13 @@ class RacingViewComponent: EntityComponent
             eventManager.setMouse(oldMouseX, oldMouseY);
         }
         
-        turnDelta += controllerAxisX * 5.0f * time.delta;
+        turnDelta += controllerAxisX * 2.0f * time.delta;
         
         targetTurnAngle += turnDelta;
         float delta = shortestAngleDelta(turnAngle, targetTurnAngle);
         turnAngle += delta * turnStiffness;
+        
+        pitchDelta += -controllerAxisY * 2.0f * time.delta;
         
         targetPitchAngle += pitchDelta;
         targetPitchAngle = clamp(targetPitchAngle, degtorad(10.0f), degtorad(40.0f));
