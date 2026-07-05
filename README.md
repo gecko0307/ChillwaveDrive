@@ -13,16 +13,18 @@ Currently I'm working on the race logics, weather effects, and car description f
 
 ## Controls
 
-- W / Right trigger - accelerate
-- S / Left trigger - brake/reverse
-- A / Left stick -X - steer left
-- D / Left stick +X - steer right
-- L - toggle headlights
-- M - play/stop background music
-- Escape - pause
-- LMB + mouse - rotate the camera (when paused)
+- Enter/Start - start the race
+- W key / Up arrow key / Right trigger / A button - accelerate
+- S key / Down arrow key / Left trigger / B button  - brake/reverse
+- A key / Left arrow key / Left stick -X / D-pad left - steer left
+- D key / Right arrow key / Left stick +X / D-pad right - steer right
+- L key / Left shoulder - toggle headlights
+- M key - toggle background music
+- Escape key/Start/Back - pause/resume
+- LMB + mouse - rotate the camera (only when paused)
+- Right stick - rotate the camera
 - RMB - take a screenshot
-- F5 - show debug info.
+- F5 key - show debug info.
 
 Xbox controller is recommended. Steering wheels are not supported yet.
 
