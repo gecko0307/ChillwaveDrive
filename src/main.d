@@ -1258,6 +1258,10 @@ class GameScene: Scene
         const float angularThreshold = degtorad(30.0f);
         bool stopped = car.vehicle.chassisBody.velocity.length < velocityThreshold && car.vehicle.chassisBody.angularVelocity.length < angularThreshold;
         
+        bool isOnGravel =
+            car.vehicle.wheels[2].groundMaterialIndex == 1 ||
+            car.vehicle.wheels[3].groundMaterialIndex == 1;
+        
         // Rollover detection
         if (stopped && dot(car.eCar.up, Vector3f(0, 1, 0)) < 0.5f)
         {
@@ -1355,11 +1359,13 @@ class GameScene: Scene
             }
         }
         
+        // Feedback
+        updateGamepadRumble(car, speedKMH, lateralSlip, longitudinalSlip, isOnGravel, rpmFactor, t.delta);
+        
         // Dust particles
         bool makingDust =
             lateralSlip > 0.0f || car.brake ||
-            ((car.vehicle.wheels[2].groundMaterialIndex == 1 ||
-            car.vehicle.wheels[3].groundMaterialIndex == 1) && !car.vehicle.stopped);
+            (isOnGravel && !car.vehicle.stopped);
         if (makingDust && car.vehicle.wheels[2].onGround) emitterLeft.emitting = true;
         else emitterLeft.emitting = false;
         if (makingDust && car.vehicle.wheels[3].onGround) emitterRight.emitting = true;
@@ -1464,6 +1470,38 @@ class GameScene: Scene
         tachometerArrowPivot.x = tachometer.x + 128;
         tachometerArrowPivot.y = tachometer.y + 128;
         tachometerArrowPivot.entity.rotation = rotationQuaternion!float(Axis.z, degtorad(tachometerValue));
+    }
+    
+    void updateGamepadRumble(Car car, float speed, float lateralSlip, float longitudinalSlip, bool isOnGravel, float rpmFactor, double dt)
+    {
+        float lowFreq = 0.0f;
+        float highFreq = 0.0f;
+        
+        if (car.vehicle.accelerating)
+            highFreq = max2(highFreq, lerp(0.0f, 0.05f, rpmFactor));
+        
+        if (longitudinalSlip > 0.8f)
+            highFreq = max2(highFreq, clamp(longitudinalSlip, 0.0f, 0.5f));
+        
+        if (lateralSlip > 0.5f)
+            highFreq = max2(highFreq, 0.3f);
+
+        if (isOnGravel && !car.vehicle.stopped)
+            highFreq = max2(highFreq, 0.3f);
+
+        if (speed > 15.0f)
+        {
+            foreach(wheel; car.vehicle.wheels)
+            {
+                float fDelta = abs(wheel.normalForce - wheel.normalForcePrev);
+                if (fDelta > 1000.0f)
+                    lowFreq = max2(lowFreq, 0.5f);
+            }
+        }
+
+        uint low = cast(uint)(lowFreq * 65535);
+        uint high = cast(uint)(highFreq * 65535);
+        eventManager.gameControllerRumble(0, low, high, 0.04f);
     }
     
     float viewResetTime = 0.0f;

@@ -60,6 +60,7 @@ class Wheel: Owner, NewtonRaycaster
     float camberAngle = 0.0f;
     float facing = 0.0f;
     float normalForce = 0.0f;
+    float normalForcePrev = 0.0f;
     float arbForce = 0.0f;
     float lateralFrictionForce = 0.0f;
     float staticLateralFrictionForce = 0.0f;
@@ -214,6 +215,7 @@ class Wheel: Owner, NewtonRaycaster
             suspension.compression = 0.0f;
             
             normalForce = 0.0f;
+            normalForcePrev = 0.0f;
             lateralFrictionForce = 0.0f;
             longitudinalFrictionForce = 0.0f;
             
@@ -250,6 +252,7 @@ class Wheel: Owner, NewtonRaycaster
             vehicle.chassisBody.addForceAtPos(groundNormal * suspensionForce, suspPosition);
             
             float unsprungMass = vehicle.unsprungMass / cast(float)vehicle.wheels.length;
+            normalForcePrev = normalForce;
             normalForce = max2(suspensionForce + unsprungMass * 9.81f, 0.0f);
             
             Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
