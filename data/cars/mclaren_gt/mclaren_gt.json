@@ -1,7 +1,7 @@
 {
     "name": "mclaren_gt",
     "mass": 1530,
-    "inertia": [1.9, 0.7, 4.7],
+    "inertia": [1.0, 4.0, 1.0],
     "centerOfMass": [0.0, 0.0, 0.0],
     "maxSteeringAngle": 45,
     "maxTorque": 630,
@@ -37,7 +37,7 @@
             "suspension": {
                 "position": [-0.85, 0.38, 1.25],
                 "maxLength": 0.48,
-                "stiffness": 90000,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {
@@ -55,7 +55,7 @@
             "suspension": {
                 "position": [0.85, 0.38, 1.25],
                 "maxLength": 0.48,
-                "stiffness": 90000,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {
@@ -73,7 +73,7 @@
             "suspension": {
                 "position": [-0.85, 0.45, -1.42],
                 "maxLength": 0.48,
-                "stiffness": 90000,
+                "stiffness":60000,
                 "damping": 9000
             },
             "tyre": {
@@ -91,7 +91,7 @@
             "suspension": {
                 "position": [0.85, 0.45, -1.42],
                 "maxLength": 0.48,
-                "stiffness": 90000,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {

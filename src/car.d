@@ -355,11 +355,11 @@ class Car: Owner
             eWindows.blurMask = 0.0f;
         }
         
-        mass = jsonPropFloat(root, "facing", 1500.0f);
+        mass = jsonPropFloat(root, "mass", 1500.0f);
         inertia = jsonPropVector(root, "inertia", Vector3f(1.0f, 1.0f, 1.0f));
         
         vehicle = New!Vehicle(physicsWorld, eCar, chassisShape, mass, 1);
-        vehicle.setInertia(mass, boxInertia(inertia, mass));
+        vehicle.setInertiaCoefficients(mass, inertia);
         vehicle.chassisBody.centerOfMass = jsonPropVector(root, "centerOfMass", Vector3f(0.0f, 0.0f, 0.0f));
         vehicle.maxSteeringAngle = jsonPropFloat(root, "maxSteeringAngle", 45.0f);
         vehicle.maxTorque = jsonPropFloat(root, "maxTorque", 500.0f);

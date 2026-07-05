@@ -148,6 +148,7 @@ class Vehicle: EntityComponent
         
         gearRatio = gears[0];
         
+        this.chassisBody.gravity = Vector3f(0.0f, -9.81f, 0.0f);
         this.chassisBody.linearDamping = 0.0f;
     }
     
@@ -189,9 +190,16 @@ class Vehicle: EntityComponent
         return antiRollBar;
     }
     
-    void setInertia(float mass, Vector3f itertia)
+    void setInertiaCoefficients(float mass, Vector3f inertiaCoef)
     {
-        NewtonBodySetMassMatrix(chassisBody.newtonBody, mass, itertia.x, itertia.y, itertia.z);
+        float Ixx, Iyy, Izz;
+        NewtonBodyGetMass(chassisBody.newtonBody, &mass, &Ixx, &Iyy, &Izz);
+        Ixx *= inertiaCoef.x;
+        Iyy *= inertiaCoef.y;
+        Izz *= inertiaCoef.z;
+        NewtonBodySetMassMatrix(chassisBody.newtonBody, mass, Ixx, Iyy, Izz);
+        
+        //NewtonBodySetMassMatrix(chassisBody.newtonBody, mass, itertia.x, itertia.y, itertia.z);
     }
     
     Vector3f position() @property

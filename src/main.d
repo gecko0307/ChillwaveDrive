@@ -1035,6 +1035,11 @@ class GameScene: Scene
             if (!raceStarted)
                 startRace();
         }
+        else if (key == KEY_J)
+        {
+            car.vehicle.chassisBody.addForce(Vector3f(0.0f, 200000.0f, 0.0f));
+            car.vehicle.chassisBody.addTorque(Vector3f(100000.0f, 0.0f, 0.0f));
+        }
     }
     
     override void onControllerButtonDown(uint deviceIndex, int button)
@@ -1248,6 +1253,23 @@ class GameScene: Scene
         car.update(t);
         car2.update(t);
         car3.update(t);
+        
+        const float velocityThreshold = 2.0f;
+        const float angularThreshold = degtorad(30.0f);
+        bool stopped = car.vehicle.chassisBody.velocity.length < velocityThreshold && car.vehicle.chassisBody.angularVelocity.length < angularThreshold;
+        
+        // Rollover detection
+        if (stopped && dot(car.eCar.up, Vector3f(0, 1, 0)) < 0.5f)
+        {
+            Vector3f newCarPos = car.vehicle.position + Vector3f(0.0f, 0.1f, 0.0f);
+            Vector3f carDirection = car.eCar.direction;
+            carDirection = Vector3f(carDirection.x, 0.0f, carDirection.z).normalized;
+            float targetCarViewTurnAngle = -(atan2(carDirection.z, carDirection.x) - PI * 0.5f);
+            Matrix4x4f newCarTransform =
+                translationMatrix(newCarPos) *
+                rotationQuaternion!float(Axis.y, targetCarViewTurnAngle).toMatrix4x4;
+            car.vehicle.chassisBody.setTransformation(newCarTransform);
+        }
         
         speedKMH = car.speedKMH();
         
