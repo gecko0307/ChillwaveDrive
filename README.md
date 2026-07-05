@@ -23,7 +23,7 @@ Currently I'm working on the race logics, weather effects, and car description f
 - Escape key/Start/Back - pause/resume
 - LMB + mouse - rotate the camera (only when paused)
 - Right stick - rotate the camera
-- RMB - take a screenshot
+- F4 key - take a screenshot
 - F5 key - show debug info.
 
 Xbox controller is recommended. Steering wheels are not supported yet.

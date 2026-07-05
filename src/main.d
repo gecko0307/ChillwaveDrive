@@ -191,6 +191,13 @@ class ImGui: EventListener
             igEnd();
         }
         
+        if (igBegin("Quick options", null, ImGuiWindowFlags.NoCollapse))
+        {
+            igCheckbox("Enable gamepad rumble", &gameScene.rumbleEnabled);
+            
+            igEnd();
+        }
+        
         if (igBeginPopupModal("Exit Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
         {
             igText("Are you sure you want to quit?");
@@ -524,6 +531,8 @@ class GameScene: Scene
     float skyCleanupTimer = 0.0f;
     int skyCleanupMode = 0;
     float nextCleanupDuration = 10.0f;
+    
+    bool rumbleEnabled = true;
 
     this(VehicleDemoGame game)
     {
@@ -857,7 +866,7 @@ class GameScene: Scene
         eRain.material = addMaterial();
         eRain.material.baseColorTexture = aRain.texture;
         eRain.material.blendMode = Transparent;
-        eRain.material.opacity = 0.02f;
+        eRain.material.opacity = 0.01f;
         eRain.material.shadeless = true;
         eRain.material.emissionEnergy = 1.0f;
         eRain.material.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -996,7 +1005,15 @@ class GameScene: Scene
     override void onKeyDown(int key)
     {
         // Global keys
-        if (key == KEY_F5)
+        if (key == KEY_F4)
+        {
+            auto shotVoice = audio.play(sfxCamera);
+            audio.setVolume(shotVoice, sfxVolume);
+            application.takeScreenshot("screenshots/screenshot");
+            overlay.background.opacity = 1.0f;
+            overlay.background.fadeOut(0.25f);
+        }
+        else if (key == KEY_F5)
         {
             if (eText.visible)
                 eText.hide();
@@ -1128,14 +1145,6 @@ class GameScene: Scene
                 vehicleView.active = false;
                 eventManager.setMouse(lastMouseX, lastMouseY);
             }
-        }
-        else if (button == MB_RIGHT)
-        {
-            auto shotVoice = audio.play(sfxCamera);
-            audio.setVolume(shotVoice, sfxVolume);
-            application.takeScreenshot("screenshots/screenshot");
-            overlay.background.opacity = 1.0f;
-            overlay.background.fadeOut(0.25f);
         }
     }
     
@@ -1360,7 +1369,8 @@ class GameScene: Scene
         }
         
         // Feedback
-        updateGamepadRumble(car, speedKMH, lateralSlip, longitudinalSlip, isOnGravel, rpmFactor, t.delta);
+        if (rumbleEnabled)
+            updateGamepadRumble(car, speedKMH, lateralSlip, longitudinalSlip, isOnGravel, rpmFactor, t.delta);
         
         // Dust particles
         bool makingDust =
