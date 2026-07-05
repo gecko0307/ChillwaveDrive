@@ -1412,13 +1412,16 @@ class GameScene: Scene
         
         updateHUD(t);
         
-        if (viewResetTime < 1.0f)
-            viewResetTime += 0.5f * t.delta;
-        else
-            viewResetTime = 1.0f;
-        vehicleView.targetTurnAngle = lerpAngle(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
-        vehicleView.targetPitchAngle = lerpAngle(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
-        vehicleView.targetDistance = lerp(vehicleView.targetDistance, vehicleView.minDistanceToTarget, viewResetTime);
+        if (abs(vehicleView.controllerAxisX) == 0.0f)
+        {
+            if (viewResetTime < 1.0f)
+                viewResetTime += 0.25f * t.delta;
+            else
+                viewResetTime = 1.0f;
+            vehicleView.targetTurnAngle = lerpAngle(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
+            vehicleView.targetPitchAngle = lerpAngle(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
+            vehicleView.targetDistance = lerp(vehicleView.targetDistance, vehicleView.minDistanceToTarget, viewResetTime);
+        }
         
         eventManager.showCursor(false);
     }
