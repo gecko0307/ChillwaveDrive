@@ -82,8 +82,7 @@ class ImGui: EventListener
             0x0400, 0x044F, // Cyrillic
             0
         ];
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/DroidSans.ttf", 16, null, 
-            ranges.ptr);
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/DroidSans.ttf", 20, null, ranges.ptr);
         igStyleColorsDark(null);
         /*
         ImGuiStyle* style = igGetStyle();
