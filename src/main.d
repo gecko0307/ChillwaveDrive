@@ -198,13 +198,8 @@ class ImGui: EventListener
             igEnd();
         }
         
-        if (igBegin("Race info", null, ImGuiWindowFlags.NoCollapse))
+        if (igBegin("Standings", null, ImGuiWindowFlags.NoCollapse))
         {
-            // Tutle
-            igTextColored(ImVec4(0.90f, 0.45f, 0.0f, 1.0f), "Standings");
-            igSeparator();
-            igDummy(ImVec2(0.0f, 5.0f));
-
             ImGuiTableFlags flags = ImGuiTableFlags.RowBg | 
                                     ImGuiTableFlags.BordersOuter | 
                                     ImGuiTableFlags.BordersV | 
@@ -254,22 +249,20 @@ class ImGui: EventListener
 
                     // Column 2: Current Lap Time
                     igTableSetColumnIndex(2);
-                    char[10] timeStr;
+                    char[11] timeStr;
                     uint lapMin = cast(uint)(car.lapTime / 60.0);
                     uint lapSec = cast(uint)(car.lapTime) % 60;
                     uint lapMsec = cast(uint)((car.lapTime - cast(uint)car.lapTime) * 1000.0);
-                    uint n = sprintf(timeStr.ptr, "%02u:%02u.%03u", lapMin, lapSec, lapMsec);
-                    snprintf(timeStr.ptr, timeStr.length, "%f", car.lapTime);
+                    uint n = sprintf(timeStr.ptr, "%02u:%02u.%03u\0", lapMin, lapSec, lapMsec);
                     igText(timeStr.ptr);
 
                     // Column 3: Best Lap Time
                     igTableSetColumnIndex(3);
-                    char[10] bestTimeStr;
+                    char[11] bestTimeStr;
                     uint bestMin = cast(uint)(car.bestLapTime / 60.0);
                     uint bestSec = cast(uint)(car.bestLapTime) % 60;
                     uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
-                    n = sprintf(bestTimeStr.ptr, "%02u:%02u.%03u", bestMin, bestSec, bestMsec);
-                    snprintf(bestTimeStr.ptr, bestTimeStr.length, "%f", car.bestLapTime);
+                    n = sprintf(bestTimeStr.ptr, "%02u:%02u.%03u\0", bestMin, bestSec, bestMsec);
                     igTextColored(ImVec4(0.0f, 0.9f, 0.4f, 1.00), bestTimeStr.ptr); // Green text for best times
                 }
 
@@ -325,16 +318,16 @@ class ImGui: EventListener
         style.TabRounding       = 4.0f;
 
         // 3. Define our color palette
-        ImVec4 color_bg_dark     = ImVec4(0.10f, 0.10f, 0.10f, 1.00f); // Deep charcoal
-        ImVec4 color_bg_med      = ImVec4(0.15f, 0.15f, 0.15f, 1.00f); // Lighter panel background
-        ImVec4 color_bg_light    = ImVec4(0.22f, 0.22f, 0.22f, 1.00f); // Interactive element background
+        ImVec4 color_bg_dark     = ImVec4(0.10f, 0.10f, 0.10f, 0.75f); // Deep charcoal
+        ImVec4 color_bg_med      = ImVec4(0.15f, 0.15f, 0.15f, 0.8f); // Lighter panel background
+        ImVec4 color_bg_light    = ImVec4(0.22f, 0.22f, 0.22f, 1.0f); // Interactive element background
         
-        ImVec4 color_orange      = ImVec4(0.90f, 0.45f, 0.00f, 1.00f); // Vibrant orange
-        ImVec4 color_orange_hover= ImVec4(1.00f, 0.55f, 0.15f, 1.00f); // Bright orange for hover
-        ImVec4 color_orange_act  = ImVec4(0.80f, 0.35f, 0.00f, 1.00f); // Deeper orange for clicks
+        ImVec4 color_orange      = ImVec4(0.90f, 0.45f, 0.00f, 1.0f); // Vibrant orange
+        ImVec4 color_orange_hover= ImVec4(1.00f, 0.55f, 0.15f, 1.0f); // Bright orange for hover
+        ImVec4 color_orange_act  = ImVec4(0.80f, 0.35f, 0.00f, 1.0f); // Deeper orange for clicks
 
-        ImVec4 color_text        = ImVec4(0.95f, 0.95f, 0.95f, 1.00f); // Off-white text
-        ImVec4 color_text_disabled=ImVec4(0.50f, 0.50f, 0.50f, 1.00f); 
+        ImVec4 color_text        = ImVec4(0.95f, 0.95f, 0.95f, 1.0f); // Off-white text
+        ImVec4 color_text_disabled=ImVec4(0.50f, 0.50f, 0.50f, 1.0f); 
 
         // 4. Map colors to ImGui elements
         style.Colors[ImGuiCol.Text]                  = color_text;
