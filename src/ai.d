@@ -91,6 +91,21 @@ class Autopilot: Owner
     void stop()
     {
         isIdle = true;
+        isRecovering = false;
+        stuckTimer = 0.0;
+        recoveryTimer = 0.0;
+    }
+    
+    void reset()
+    {
+        isIdle = true;
+        isRecovering = false;
+        currentSegmentIndex = 0;
+        stuckTimer = 0.0;
+        recoveryTimer = 0.0;
+        targetPoint = Vector3f(0.0f, 0.0f, 0.0f);
+        curvature = 0.0f;
+        steeringInput = 0.0f;
     }
     
     void update(Time t)

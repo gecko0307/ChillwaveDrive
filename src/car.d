@@ -469,12 +469,6 @@ class Car: Owner
     void restart()
     {
         vehicle.reset(startPosition, rotationQuaternion!float(Axis.y, degtorad(startTurnAngle)));
-        /*
-        vehicle.chassisBody.transformation =
-            translationMatrix() *
-            rotationQuaternion!float(Axis.y, degtorad(startTurnAngle)).toMatrix4x4;
-        NewtonBodySetMatrix(vehicle.chassisBody.newtonBody, vehicle.chassisBody.transformation.arrayof.ptr);
-        */
         brakeHysteresisTimer = 0.0f;
         brakeHysteresis = false;
         raceStarted = false;

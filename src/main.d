@@ -1089,14 +1089,14 @@ class GameScene: Scene
     
     void restartRace()
     {
-        autopilot.stop();
-        autopilot2.stop();
-        autopilot3.stop();
-        togglePause();
         car.restart();
         car2.restart();
         car3.restart();
+        autopilot.reset();
+        autopilot2.reset();
+        autopilot3.reset();
         raceStarted = false;
+        togglePause();
         eText.hide();
         eText2.show();
     }
@@ -1272,39 +1272,6 @@ class GameScene: Scene
     
     float joystickSteer = 0.0f;
     
-    /*
-    override void onJoystickAxisMotion(uint deviceIndex, int axis, float value)
-    {
-        joystickSteer = -value;
-    }
-    
-    bool joystickForward = false;
-    bool joystickBack = false;
-    override void onJoystickButtonDown(uint deviceIndex, int button)
-    {
-        if (button == 1)
-        {
-            joystickForward = true;
-        }
-        else if (button == 0)
-        {
-            joystickBack = true;
-        }
-    }
-    
-    override void onJoystickButtonUp(uint deviceIndex, int button)
-    {
-        if (button == 1)
-        {
-            joystickForward = false;
-        }
-        else if (button == 0)
-        {
-            joystickBack = false;
-        }
-    }
-    */
-    
     float steeringInputPrev = 0.0f;
     
     float gravelVolume = 0.0f;
@@ -1322,9 +1289,9 @@ class GameScene: Scene
         if (raceStarted && !autopilot.active)
         {
             // Car controls
-            if (inputManager.getButton("forward")) // || joystickForward
+            if (inputManager.getButton("forward"))
                 car.vehicle.accelerate(1.0f, 2.0f * t.delta);
-            else if (inputManager.getButton("back")) // || joystickBack
+            else if (inputManager.getButton("back"))
                 car.vehicle.accelerate(-1.0f, 2.0f * t.delta);
             else if (triggerForward > 0.0f)
                 car.vehicle.accelerate(1.0f, triggerForward);
