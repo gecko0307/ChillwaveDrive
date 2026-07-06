@@ -185,6 +185,12 @@ class Car: Owner
     NewtonCompoundShape chassisShape;
     
     ///
+    Vector3f startPosition;
+    
+    ///
+    float startTurnAngle = 0.0f;
+    
+    ///
     float mass;
     
     ///
@@ -272,6 +278,8 @@ class Car: Owner
     {
         super(owner);
         
+        startPosition = position;
+        startTurnAngle = turnAngle;
         name = "Unknown";
         
         carPaintMaterial = scene.addMaterial();
@@ -292,8 +300,8 @@ class Car: Owner
             brakelightsMaterial.emissionEnergy = 0.0f;
         
         eCar = scene.addEntity();
-        eCar.position = position;
-        eCar.turn(turnAngle);
+        eCar.position = startPosition;
+        eCar.turn(startTurnAngle);
         eCar.blurMask = 0.0f;
         
         if (asset.shadowTexture)
@@ -456,6 +464,27 @@ class Car: Owner
     {
         eWheels.free();
         name.free();
+    }
+    
+    void restart()
+    {
+        vehicle.reset(startPosition, rotationQuaternion!float(Axis.y, degtorad(startTurnAngle)));
+        /*
+        vehicle.chassisBody.transformation =
+            translationMatrix() *
+            rotationQuaternion!float(Axis.y, degtorad(startTurnAngle)).toMatrix4x4;
+        NewtonBodySetMatrix(vehicle.chassisBody.newtonBody, vehicle.chassisBody.transformation.arrayof.ptr);
+        */
+        brakeHysteresisTimer = 0.0f;
+        brakeHysteresis = false;
+        raceStarted = false;
+        finished = false;
+        trackSegmentIndex = 0;
+        laps = 0;
+        raceTime = 0.0;
+        lapTime = 0.0;
+        bestLapTime = 0.0;
+        racePosition = 0;
     }
     
     bool makeChassisMaterialUnique(GLTFAsset carModel, JSONAsset carConfig, string matType, GLTFGeometryInstance geomInstance, Material replaceWith)

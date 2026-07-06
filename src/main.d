@@ -141,6 +141,13 @@ class ImGui: EventListener
             
             igSameLine(0.0f, -1.0f);
             
+            if (igButton("Restart", ImVec2(100, 32)))
+            {
+                gameScene.restartRace();
+            }
+            
+            igSameLine(0.0f, -1.0f);
+            
             if (igButton("Exit", ImVec2(100, 32)))
             {
                 //application.exit();
@@ -1078,6 +1085,20 @@ class GameScene: Scene
         overlay.background.opacity = 0.0f;
         
         game.deferred.passLight.volumetricScatteringEnabled = false;
+    }
+    
+    void restartRace()
+    {
+        autopilot.stop();
+        autopilot2.stop();
+        autopilot3.stop();
+        togglePause();
+        car.restart();
+        car2.restart();
+        car3.restart();
+        raceStarted = false;
+        eText.hide();
+        eText2.show();
     }
     
     override void onKeyDown(int key)

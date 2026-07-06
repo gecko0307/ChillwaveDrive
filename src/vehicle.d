@@ -146,7 +146,8 @@ class Vehicle: EntityComponent
         unsprungMass = mass * 0.15f;
         sprungMass = totalMass - unsprungMass;
         
-        gearRatio = gears[0];
+        gear = 0;
+        gearRatio = gears[gear];
         
         this.chassisBody.gravity = Vector3f(0.0f, -9.81f, 0.0f);
         this.chassisBody.linearDamping = 0.0f;
@@ -156,6 +157,42 @@ class Vehicle: EntityComponent
     {
         wheels.free();
         antiRollBars.free();
+    }
+    
+    void reset(Vector3f position, Quaternionf rotation)
+    {
+        entity.position = position;
+        entity.rotation = rotation;
+        chassisBody.position = entity.position;
+        chassisBody.rotation = entity.rotation;
+        chassisBody.transformation =
+            translationMatrix(entity.position) *
+            entity.rotation.toMatrix4x4;
+        NewtonBodySetMatrix(chassisBody.newtonBody, chassisBody.transformation.arrayof.ptr);
+        prevTransformation = Matrix4x4f.identity;
+        chassisBody.velocity = Vector3f(0.0f, 0.0f, 0.0f);
+        chassisBody.angularVelocity = Vector3f(0.0f, 0.0f, 0.0f);
+        chassisBody.linearDamping = 0.0f;
+        
+        gear = 0;
+        gearRatio = gears[gear];
+        
+        steeringInput = 0.0f;
+        torqueDirection = 1.0f;
+        
+        rpm = 0.0f;
+        rpmPrev = 0.0f;
+        throttle = 0.0f;
+        clutch = 0.0f;
+        popping = 0.0f;
+        
+        exhaustTemperature = 0.0f;
+        exhaustUnburntFuel = 0.0f;
+        
+        stopped = true;
+        accelerating = false;
+        brake = false;
+        movementDirection = 0.0f;
     }
     
     Wheel addWheel(Vector3f suspensionPosition, float radius, float facing)
