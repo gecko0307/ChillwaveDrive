@@ -43,6 +43,8 @@ class ChillwaveDriveGame: Game
     Soloud audio;
     RaceScene raceScene;
     ImGui ui;
+    Wav sfxClose;
+    Wav sfxPopup;
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -56,6 +58,12 @@ class ChillwaveDriveGame: Game
         ui = New!ImGui(this, raceScene);
         
         eventManager.onProcessEvent = &ui.onProcessEvent;
+        
+        sfxClose = Wav.create();
+        sfxClose.load("data/sounds/close.wav");
+        
+        sfxPopup = Wav.create();
+        sfxPopup.load("data/sounds/beep.wav");
     }
     
     override void onUpdate(Time t)

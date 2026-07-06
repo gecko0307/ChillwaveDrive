@@ -898,6 +898,9 @@ class RaceScene: Scene
             audio.setPauseAll(false);
             viewResetTime = 0.0f;
         }
+        
+        auto pauseVoice = audio.play(game.sfxClose);
+        audio.setVolume(pauseVoice, 2.0f * sfxVolume);
     }
     
     override void onMouseButtonDown(int button)

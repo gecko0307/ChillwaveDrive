@@ -121,6 +121,8 @@ class ImGui: EventListener
             
             if (igButton("Restart", ImVec2(100, 32)))
             {
+                auto popupVoice = scene.audio.play(scene.game.sfxPopup);
+                scene.audio.setVolume(popupVoice, scene.sfxVolume);
                 igOpenPopup("Restart Confirmation");
                 showRestartPopup = true;
             }
@@ -129,6 +131,8 @@ class ImGui: EventListener
             
             if (igButton("Exit", ImVec2(100, 32)))
             {
+                auto popupVoice = scene.audio.play(scene.game.sfxPopup);
+                scene.audio.setVolume(popupVoice, scene.sfxVolume);
                 igOpenPopup("Exit Confirmation");
                 showExitPopup = true;
             }
