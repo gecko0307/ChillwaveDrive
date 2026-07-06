@@ -63,6 +63,7 @@ class ImGui: EventListener
     ImFont* font;
     bool active = false;
     
+    bool showRestartPopup = false;
     bool showExitPopup = false;
     
     this(Application application, GameScene gameScene)
@@ -143,14 +144,14 @@ class ImGui: EventListener
             
             if (igButton("Restart", ImVec2(100, 32)))
             {
-                gameScene.restartRace();
+                igOpenPopup("Restart Confirmation");
+                showRestartPopup = true;
             }
             
             igSameLine(0.0f, -1.0f);
             
             if (igButton("Exit", ImVec2(100, 32)))
             {
-                //application.exit();
                 igOpenPopup("Exit Confirmation");
                 showExitPopup = true;
             }
@@ -168,32 +169,6 @@ class ImGui: EventListener
                     igSliderFloat("Metallic", &mat.metallicFactor, 0.0f, 1.0f, "%.3f");
                 }
             }
-            
-            /*
-            if (igCollapsingHeader("Suspension"))
-            {
-                igSliderFloat("Max length", &gameScene.suspensionMaxLength, 0.0f, 1.0f, "%.3f");
-                igSliderFloat("Stiffness", &gameScene.suspensionStiffness, 0.0f, 100000.0f, "%.0f");
-                igSliderFloat("Damping", &gameScene.suspensionDamping, 0.0f, 10000.0f, "%.3f");
-                
-                foreach(wheel; gameScene.car.vehicle.wheels)
-                {
-                    wheel.suspension.maxLength = gameScene.suspensionMaxLength;
-                    wheel.suspension.stiffness = gameScene.suspensionStiffness;
-                    wheel.suspension.damping = gameScene.suspensionDamping;
-                }
-            }
-            
-            if (igCollapsingHeader("Tyre"))
-            {
-                igSliderFloat("Friction", &gameScene.tyreLateralFriction, 0.0f, 3.0f, "%.3f");
-                
-                foreach(wheel; gameScene.car.wheels)
-                {
-                    wheel.lateralDynamicFrictionCoefficient = gameScene.tyreLateralFriction;
-                }
-            }
-            */
             
             igEnd();
         }
@@ -298,6 +273,30 @@ class ImGui: EventListener
             {
                 igCloseCurrentPopup();
                 showExitPopup = false;
+            }
+            
+            igEndPopup();
+        }
+        
+        if (igBeginPopupModal("Restart Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            igText("Are you sure you want to restart?");
+            igSeparator();
+
+            if (igButton("Yes", ImVec2(120, 0)))
+            {
+                gameScene.restartRace();
+                
+                igCloseCurrentPopup();
+                showRestartPopup = false;
+            }
+            
+            igSameLine(0.0f, -1.0f);
+            
+            if (igButton("Cancel", ImVec2(120, 0)))
+            {
+                igCloseCurrentPopup();
+                showRestartPopup = false;
             }
             
             igEndPopup();
@@ -621,8 +620,10 @@ class GameScene: Scene
         this.game = game;
         this.audio = game.audio;
         
+        auto splashTextureAsset = addTextureAsset("data/ui/splash_screen.jpg", true);
+        
         loadingScreen = New!LoadingScreen(game, this);
-        //loadingScreen.backgroundTexture = splashTextureAsset.texture;
+        loadingScreen.backgroundTexture = splashTextureAsset.texture;
         loadingScreen.progressbarCentered = false;
     }
     
