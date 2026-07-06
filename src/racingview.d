@@ -30,7 +30,16 @@ module racingview;
 import std.math;
 import std.random;
 
-import dagon;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.quaternion;
+import dlib.math.transformation;
+import dlib.math.utils;
+
+import dagon.core.event;
+import dagon.core.time;
+import dagon.core.keycodes;
+import dagon.graphics.entity;
 
 float shortestAngleDelta(float from, float to)
 {

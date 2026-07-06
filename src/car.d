@@ -27,11 +27,33 @@ DEALINGS IN THE SOFTWARE.
 */
 module car;
 
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.core.stream;
+import dlib.container.array;
+import dlib.filesystem.filesystem;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.quaternion;
+import dlib.math.transformation;
+import dlib.math.utils;
+import dlib.image.color;
 import dlib.text.str;
 import dlib.serialization.json;
 
-import dagon;
+import dagon.core.time;
+import dagon.core.logger;
+import dagon.graphics.drawable;
+import dagon.graphics.entity;
+import dagon.graphics.material;
+import dagon.graphics.texture;
+import dagon.graphics.shapes;
+import dagon.graphics.light;
+import dagon.resource.asset;
+import dagon.resource.scene;
+import dagon.resource.gltf;
 import dagon.ext.newton;
+
 import vehicle;
 import wheel;
 

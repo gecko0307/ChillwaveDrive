@@ -30,8 +30,20 @@ module vehicle;
 import std.stdio;
 import std.algorithm;
 import std.math;
-import dagon;
+
+import dlib.core.memory;
+import dlib.container.array;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.quaternion;
+import dlib.math.interpolation;
+import dlib.math.utils;
+
+import dagon.core.time;
+import dagon.graphics.entity;
 import dagon.ext.newton;
+
 import wheel;
 import arb;
 import track;

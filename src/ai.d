@@ -28,7 +28,13 @@ DEALINGS IN THE SOFTWARE.
 module ai;
 
 import std.math;
-import dagon;
+
+import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.utils;
+
+import dagon.core.time;
+
 import car;
 import track;
 
@@ -50,7 +56,7 @@ class Autopilot: Owner
     bool active = true;
     
     // A visibility window of forward segments.
-    size_t maxSegmentsToSearch = 5; //30;
+    size_t maxSegmentsToSearch = 5;
     
     ///
     size_t currentSegmentIndex = 0;
@@ -70,7 +76,6 @@ class Autopilot: Owner
     ///
     bool isRecovering = false;
     
-    ///
     double stuckTimer = 0.0;
     double recoveryTimer = 0.0;
     Vector3f targetPoint = Vector3f(0.0f, 0.0f, 0.0f);

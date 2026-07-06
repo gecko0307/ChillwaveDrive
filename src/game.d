@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2026 Timur Gafarov
+Copyright (c) 2021-2026 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -25,33 +25,49 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module arb;
+module game;
 
-import dlib.core.ownership;
+import dlib.core.memory;
 
 import dagon.core.time;
+import dagon.game.game;
+import dagon.ext.imgui;
 
-import wheel;
+import soloud;
 
-class AntiRollBar: Owner
+import race;
+import ui;
+
+class ChillwaveDriveGame: Game
 {
-    Wheel wheelLeft;
-    Wheel wheelRight;
-    float stiffness = 10000.0f;
+    Soloud audio;
+    RaceScene raceScene;
+    ImGui ui;
     
-    this(Wheel wLeft, Wheel wRight, Owner owner)
+    this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
-        super(owner);
+        super(w, h, fullscreen, title, args);
+        audio = Soloud.create();
+        audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
         
-        wheelLeft = wLeft;
-        wheelRight = wRight;
+        raceScene = New!RaceScene(this);
+        currentScene = raceScene;
+        
+        ui = New!ImGui(this, raceScene);
+        
+        eventManager.onProcessEvent = &ui.onProcessEvent;
     }
     
-    void update(Time t)
+    override void onUpdate(Time t)
     {
-        float compressionDelta = wheelLeft.suspension.compression - wheelRight.suspension.compression;
-        float stabilizationForce = compressionDelta * stiffness;
-        wheelLeft.arbForce = stabilizationForce;
-        wheelRight.arbForce = -stabilizationForce;
+        super.onUpdate(t);
+        ui.update(t);
+        //currentScene.focused = !ui.capturesMouse;
+    }
+    
+    override void onRender()
+    {
+        super.onRender();
+        ui.render();
     }
 }

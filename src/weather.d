@@ -28,7 +28,19 @@ DEALINGS IN THE SOFTWARE.
 module weather;
 
 import std.random;
-import dagon;
+
+import dlib.core.memory;
+import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.matrix;
+import dlib.math.transformation;
+import dlib.math.utils;
+
+import dagon.core.bindings;
+import dagon.core.time;
+import dagon.graphics.updateable;
+import dagon.graphics.drawable;
+import dagon.graphics.mesh;
 
 struct Raindrop
 {

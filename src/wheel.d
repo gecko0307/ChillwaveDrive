@@ -30,8 +30,15 @@ module wheel;
 import std.stdio;
 import std.algorithm;
 import std.math;
-import dagon;
+
+import dlib.core.ownership;
+import dlib.math.vector;
+import dlib.math.quaternion;
+import dlib.math.interpolation;
+import dlib.math.utils;
+
 import dagon.ext.newton;
+
 import vehicle;
 import pacejka;
 
