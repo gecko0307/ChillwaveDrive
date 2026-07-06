@@ -198,6 +198,87 @@ class ImGui: EventListener
             igEnd();
         }
         
+        if (igBegin("Race info", null, ImGuiWindowFlags.NoCollapse))
+        {
+            // Tutle
+            igTextColored(ImVec4(0.90f, 0.45f, 0.0f, 1.0f), "Standings");
+            igSeparator();
+            igDummy(ImVec2(0.0f, 5.0f));
+
+            ImGuiTableFlags flags = ImGuiTableFlags.RowBg | 
+                                    ImGuiTableFlags.BordersOuter | 
+                                    ImGuiTableFlags.BordersV | 
+                                    ImGuiTableFlags.NoBordersInBody;
+
+            if (igBeginTable("LeaderboardTable", 4, flags, ImVec2(0.0f, 0.0f), 0.0f))
+            {
+                // Column headers
+                igTableSetupColumn("Pos", ImGuiTableColumnFlags.WidthFixed, 40.0f, 0);
+                igTableSetupColumn("Racer", ImGuiTableColumnFlags.WidthStretch, 0.0f, 0);
+                igTableSetupColumn("Lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
+                igTableSetupColumn("Best lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
+                igTableHeadersRow();
+
+                // Populate rows with data
+                foreach (i, car; gameScene.participants)
+                {
+                    igTableNextRow(ImGuiTableRowFlags.None, 0.0f);
+
+                    // Highlight the player's row
+                    if (car.isPlayer)
+                        igTableSetBgColor(ImGuiTableBgTarget.RowBg0, 
+                            igColorConvertFloat4ToU32(ImVec4(0.9f, 0.45f, 0.0f, 0.25f)), -1);
+
+                    // Column 0: Position
+                    igTableSetColumnIndex(0);
+                    char[8] posStr;
+                    snprintf(posStr.ptr, posStr.length, "%d", car.racePosition);
+                    posStr[7] = '\0';
+                    
+                    // Make top 3 positions pop out color-wise
+                    if (car.racePosition == 1)
+                        igTextColored(ImVec4(1.0f, 0.84f, 0.0f, 1.0f), posStr.ptr); // Gold
+                    else if (car.racePosition == 2)
+                        igTextColored(ImVec4(0.75f, 0.75f, 0.75f, 1.0f), posStr.ptr); // Silver
+                    else if (car.racePosition == 3)
+                        igTextColored(ImVec4(0.8f, 0.5f, 0.2f, 1.0f), posStr.ptr); // Bronze
+                    else
+                        igText(posStr.ptr);
+
+                    // Column 1: Name
+                    igTableSetColumnIndex(1);
+                    if (car.isPlayer)
+                        igTextColored(ImVec4(1.0f, 0.55f, 0.15f, 1.0f), car.name.ptr); // Bright Orange text for player
+                    else
+                        igText(car.name.ptr);
+
+                    // Column 2: Current Lap Time
+                    igTableSetColumnIndex(2);
+                    char[10] timeStr;
+                    uint lapMin = cast(uint)(car.lapTime / 60.0);
+                    uint lapSec = cast(uint)(car.lapTime) % 60;
+                    uint lapMsec = cast(uint)((car.lapTime - cast(uint)car.lapTime) * 1000.0);
+                    uint n = sprintf(timeStr.ptr, "%02u:%02u.%03u", lapMin, lapSec, lapMsec);
+                    snprintf(timeStr.ptr, timeStr.length, "%f", car.lapTime);
+                    igText(timeStr.ptr);
+
+                    // Column 3: Best Lap Time
+                    igTableSetColumnIndex(3);
+                    char[10] bestTimeStr;
+                    uint bestMin = cast(uint)(car.bestLapTime / 60.0);
+                    uint bestSec = cast(uint)(car.bestLapTime) % 60;
+                    uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
+                    n = sprintf(bestTimeStr.ptr, "%02u:%02u.%03u", bestMin, bestSec, bestMsec);
+                    snprintf(bestTimeStr.ptr, bestTimeStr.length, "%f", car.bestLapTime);
+                    igTextColored(ImVec4(0.0f, 0.9f, 0.4f, 1.00), bestTimeStr.ptr); // Green text for best times
+                }
+
+                igEndTable();
+            }
+            
+            igEnd();
+        }
+        
         if (igBeginPopupModal("Exit Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
         {
             igText("Are you sure you want to quit?");
@@ -772,6 +853,8 @@ class GameScene: Scene
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);
+        car.isPlayer = true;
+        car.name = String("Player");
         car.vehicle.track = track;
         car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 2000.0f);
@@ -788,6 +871,7 @@ class GameScene: Scene
         
         // Opponent cars
         car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
+        car2.name = String("AI 1");
         car2.vehicle.track = track;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[0], car2.vehicle.wheels[1], 2000.0f);
@@ -802,6 +886,7 @@ class GameScene: Scene
         participants[1] = car2;
         
         car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
+        car3.name = String("AI 2");
         car3.vehicle.track = track;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[0], car3.vehicle.wheels[1], 2000.0f);

@@ -27,7 +27,9 @@ DEALINGS IN THE SOFTWARE.
 */
 module car;
 
+import dlib.text.str;
 import dlib.serialization.json;
+
 import dagon;
 import dagon.ext.newton;
 import vehicle;
@@ -201,6 +203,12 @@ class Car: Owner
     Entity eCar;
     
     ///
+    String name;
+    
+    ///
+    bool isPlayer = false;
+    
+    ///
     Array!Entity eWheels;
     
     ///
@@ -263,6 +271,8 @@ class Car: Owner
     this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, Owner owner)
     {
         super(owner);
+        
+        name = "Unknown";
         
         carPaintMaterial = scene.addMaterial();
         carPaintMaterial.roughnessFactor = 0.01f;
@@ -445,6 +455,7 @@ class Car: Owner
     ~this()
     {
         eWheels.free();
+        name.free();
     }
     
     bool makeChassisMaterialUnique(GLTFAsset carModel, JSONAsset carConfig, string matType, GLTFGeometryInstance geomInstance, Material replaceWith)
