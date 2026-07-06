@@ -44,6 +44,7 @@ class ChillwaveDriveGame: Game
     RaceScene raceScene;
     ImGui ui;
     Wav sfxClose;
+    Wav sfxClick;
     Wav sfxPopup;
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
@@ -61,6 +62,9 @@ class ChillwaveDriveGame: Game
         
         sfxClose = Wav.create();
         sfxClose.load("data/sounds/close.wav");
+        
+        sfxClick = Wav.create();
+        sfxClick.load("data/sounds/click.wav");
         
         sfxPopup = Wav.create();
         sfxPopup.load("data/sounds/beep.wav");

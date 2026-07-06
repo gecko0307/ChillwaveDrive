@@ -804,9 +804,15 @@ class RaceScene: Scene
             else
                 eText.show();
             eText2.hide();
+            
+            auto clickVoice = audio.play(game.sfxClick);
+            audio.setVolume(clickVoice, 2.0f * sfxVolume);
         }
         else if (key == KEY_M)
         {
+            auto clickVoice = audio.play(game.sfxClick);
+            audio.setVolume(clickVoice, 2.0f * sfxVolume);
+            
             if (audio.isValidVoiceHandle(musicVoice))
             {
                 audio.stop(musicVoice);
@@ -830,11 +836,17 @@ class RaceScene: Scene
         {
             autopilot.active = !autopilot.active;
             car.vehicle.arcadeSteering = !car.vehicle.arcadeSteering;
+            auto clickVoice = audio.play(game.sfxClick);
+            audio.setVolume(clickVoice, 2.0f * sfxVolume);
         }
         else if (key == KEY_RETURN)
         {
             if (!raceStarted)
+            {
                 startRace();
+                auto clickVoice = audio.play(game.sfxClick);
+                audio.setVolume(clickVoice, 2.0f * sfxVolume);
+            }
         }
         else if (key == KEY_J)
         {
