@@ -190,7 +190,7 @@ class ImGui: EventListener
             if (igBeginTable("LeaderboardTable", 4, flags, ImVec2(0.0f, 0.0f), 0.0f))
             {
                 // Column headers
-                igTableSetupColumn("Pos", ImGuiTableColumnFlags.WidthFixed, 40.0f, 0);
+                igTableSetupColumn("Pos.", ImGuiTableColumnFlags.WidthFixed, 40.0f, 0);
                 igTableSetupColumn("Racer", ImGuiTableColumnFlags.WidthStretch, 0.0f, 0);
                 igTableSetupColumn("Lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
                 igTableSetupColumn("Best lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
