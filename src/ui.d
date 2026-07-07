@@ -235,6 +235,12 @@ class ImGui: EventListener
             igEnd();
         }
         
+        igSetNextWindowPos(
+            ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+            ImGuiCond.Appearing,
+            ImVec2(0.5f, 0.5f)
+        );
+        
         if (igBeginPopupModal("Exit Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
         {
             igText("Are you sure you want to quit?");
