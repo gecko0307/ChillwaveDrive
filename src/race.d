@@ -183,6 +183,7 @@ class RaceScene: Scene
     Wav[2] sfxSuspension;
     Wav[2] sfxHit;
     Wav[7] sfxImpact;
+    Wav sfxScratch;
     Wav sfxCamera;
     
     int musicVoice;
@@ -196,6 +197,7 @@ class RaceScene: Scene
     int hitVoice;
     int suspVoice;
     int slipVoice;
+    int scratchVoice;
     
     float impactSoundResetTimer = 0.0f;
     bool canPlayImpactSound = true;
@@ -485,6 +487,10 @@ class RaceScene: Scene
         sfxImpact[6].load("data/sounds/impact7.wav");
         sfxImpact[6].set3dDistanceDelay(true);
         
+        sfxScratch = Wav.create();
+        sfxScratch.load("data/sounds/scratch1.wav");
+        sfxScratch.set3dDistanceDelay(true);
+        
         sfxCamera = Wav.create();
         sfxCamera.load("data/sounds/camera.wav");
         sfxCamera.set3dDistanceDelay(true);
@@ -770,6 +776,11 @@ class RaceScene: Scene
         audio.setLooping(poppingVoice, true);
         audio.set3dSourceMinMaxDistance(poppingVoice, 1.0f, 50.0f);
         
+        scratchVoice = audio.play3d(sfxScratch, car.position.x, car.position.y, car.position.z);
+        audio.setVolume(scratchVoice, 0.0f);
+        audio.setLooping(scratchVoice, true);
+        audio.set3dSourceMinMaxDistance(scratchVoice, 1.0f, 50.0f);
+        
         audio.update3dAudio();
         
         eText = addEntityHUD();
@@ -1043,17 +1054,28 @@ class RaceScene: Scene
     float gravelVolume = 0.0f;
     float speedKMH = 0.0f;
     
+    bool scraping = false;
+    float scrapingVolume = 0.0f;
+    
     void onCarContact(NewtonRigidBody carBody, NewtonRigidBody otherBody, const void* contact)
     {
         NewtonMaterial* mat = NewtonContactGetMaterial(contact);
-        float contactSpeed = NewtonMaterialGetContactNormalSpeed(mat);
+        float contactSpeed = abs(NewtonMaterialGetContactNormalSpeed(mat));
+        float slidingSpeed = abs(NewtonMaterialGetContactTangentSpeed(mat, 0));
+        
         if (contactSpeed >= 5.0f && canPlayImpactSound)
         {
             float impactVolume = lerp(2.0f, 4.0f, clamp((contactSpeed - 5.0f) / 10.0f, 0.0f, 1.0f));
             canPlayImpactSound = false;
             hitVoice = audio.play3d(sfxImpact[uniform(0, $)], car.position.x, car.position.y, car.position.z);
             audio.setVolume(hitVoice, impactVolume * sfxVolume);
+            audio.setRelativePlaySpeed(hitVoice, 1.5f);
             audio.set3dSourceMinMaxDistance(hitVoice, 1.0f, 50.0f);
+        }
+        
+        if (slidingSpeed >= 10.0f)
+        {
+            scraping = true;
         }
     }
     
@@ -1107,6 +1129,8 @@ class RaceScene: Scene
         car.update(t);
         car2.update(t);
         car3.update(t);
+        
+        physicsWorld.update(t.delta);
         
         const float velocityThreshold = 2.0f;
         const float angularThreshold = degtorad(30.0f);
@@ -1224,6 +1248,25 @@ class RaceScene: Scene
             }
         }
         
+        if (scraping)
+        {
+            if (scrapingVolume < 1.0f)
+                scrapingVolume += 3.0f * t.delta;
+            else
+                scrapingVolume = 1.0f;
+        }
+        else
+        {
+            if (scrapingVolume > 0.0f)
+                scrapingVolume -= 3.0f * t.delta;
+            else
+                scrapingVolume = 0.0f;
+        }
+        
+        audio.setVolume(scratchVoice, scrapingVolume * sfxVolume);
+        audio.setRelativePlaySpeed(scratchVoice, 3.0f);
+        scraping = false;
+        
         // Feedback
         if (rumbleEnabled)
             updateGamepadRumble(car, speedKMH, lateralSlip, longitudinalSlip, isOnGravel, rpmFactor, t.delta);
@@ -1236,8 +1279,6 @@ class RaceScene: Scene
         else emitterLeft.emitting = false;
         if (makingDust && car.vehicle.wheels[3].onGround) emitterRight.emitting = true;
         else emitterRight.emitting = false;
-        
-        physicsWorld.update(t.delta);
         
         Vector3f camPos = camera.positionAbsolute;
         rain.spawnPosition = Vector3f(
