@@ -499,7 +499,7 @@ class RaceScene: Scene
         sfxAmbient.load("data/sounds/rain.mp3");
         
         music = WavStream.create();
-        music.load("data/music/Machine Code.mp3");
+        music.load("data/music/Machine Code 2.mp3");
     }
     
     override void onLoad(Time t, float progress)
@@ -850,6 +850,8 @@ class RaceScene: Scene
     
     void restartRace()
     {
+        if (audio.isValidVoiceHandle(musicVoice))
+            audio.stop(musicVoice);
         car.restart();
         car2.restart();
         car3.restart();
@@ -965,6 +967,13 @@ class RaceScene: Scene
             car.raceStarted = true;
             car2.raceStarted = true;
             car3.raceStarted = true;
+            
+            if (!audio.isValidVoiceHandle(musicVoice))
+            {
+                musicVoice = audio.play(music);
+                audio.setLooping(musicVoice, true);
+                audio.setVolume(musicVoice, musicVolume);
+            }
         }
     }
     
@@ -1160,14 +1169,15 @@ class RaceScene: Scene
         audio.set3dSourcePosition(engine1Voice, car.position.x, car.position.y, car.position.z);
         float newRpmFactor = clamp((car.rpm - 800.0f) / (6500.0f - 800.0f), 0.0f, 1.0f);
         rpmFactor += (newRpmFactor - rpmFactor) * 0.9f;
-        float engineSoundSpeed = lerp(0.9f, 2.0f, rpmFactor); //1.8f;
+        float engineSoundSpeed = lerp(0.9f, 2.0f, rpmFactor);
         audio.setRelativePlaySpeed(engine1Voice, engineSoundSpeed);
         
         audio.set3dSourcePosition(engine2Voice, car.position.x, car.position.y, car.position.z);
         float engine2SoundSpeed = lerp(0.5f, 1.0f, rpmFactor);
         audio.setRelativePlaySpeed(engine2Voice, engineSoundSpeed);
         float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor);
-        audio.setVolume(engine2Voice, sfxVolume * engine2Volume);
+        audio.setVolume(engine2Voice, sfxVolume * engine2Volume * 2.0f);
+        audio.setVolume(engine1Voice, sfxVolume * (1.0f - engine2Volume) * 2.0f);
         
         // Popping
         audio.setVolume(poppingVoice, sfxVolume * car.vehicle.popping * 3.0f);
