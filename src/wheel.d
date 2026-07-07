@@ -345,7 +345,7 @@ class Wheel: Owner, NewtonRaycaster
             angularAcceleration -= physicalSlipSign * (frictionTorque * invInertia);
         }
         
-        roll += angularVelocity * dt;
+        roll += clamp(angularVelocity, -9.0f * PI, 9.0f * PI) * dt;
         roll = fmod(roll, 2.0f * PI);
         
         visualSuspensionLength += (suspension.length - visualSuspensionLength) * dt * visualSuspensionChangeSpeed;
