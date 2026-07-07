@@ -204,6 +204,9 @@ class Car: Owner
     Vehicle vehicle;
     
     ///
+    int chassisGroupId;
+    
+    ///
     NewtonCompoundShape chassisShape;
     
     ///
@@ -296,12 +299,13 @@ class Car: Owner
     ///
     uint racePosition = 0;
     
-    this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, Owner owner)
+    this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, int chassisGroupId, Owner owner)
     {
         super(owner);
         
         startPosition = position;
         startTurnAngle = turnAngle;
+        this.chassisGroupId = chassisGroupId;
         name = "Unknown";
         
         carPaintMaterial = scene.addMaterial();
@@ -398,7 +402,7 @@ class Car: Owner
         mass = jsonPropFloat(root, "mass", 1500.0f);
         inertia = jsonPropVector(root, "inertia", Vector3f(1.0f, 1.0f, 1.0f));
         
-        vehicle = New!Vehicle(physicsWorld, eCar, chassisShape, mass, 1);
+        vehicle = New!Vehicle(physicsWorld, eCar, chassisShape, mass, chassisGroupId);
         vehicle.setInertiaCoefficients(mass, inertia);
         vehicle.chassisBody.centerOfMass = jsonPropVector(root, "centerOfMass", Vector3f(0.0f, 0.0f, 0.0f));
         vehicle.maxSteeringAngle = jsonPropFloat(root, "maxSteeringAngle", 45.0f);

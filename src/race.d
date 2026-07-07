@@ -46,6 +46,7 @@ import dlib.text.str;
 
 import dagon.core.keycodes;
 import dagon.core.time;
+import dagon.core.logger;
 import dagon.graphics.entity;
 import dagon.graphics.components;
 import dagon.graphics.material;
@@ -59,7 +60,6 @@ import dagon.resource.scene;
 import dagon.resource.texture;
 import dagon.resource.font;
 import dagon.resource.gltf;
-//import dagon.game.loadingscreen;
 import dagon.ui.textline;
 import dagon.ui.widget;
 import dagon.ext.newton;
@@ -78,6 +78,33 @@ import track;
 import ui;
 import loadingscreen;
 
+extern(C)
+{
+    void carContactsProcess(
+        const(NewtonJoint)* contactJoint,
+        dFloat timestep,
+        int threadIndex)
+    {
+        NewtonBody* b0 = NewtonJointGetBody0(contactJoint);
+        NewtonBody* b1 = NewtonJointGetBody1(contactJoint);
+        NewtonRigidBody body0 = cast(NewtonRigidBody)NewtonBodyGetUserData(b0);
+        NewtonRigidBody body1 = cast(NewtonRigidBody)NewtonBodyGetUserData(b1);
+        
+        void* nextContact;
+        uint numContacts = 0;
+        for (void* contact = NewtonContactJointGetFirstContact(contactJoint); contact; contact = nextContact)
+        {
+            if (body0)
+                body0.onContact(body1, contact);
+            else if (body1)
+                body1.onContact(body0, contact);
+            
+            nextContact = NewtonContactJointGetNextContact(contactJoint, contact);
+            numContacts++;
+        }
+    }
+}
+
 class RaceScene: Scene
 {
     FontAsset aFontDroidSans14;
@@ -93,6 +120,7 @@ class RaceScene: Scene
     RacingViewComponent vehicleView;
     
     NewtonPhysicsWorld physicsWorld;
+    int carChassisGroupId;
     
     TextureAsset aRain;
     
@@ -154,6 +182,7 @@ class RaceScene: Scene
     Wav sfxPopping;
     Wav[2] sfxSuspension;
     Wav[2] sfxHit;
+    Wav[7] sfxImpact;
     Wav sfxCamera;
     
     int musicVoice;
@@ -167,6 +196,9 @@ class RaceScene: Scene
     int hitVoice;
     int suspVoice;
     int slipVoice;
+    
+    float impactSoundResetTimer = 0.0f;
+    bool canPlayImpactSound = true;
     
     float musicVolume = 0.5f;
     float sfxVolume = 0.5f;
@@ -425,6 +457,34 @@ class RaceScene: Scene
         sfxHit[1].load("data/sounds/hit2.wav");
         sfxHit[1].set3dDistanceDelay(true);
         
+        sfxImpact[0] = Wav.create();
+        sfxImpact[0].load("data/sounds/impact1.wav");
+        sfxImpact[0].set3dDistanceDelay(true);
+        
+        sfxImpact[1] = Wav.create();
+        sfxImpact[1].load("data/sounds/impact2.wav");
+        sfxImpact[1].set3dDistanceDelay(true);
+        
+        sfxImpact[2] = Wav.create();
+        sfxImpact[2].load("data/sounds/impact3.wav");
+        sfxImpact[2].set3dDistanceDelay(true);
+        
+        sfxImpact[3] = Wav.create();
+        sfxImpact[3].load("data/sounds/impact4.wav");
+        sfxImpact[3].set3dDistanceDelay(true);
+        
+        sfxImpact[4] = Wav.create();
+        sfxImpact[4].load("data/sounds/impact5.wav");
+        sfxImpact[4].set3dDistanceDelay(true);
+        
+        sfxImpact[5] = Wav.create();
+        sfxImpact[5].load("data/sounds/impact6.wav");
+        sfxImpact[5].set3dDistanceDelay(true);
+        
+        sfxImpact[6] = Wav.create();
+        sfxImpact[6].load("data/sounds/impact7.wav");
+        sfxImpact[6].set3dDistanceDelay(true);
+        
         sfxCamera = Wav.create();
         sfxCamera.load("data/sounds/camera.wav");
         sfxCamera.set3dDistanceDelay(true);
@@ -536,9 +596,12 @@ class RaceScene: Scene
         
         participants = New!(Car[])(3);
         
+        carChassisGroupId = physicsWorld.createGroupId();
+        NewtonMaterialSetCollisionCallback(physicsWorld.newtonWorld, carChassisGroupId, physicsWorld.defaultGroupId, null, &carContactsProcess);
+        
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
-        car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, this);
+        car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
         car.vehicle.track = track;
@@ -546,6 +609,7 @@ class RaceScene: Scene
         car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 2000.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 2000.0f);
         car.vehicle.arcadeSteering = true;
+        car.vehicle.chassisBody.contactCallback = &onCarContact;
         autopilot = New!Autopilot(car, this);
         autopilot.track = track;
         autopilot.maxSpeed = 45.0f;
@@ -556,7 +620,7 @@ class RaceScene: Scene
         participants[0] = car;
         
         // Opponent cars
-        car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, this);
+        car2 = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car2.name = String("AI 1");
         car2.vehicle.track = track;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
@@ -571,7 +635,7 @@ class RaceScene: Scene
         autopilot2.steeringForce = 20.0f;
         participants[1] = car2;
         
-        car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, this);
+        car3 = New!Car(this, physicsWorld, &mclaren, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car3.name = String("AI 2");
         car3.vehicle.track = track;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
@@ -975,13 +1039,23 @@ class RaceScene: Scene
         }
     }
     
-    float joystickSteer = 0.0f;
-    
     float steeringInputPrev = 0.0f;
-    
     float gravelVolume = 0.0f;
-    
     float speedKMH = 0.0f;
+    
+    void onCarContact(NewtonRigidBody carBody, NewtonRigidBody otherBody, const void* contact)
+    {
+        NewtonMaterial* mat = NewtonContactGetMaterial(contact);
+        float contactSpeed = NewtonMaterialGetContactNormalSpeed(mat);
+        if (contactSpeed >= 5.0f && canPlayImpactSound)
+        {
+            float impactVolume = lerp(2.0f, 4.0f, clamp((contactSpeed - 5.0f) / 10.0f, 0.0f, 1.0f));
+            canPlayImpactSound = false;
+            hitVoice = audio.play3d(sfxImpact[uniform(0, $)], car.position.x, car.position.y, car.position.z);
+            audio.setVolume(hitVoice, impactVolume * sfxVolume);
+            audio.set3dSourceMinMaxDistance(hitVoice, 1.0f, 50.0f);
+        }
+    }
     
     override void onUpdate(Time t)
     {
@@ -1012,8 +1086,6 @@ class RaceScene: Scene
                 float axis = inputManager.getAxis("horizontal");
                 car.vehicle.steer(-axis * 5.0f * t.delta);
             }
-            else
-                car.vehicle.manualSteer(joystickSteer);
         }
         
         // Headlights on/off
@@ -1138,6 +1210,17 @@ class RaceScene: Scene
                     suspVoice = audio.play3d(sfxSuspension[uniform(0, $)], car.position.x, car.position.y, car.position.z);
                     audio.setVolume(suspVoice, 0.5f * sfxVolume);
                 }
+            }
+        }
+        
+        // Impact
+        if (!canPlayImpactSound)
+        {
+            impactSoundResetTimer += t.delta;
+            if (impactSoundResetTimer >= 0.2f)
+            {
+                canPlayImpactSound = true;
+                impactSoundResetTimer = 0.0f;
             }
         }
         
