@@ -992,7 +992,7 @@ class RaceScene: Scene
         }
         
         auto pauseVoice = audio.play(game.sfxClose);
-        audio.setVolume(pauseVoice, 2.0f * sfxVolume);
+        audio.setVolume(pauseVoice, sfxVolume);
     }
     
     override void onMouseButtonDown(int button)
@@ -1054,6 +1054,7 @@ class RaceScene: Scene
     float gravelVolume = 0.0f;
     float speedKMH = 0.0f;
     
+    float impactVolume = 0.0f;
     bool scraping = false;
     float scrapingVolume = 0.0f;
     
@@ -1065,7 +1066,7 @@ class RaceScene: Scene
         
         if (contactSpeed >= 5.0f && canPlayImpactSound)
         {
-            float impactVolume = lerp(2.0f, 4.0f, clamp((contactSpeed - 5.0f) / 10.0f, 0.0f, 1.0f));
+            impactVolume = lerp(1.0f, 3.0f, clamp((contactSpeed - 5.0f) / 10.0f, 0.0f, 1.0f));
             canPlayImpactSound = false;
             hitVoice = audio.play3d(sfxImpact[uniform(0, $)], car.position.x, car.position.y, car.position.z);
             audio.setVolume(hitVoice, impactVolume * sfxVolume);
@@ -1263,6 +1264,11 @@ class RaceScene: Scene
                 scrapingVolume = 0.0f;
         }
         
+        if (impactVolume > 0.0f)
+            impactVolume -= 3.0f * t.delta;
+        else
+            impactVolume = 0.0f;
+        
         audio.setVolume(scratchVoice, scrapingVolume * sfxVolume);
         audio.setRelativePlaySpeed(scratchVoice, 3.0f);
         scraping = false;
@@ -1402,8 +1408,13 @@ class RaceScene: Scene
             {
                 float fDelta = abs(wheel.normalForce - wheel.normalForcePrev);
                 if (fDelta > 1200.0f)
-                    lowFreq = max2(lowFreq, 0.5f);
+                    lowFreq = max2(lowFreq, 0.25f);
             }
+        }
+        
+        if (impactVolume > 0.0f)
+        {
+            lowFreq = max2(lowFreq, 0.75f);
         }
 
         uint low = cast(uint)(lowFreq * 65535);
