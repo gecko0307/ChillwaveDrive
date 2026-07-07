@@ -46,6 +46,7 @@ class ChillwaveDriveGame: Game
     Wav sfxClose;
     Wav sfxClick;
     Wav sfxPopup;
+    Wav sfxSwitch;
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
@@ -67,7 +68,10 @@ class ChillwaveDriveGame: Game
         sfxClick.load("data/sounds/click.wav");
         
         sfxPopup = Wav.create();
-        sfxPopup.load("data/sounds/beep.wav");
+        sfxPopup.load("data/sounds/popup.wav");
+        
+        sfxSwitch = Wav.create();
+        sfxSwitch.load("data/sounds/switch.wav");
     }
     
     override void onUpdate(Time t)
