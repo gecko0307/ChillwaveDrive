@@ -161,6 +161,12 @@ class ImGui: EventListener
             igEnd();
         }
         
+        igSetNextWindowPos(
+            ImVec2(io.DisplaySize.x - 16, 16),
+            ImGuiCond.Appearing,
+            ImVec2(1.0f, 0.0f)
+        );
+        
         if (igBegin("Standings", null, ImGuiWindowFlags.NoCollapse))
         {
             ImGuiTableFlags flags = ImGuiTableFlags.RowBg | 
