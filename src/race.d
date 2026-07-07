@@ -1409,8 +1409,8 @@ class RaceScene: Scene
         if (lateralSlip > 0.5f)
             highFreq = max2(highFreq, 0.3f);
 
-        if (isOnGravel && !car.vehicle.stopped)
-            highFreq = max2(highFreq, 0.3f);
+        if (isOnGravel && speed > 20.0f)
+            highFreq = max2(highFreq, clamp((speed - 20.0f) / 30.0f, 0.0f, 1.0f) * 0.3f);
 
         if (speed > 15.0f)
         {
