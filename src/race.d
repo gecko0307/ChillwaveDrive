@@ -1023,7 +1023,7 @@ class RaceScene: Scene
                 headlightsPressed = true;
                 car.toggleHeadlights();
                 auto switchVoice = audio.play(game.sfxSwitch);
-                audio.setVolume(switchVoice, 2.0f * sfxVolume);
+                audio.setVolume(switchVoice, sfxVolume);
             }
         }
         else
