@@ -59,7 +59,7 @@ import dagon.resource.scene;
 import dagon.resource.texture;
 import dagon.resource.font;
 import dagon.resource.gltf;
-import dagon.game.loadingscreen;
+//import dagon.game.loadingscreen;
 import dagon.ui.textline;
 import dagon.ui.widget;
 import dagon.ext.newton;
@@ -76,6 +76,7 @@ import ai;
 import weather;
 import track;
 import ui;
+import loadingscreen;
 
 class RaceScene: Scene
 {
