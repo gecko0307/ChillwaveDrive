@@ -432,7 +432,7 @@ class RaceScene: Scene
         sfxAmbient.load("data/sounds/rain.mp3");
         
         music = WavStream.create();
-        music.load("data/music/stellar_escape.mp3");
+        music.load("data/music/Machine Code.mp3");
     }
     
     override void onLoad(Time t, float progress)
@@ -860,7 +860,11 @@ class RaceScene: Scene
         if (button == GB_START)
         {
             if (!paused && !raceStarted)
+            {
                 startRace();
+                auto clickVoice = audio.play(game.sfxClick);
+                audio.setVolume(clickVoice, 2.0f * sfxVolume);
+            }
             else
                 togglePause();
         }
