@@ -428,7 +428,8 @@ class ImGui: EventListener
             if (yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();
-                game.exit();
+                game.audio.stopAll();
+                game.setCurrentScene("MainMenu", true);
             }
             igSameLine(0.0f, -1.0f);
             
