@@ -37,7 +37,7 @@ In the pause mode it is possible to customize car's appearance using the "Car se
 - [x] Opponents AI
 - [x] Road/ground material detection
 - [x] Race logic
-- [ ] Main menu
+- [x] Main menu
 - [ ] Car selection UI
 - [ ] Track selection UI
 - [ ] Custom cars
