@@ -29,37 +29,64 @@ module ui;
 
 import std.stdio;
 
+import dlib.core.memory;
+import dlib.text.str;
+
+import dagon.core.logger;
 import dagon.core.bindings;
-import dagon.core.application;
+import dagon.game.game;
 import dagon.core.event;
 import dagon.core.time;
+import dagon.resource.scene;
 import dagon.ext.imgui;
 
+import game;
 import race;
+import menu;
 
 class ImGui: EventListener
 {
-    Application application;
-    RaceScene scene;
+    ChillwaveDriveGame game;
+    MainMenuScene mainMenuScene;
+    RaceScene raceScene;
     
     ImGuiContext* igContext;
     ImGuiIO* io;
     ImFont* font;
     bool active = false;
     
+    ImGuiWindowFlags menuWindowFlags = 
+        ImGuiWindowFlags.NoCollapse |
+        ImGuiWindowFlags.NoTitleBar |
+        ImGuiWindowFlags.NoDecoration |
+        ImGuiWindowFlags.NoMove |
+        ImGuiWindowFlags.NoMouseInputs |
+        ImGuiWindowFlags.NoDocking |
+        ImGuiWindowFlags.AlwaysAutoResize;
+    
+    String[3] mainMenuItems = [
+        "Start game",
+        "Settings",
+        "Exit"
+    ];
+    
+    bool[3] mainMenuItemsHovered;
+    
     bool showRestartPopup = false;
     bool showExitPopup = false;
     
-    this(Application application, RaceScene scene)
+    this(ChillwaveDriveGame game)
     {
-        super(application.eventManager, application);
-        this.application = application;
+        super(game.eventManager, game);
+        this.game = game;
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
         io = igGetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.NoMouseCursorChange;
+        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         ImWchar[] ranges = [
             0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -70,16 +97,32 @@ class ImGui: EventListener
         font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/DroidSans.ttf", 20, null, ranges.ptr);
         igStyleColorsDark(null);
         applyTheme();
-        ImGui_ImplSDL2_InitForOpenGL(application.window, application.glcontext);
+        ImGui_ImplSDL2_InitForOpenGL(game.window, game.glcontext);
         ImGuiOpenGLBackend.init("#version 400 core");
         
-        this.scene = scene;
+        mainMenuScene = cast(MainMenuScene)game.scenes["MainMenu"];
     }
     
     void onProcessEvent(SDL_Event* event)
     {
         if (active)
+        {
             ImGui_ImplSDL2_ProcessEvent(event);
+        }
+    }
+    
+    void reset()
+    {
+        igClearActiveID();
+        ImGuiIO_ClearInputKeys(io);
+        
+        for (int i = 0; i < 5; i++)
+            io.MouseDown[i] = false;
+        
+        for (int i = 0; i < ImGuiKey.COUNT; i++)
+            io.KeysDown[i] = false;
+        
+        igSetWindowFocus_Str(null);
     }
     
     bool capturesMouse() @property
@@ -90,6 +133,11 @@ class ImGui: EventListener
     bool capturesKeyboard() @property
     {
         return active && io.WantCaptureKeyboard;
+    }
+    
+    override void onResize(int width, int height)
+    {
+        io.DisplaySize = ImVec2(eventManager.windowWidth, eventManager.windowHeight);
     }
     
     void update(Time t)
@@ -103,142 +151,97 @@ class ImGui: EventListener
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
         
-        drawPauseUI();
+        bool haveAnythingToRender = false;
+        if (game.currentScene is mainMenuScene)
+            haveAnythingToRender = drawMainMenu();
+        else if (raceScene && game.currentScene is raceScene)
+            haveAnythingToRender = drawPauseUI(raceScene);
         
-        igRender();
+        if (haveAnythingToRender)
+            igRender();
     }
     
-    void drawPauseUI()
+    size_t selectedMainMenuItem = 0;
+    
+    bool drawMainMenu()
     {
-        if (igBegin("Pause", null, ImGuiWindowFlags.NoCollapse))
-        {
-            if (igButton("Resume", ImVec2(100, 32)))
-            {
-                scene.togglePause();
-            }
-            
-            igSameLine(0.0f, -1.0f);
-            
-            if (igButton("Restart", ImVec2(100, 32)))
-            {
-                auto popupVoice = scene.audio.play(scene.game.sfxPopup);
-                scene.audio.setVolume(popupVoice, scene.sfxVolume);
-                igOpenPopup("Restart Confirmation");
-                showRestartPopup = true;
-            }
-            
-            igSameLine(0.0f, -1.0f);
-            
-            if (igButton("Exit", ImVec2(100, 32)))
-            {
-                auto popupVoice = scene.audio.play(scene.game.sfxPopup);
-                scene.audio.setVolume(popupVoice, scene.sfxVolume);
-                igOpenPopup("Exit Confirmation");
-                showExitPopup = true;
-            }
-        }
+        igPushStyleColor(ImGuiCol.FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        igPushStyleColor(ImGuiCol.Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.8f));
         
-        if (igBegin("Car settings", null, ImGuiWindowFlags.NoCollapse))
+        igSetNextWindowSize(ImVec2(250, eventManager.windowHeight));
+        igSetNextWindowPos(ImVec2(0, 0));
+        
+        if (igBegin("MainMenu", null, menuWindowFlags))
         {
-            if (igCollapsingHeader("Paint", ImGuiTreeNodeFlags.DefaultOpen))
+            if (igBeginListBox("##listbox1", ImVec2(0, 5 * igGetTextLineHeightWithSpacing())))
             {
-                auto mat = scene.car.carPaintMaterial;
-                if (mat)
+                bool hoverSoundPlayed = false;
+                
+                if (igIsWindowAppearing())
+                    igSetKeyboardFocusHere(0);
+                
+                foreach(i, v; mainMenuItems)
                 {
-                    igColorEdit4("Color", &mat.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
-                    igSliderFloat("Roughness", &mat.roughnessFactor, 0.0f, 1.0f, "%.3f");
-                    igSliderFloat("Metallic", &mat.metallicFactor, 0.0f, 1.0f, "%.3f");
-                }
-            }
-            
-            igEnd();
-        }
-        
-        if (igBegin("Quick options", null, ImGuiWindowFlags.NoCollapse))
-        {
-            igCheckbox("Enable gamepad rumble", &scene.rumbleEnabled);
-            
-            igEnd();
-        }
-        
-        igSetNextWindowPos(
-            ImVec2(io.DisplaySize.x - 16, 16),
-            ImGuiCond.Appearing,
-            ImVec2(1.0f, 0.0f)
-        );
-        
-        if (igBegin("Standings", null, ImGuiWindowFlags.NoCollapse))
-        {
-            ImGuiTableFlags flags = ImGuiTableFlags.RowBg | 
-                                    ImGuiTableFlags.BordersOuter | 
-                                    ImGuiTableFlags.BordersV | 
-                                    ImGuiTableFlags.NoBordersInBody;
-
-            if (igBeginTable("LeaderboardTable", 4, flags, ImVec2(0.0f, 0.0f), 0.0f))
-            {
-                // Column headers
-                igTableSetupColumn("Pos.", ImGuiTableColumnFlags.WidthFixed, 40.0f, 0);
-                igTableSetupColumn("Racer", ImGuiTableColumnFlags.WidthStretch, 0.0f, 0);
-                igTableSetupColumn("Lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
-                igTableSetupColumn("Best lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
-                igTableHeadersRow();
-
-                // Populate rows with data
-                foreach (i, car; scene.participants)
-                {
-                    igTableNextRow(ImGuiTableRowFlags.None, 0.0f);
-
-                    // Highlight the player's row
-                    if (car.isPlayer)
-                        igTableSetBgColor(ImGuiTableBgTarget.RowBg0, 
-                            igColorConvertFloat4ToU32(ImVec4(0.9f, 0.45f, 0.0f, 0.25f)), -1);
-
-                    // Column 0: Position
-                    igTableSetColumnIndex(0);
-                    char[8] posStr;
-                    snprintf(posStr.ptr, posStr.length, "%d", car.racePosition);
-                    posStr[7] = '\0';
+                    bool isSelected = (selectedMainMenuItem == i);
+                    bool isClicked = igSelectable(mainMenuItems[i].ptr, isSelected);
                     
-                    // Make top 3 positions pop out color-wise
-                    if (car.racePosition == 1)
-                        igTextColored(ImVec4(1.0f, 0.84f, 0.0f, 1.0f), posStr.ptr); // Gold
-                    else if (car.racePosition == 2)
-                        igTextColored(ImVec4(0.75f, 0.75f, 0.75f, 1.0f), posStr.ptr); // Silver
-                    else if (car.racePosition == 3)
-                        igTextColored(ImVec4(0.8f, 0.5f, 0.2f, 1.0f), posStr.ptr); // Bronze
+                    if (igIsItemFocused())
+                        selectedMainMenuItem = i;
+
+                    bool isMenuFocused = igIsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+                    bool isActivated = isClicked || (isSelected && isMenuFocused && (igIsKeyPressed(ImGuiKey.Enter) || igIsKeyPressed(ImGuiKey.GamepadFaceDown)));
+                    
+                    if (isActivated)
+                    {
+                        switch(i)
+                        {
+                            case 0:
+                                active = false;
+                                raceScene = New!RaceScene(game);
+                                game.setCurrentScene(raceScene);
+                                return false;
+                            case 1:
+                                // TODO
+                                // settingsVisible = !settingsVisible;
+                                break;
+                            case 2:
+                                auto popupVoice = game.audio.play(game.sfxPopup);
+                                game.audio.setVolume(popupVoice, game.sfxVolume);
+                                showExitPopup = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    
+                    if (igIsItemHovered() || igIsItemFocused())
+                    {
+                        if (mainMenuItemsHovered[i] == false && hoverSoundPlayed == false)
+                        {
+                            mainMenuItemsHovered[i] = true;
+                            hoverSoundPlayed = true;
+                            // playSound("assets/sounds/keypress.wav");
+                        }
+                    }
                     else
-                        igText(posStr.ptr);
-
-                    // Column 1: Name
-                    igTableSetColumnIndex(1);
-                    if (car.isPlayer)
-                        igTextColored(ImVec4(1.0f, 0.55f, 0.15f, 1.0f), car.name.ptr); // Bright Orange text for player
-                    else
-                        igText(car.name.ptr);
-
-                    // Column 2: Current Lap Time
-                    igTableSetColumnIndex(2);
-                    char[11] timeStr;
-                    uint lapMin = cast(uint)(car.lapTime / 60.0);
-                    uint lapSec = cast(uint)(car.lapTime) % 60;
-                    uint lapMsec = cast(uint)((car.lapTime - cast(uint)car.lapTime) * 1000.0);
-                    uint n = sprintf(timeStr.ptr, "%02u:%02u.%03u\0", lapMin, lapSec, lapMsec);
-                    igText(timeStr.ptr);
-
-                    // Column 3: Best Lap Time
-                    igTableSetColumnIndex(3);
-                    char[11] bestTimeStr;
-                    uint bestMin = cast(uint)(car.bestLapTime / 60.0);
-                    uint bestSec = cast(uint)(car.bestLapTime) % 60;
-                    uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
-                    n = sprintf(bestTimeStr.ptr, "%02u:%02u.%03u\0", bestMin, bestSec, bestMsec);
-                    igTextColored(ImVec4(0.0f, 0.9f, 0.4f, 1.00), bestTimeStr.ptr); // Green text for best times
+                    {
+                        mainMenuItemsHovered[i] = false;
+                    }
                 }
-
-                igEndTable();
+                
+                igEndListBox();
             }
             
             igEnd();
+        }
+        
+        igPopStyleColor(3);
+        
+        if (showExitPopup)
+        {
+            igOpenPopup("Exit Confirmation");
+            showExitPopup = false; 
         }
         
         igSetNextWindowPos(
@@ -251,18 +254,23 @@ class ImGui: EventListener
         {
             igText("Are you sure you want to quit?");
             igSeparator();
-
-            if (igButton("Yes", ImVec2(120, 0)))
+            
+            bool yesClicked = igButton("Yes", ImVec2(120, 0));
+            bool yesActivated = yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter));
+            
+            if (yesActivated)
             {
-                application.exit();
-                
                 igCloseCurrentPopup();
                 showExitPopup = false;
+                game.exit();
             }
             
             igSameLine(0.0f, -1.0f);
             
-            if (igButton("Cancel", ImVec2(120, 0)))
+            bool cancelClicked = igButton("Cancel", ImVec2(120, 0));
+            bool cancelActivated = cancelClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter));
+            
+            if (cancelActivated)
             {
                 igCloseCurrentPopup();
                 showExitPopup = false;
@@ -271,29 +279,189 @@ class ImGui: EventListener
             igEndPopup();
         }
         
+        return true;
+    }
+    
+    bool drawPauseUI(RaceScene scene)
+    {
+        float leftPanelWidth = 350.0f;
+        
+        igSetNextWindowPos(ImVec2(16, 43), ImGuiCond.Always, ImVec2(0.0f, 0.0f));
+        igSetNextWindowSize(ImVec2(leftPanelWidth, io.DisplaySize.y - 60), ImGuiCond.Always);
+        
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoCollapse 
+                                     | ImGuiWindowFlags.NoResize 
+                                     | ImGuiWindowFlags.NoMove 
+                                     | ImGuiWindowFlags.NoSavedSettings;
+        
+        if (igBegin("Pause Menu", null, windowFlags))
+        {
+            igDummy(ImVec2(0, 4));
+            if (igButton("Resume", ImVec2(100, 32))) scene.togglePause();
+            igSameLine(0.0f, -1.0f);
+            
+            if (igButton("Restart", ImVec2(100, 32)))
+            {
+                auto popupVoice = scene.audio.play(scene.game.sfxPopup);
+                scene.audio.setVolume(popupVoice, scene.sfxVolume);
+                showRestartPopup = true;
+            }
+            igSameLine(0.0f, -1.0f);
+            
+            if (igButton("Exit", ImVec2(100, 32)))
+            {
+                auto popupVoice = scene.audio.play(scene.game.sfxPopup);
+                scene.audio.setVolume(popupVoice, scene.sfxVolume);
+                showExitPopup = true;
+            }
+            igDummy(ImVec2(0, 4));
+            
+            if (igCollapsingHeader("Car settings", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                igDummy(ImVec2(0, 4));
+                auto mat = scene.car.carPaintMaterial;
+                if (mat)
+                {
+                    igColorEdit4("Color", &mat.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
+                    igSliderFloat("Roughness", &mat.roughnessFactor, 0.0f, 1.0f, "%.3f");
+                    igSliderFloat("Metallic", &mat.metallicFactor, 0.0f, 1.0f, "%.3f");
+                }
+                igDummy(ImVec2(0, 4));
+            }
+            
+            if (igCollapsingHeader("Quick options", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                igDummy(ImVec2(0, 4));
+                igCheckbox("Enable gamepad rumble", &scene.rumbleEnabled);
+                igDummy(ImVec2(0, 4));
+            }
+            
+            igEnd();
+        }
+
+        static ImVec2 lastDisplaySize = ImVec2(0, 0);
+        bool sizeChanged = (io.DisplaySize.x != lastDisplaySize.x || io.DisplaySize.y != lastDisplaySize.y);
+        ImGuiCond standingsCond = ImGuiCond.Appearing;
+        if (sizeChanged && lastDisplaySize.x > 0) standingsCond = ImGuiCond.Always;
+
+        igSetNextWindowPos(ImVec2(io.DisplaySize.x - 16, 16), standingsCond, ImVec2(1.0f, 0.0f));
+        
+        if (igBegin("Standings", null, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoSavedSettings))
+        {
+            ImGuiTableFlags flags = ImGuiTableFlags.RowBg | 
+                                    ImGuiTableFlags.BordersOuter | 
+                                    ImGuiTableFlags.BordersV | 
+                                    ImGuiTableFlags.NoBordersInBody;
+
+            if (igBeginTable("LeaderboardTable", 4, flags, ImVec2(0.0f, 0.0f), 0.0f))
+            {
+                igTableSetupColumn("Pos.", ImGuiTableColumnFlags.WidthFixed, 40.0f, 0);
+                igTableSetupColumn("Racer", ImGuiTableColumnFlags.WidthStretch, 0.0f, 0);
+                igTableSetupColumn("Lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
+                igTableSetupColumn("Best lap", ImGuiTableColumnFlags.WidthFixed, 100.0f, 0);
+                igTableHeadersRow();
+
+                foreach (i, car; scene.participants)
+                {
+                    igTableNextRow(ImGuiTableRowFlags.None, 0.0f);
+
+                    if (car.isPlayer)
+                        igTableSetBgColor(ImGuiTableBgTarget.RowBg0, 
+                            igColorConvertFloat4ToU32(ImVec4(0.9f, 0.45f, 0.0f, 0.25f)), -1);
+
+                    igTableSetColumnIndex(0);
+                    char[8] posStr;
+                    snprintf(posStr.ptr, posStr.length, "%d", car.racePosition);
+                    posStr[7] = '\0';
+                    
+                    if (car.racePosition == 1) igTextColored(ImVec4(1.0f, 0.84f, 0.0f, 1.0f), posStr.ptr);
+                    else if (car.racePosition == 2) igTextColored(ImVec4(0.75f, 0.75f, 0.75f, 1.0f), posStr.ptr);
+                    else if (car.racePosition == 3) igTextColored(ImVec4(0.8f, 0.5f, 0.2f, 1.0f), posStr.ptr);
+                    else igText(posStr.ptr);
+
+                    igTableSetColumnIndex(1);
+                    if (car.isPlayer) igTextColored(ImVec4(1.0f, 0.55f, 0.15f, 1.0f), car.name.ptr);
+                    else igText(car.name.ptr);
+
+                    igTableSetColumnIndex(2);
+                    char[11] timeStr;
+                    uint lapMin = cast(uint)(car.lapTime / 60.0);
+                    uint lapSec = cast(uint)(car.lapTime) % 60;
+                    uint lapMsec = cast(uint)((car.lapTime - cast(uint)car.lapTime) * 1000.0);
+                    sprintf(timeStr.ptr, "%02u:%02u.%03u\0", lapMin, lapSec, lapMsec);
+                    igText(timeStr.ptr);
+
+                    igTableSetColumnIndex(3);
+                    char[11] bestTimeStr;
+                    uint bestMin = cast(uint)(car.bestLapTime / 60.0);
+                    uint bestSec = cast(uint)(car.bestLapTime) % 60;
+                    uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
+                    sprintf(bestTimeStr.ptr, "%02u:%02u.%03u\0", bestMin, bestSec, bestMsec);
+                    igTextColored(ImVec4(0.0f, 0.9f, 0.4f, 1.00), bestTimeStr.ptr);
+                }
+                igEndTable();
+            }
+            igEnd();
+        }
+        lastDisplaySize = io.DisplaySize;
+
+        if (showExitPopup)
+        {
+            igSetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond.Always, ImVec2(0.5f, 0.5f));
+            igOpenPopup("Exit Confirmation");
+            showExitPopup = false; 
+        }
+        
+        if (showRestartPopup)
+        {
+            igSetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond.Always, ImVec2(0.5f, 0.5f));
+            igOpenPopup("Restart Confirmation");
+            showRestartPopup = false;
+        }
+        
+        if (igBeginPopupModal("Exit Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            igText("Are you sure you want to quit?");
+            igSeparator();
+            
+            bool yesClicked = igButton("Yes", ImVec2(120, 0));
+            if (yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
+            {
+                igCloseCurrentPopup();
+                game.exit();
+            }
+            igSameLine(0.0f, -1.0f);
+            
+            bool cancelClicked = igButton("Cancel", ImVec2(120, 0));
+            if (cancelClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
+            {
+                igCloseCurrentPopup();
+            }
+            igEndPopup();
+        }
+        
         if (igBeginPopupModal("Restart Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
         {
             igText("Are you sure you want to restart?");
             igSeparator();
-
-            if (igButton("Yes", ImVec2(120, 0)))
-            {
-                scene.restartRace();
-                
-                igCloseCurrentPopup();
-                showRestartPopup = false;
-            }
             
+            bool yesClicked = igButton("Yes", ImVec2(120, 0));
+            if (yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
+            {
+                igCloseCurrentPopup();
+                scene.restartRace();
+            }
             igSameLine(0.0f, -1.0f);
             
-            if (igButton("Cancel", ImVec2(120, 0)))
+            bool cancelClicked = igButton("Cancel", ImVec2(120, 0));
+            if (cancelClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();
-                showRestartPopup = false;
             }
-            
             igEndPopup();
         }
+        
+        return true;
     }
     
     void render()
@@ -304,10 +472,8 @@ class ImGui: EventListener
     
     void applyTheme()
     {
-        // 1. Fetch the global style reference
         ImGuiStyle* style = igGetStyle();
         
-        // 2. Apply modern window and widget rounding
         style.WindowRounding    = 6.0f;
         style.ChildRounding     = 4.0f;
         style.FrameRounding     = 4.0f;
@@ -328,7 +494,6 @@ class ImGui: EventListener
         ImVec4 color_text        = ImVec4(0.95f, 0.95f, 0.95f, 1.0f); // Off-white text
         ImVec4 color_text_disabled=ImVec4(0.50f, 0.50f, 0.50f, 1.0f); 
 
-        // 4. Map colors to ImGui elements
         style.Colors[ImGuiCol.Text]                  = color_text;
         style.Colors[ImGuiCol.TextDisabled]          = color_text_disabled;
         
@@ -336,13 +501,13 @@ class ImGui: EventListener
         style.Colors[ImGuiCol.WindowBg]              = color_bg_dark;
         style.Colors[ImGuiCol.ChildBg]               = color_bg_med;
         style.Colors[ImGuiCol.PopupBg]               = color_bg_dark;
-        style.Colors[ImGuiCol.Border]                = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-        style.Colors[ImGuiCol.BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        style.Colors[ImGuiCol.Border]                = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
+        style.Colors[ImGuiCol.BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.0f);
 
         // Frame Elements (Checkboxes, Input Fields, etc.)
         style.Colors[ImGuiCol.FrameBg]               = color_bg_light;
-        style.Colors[ImGuiCol.FrameBgHovered]        = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
-        style.Colors[ImGuiCol.FrameBgActive]         = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
+        style.Colors[ImGuiCol.FrameBgHovered]        = ImVec4(0.28f, 0.28f, 0.28f, 1.0f);
+        style.Colors[ImGuiCol.FrameBgActive]         = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
 
         // Headers (Collapsing Headers, Tree Nodes)
         style.Colors[ImGuiCol.Header]                = color_bg_light;
@@ -369,7 +534,7 @@ class ImGui: EventListener
         // Sliders & Scrollbars
         style.Colors[ImGuiCol.ScrollbarBg]           = color_bg_dark;
         style.Colors[ImGuiCol.ScrollbarGrab]         = color_bg_light;
-        style.Colors[ImGuiCol.ScrollbarGrabHovered]  = ImVec4(0.30f, 0.30f, 0.30f, 1.00f);
+        style.Colors[ImGuiCol.ScrollbarGrabHovered]  = ImVec4(0.30f, 0.30f, 0.30f, 1.0f);
         style.Colors[ImGuiCol.ScrollbarGrabActive]   = color_orange;
         style.Colors[ImGuiCol.CheckMark]             = color_orange;
         style.Colors[ImGuiCol.SliderGrab]            = color_orange;
@@ -379,9 +544,12 @@ class ImGui: EventListener
         style.Colors[ImGuiCol.ResizeGrip]            = color_bg_light;
         style.Colors[ImGuiCol.ResizeGripHovered]     = color_orange;
         style.Colors[ImGuiCol.ResizeGripActive]      = color_orange_act;
-        style.Colors[ImGuiCol.Separator]             = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+        style.Colors[ImGuiCol.Separator]             = ImVec4(0.20f, 0.20f, 0.20f, 1.0f);
         style.Colors[ImGuiCol.SeparatorHovered]      = color_orange;
         style.Colors[ImGuiCol.SeparatorActive]       = color_orange_act;
         style.Colors[ImGuiCol.TextSelectedBg]        = ImVec4(0.90f, 0.45f, 0.00f, 0.35f); // Semi-transparent orange selection
+        
+        // Navigation
+        style.Colors[ImGuiCol.NavHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }

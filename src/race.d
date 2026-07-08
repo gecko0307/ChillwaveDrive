@@ -35,6 +35,7 @@ import std.random;
 import std.algorithm.sorting: sort;
 
 import dlib.core.memory;
+import dlib.core.ownership;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
@@ -44,6 +45,7 @@ import dlib.math.interpolation;
 import dlib.image.color;
 import dlib.text.str;
 
+import dagon.core.bindings;
 import dagon.core.keycodes;
 import dagon.core.time;
 import dagon.core.logger;
@@ -344,12 +346,15 @@ class RaceScene: Scene
         loadingScreen = New!LoadingScreen(game, this);
         loadingScreen.backgroundTexture = splashTextureAsset.texture;
         loadingScreen.progressbarCentered = false;
+        
+        game.hudRenderer.passHUD.clear = false;
     }
     
     ~this()
     {
         mclaren.free();
-        Delete(participants);
+        if (participants.length)
+            Delete(participants);
     }
     
     void loadCarConfig(string filename, CarAsset* carAsset)
@@ -983,9 +988,10 @@ class RaceScene: Scene
         if (!paused)
         {
             gameHUD.hide();
-            game.ui.active = true;
+            game.imgui.active = true;
             paused = true;
             audio.setPauseAll(true);
+            game.imgui.reset();
         }
         else
         {
@@ -994,7 +1000,7 @@ class RaceScene: Scene
             vehicleView.targetTurnAngle = fmod(vehicleView.targetTurnAngle, 2.0f * PI);
             vehicleView.targetPitchAngle = fmod(vehicleView.targetPitchAngle, 2.0f * PI);
             gameHUD.show();
-            game.ui.active = false;
+            game.imgui.active = false;
             paused = false;
             audio.setPauseAll(false);
             viewResetTime = 0.0f;
@@ -1006,7 +1012,7 @@ class RaceScene: Scene
     
     override void onMouseButtonDown(int button)
     {
-        if (game.ui.capturesMouse)
+        if (game.imgui.capturesMouse)
             return;
         
         if (button == MB_LEFT)
@@ -1023,7 +1029,7 @@ class RaceScene: Scene
     
     override void onMouseButtonUp(int button)
     {
-        if (game.ui.capturesMouse)
+        if (game.imgui.capturesMouse)
             return;
         
         if (button == MB_LEFT)

@@ -31,18 +31,23 @@ import dlib.core.memory;
 
 import dagon.core.time;
 import dagon.game.game;
+import dagon.resource.scene;
 import dagon.ext.imgui;
 
 import soloud;
 
 import race;
+import menu;
 import ui;
 
 class ChillwaveDriveGame: Game
 {
     Soloud audio;
-    RaceScene raceScene;
-    ImGui ui;
+    ImGui imgui;
+    
+    // TODO: make a separate Audio class
+    float sfxVolume = 0.5f;
+    float musicVolume = 0.5f;
     Wav sfxClose;
     Wav sfxClick;
     Wav sfxPopup;
@@ -54,12 +59,12 @@ class ChillwaveDriveGame: Game
         audio = Soloud.create();
         audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
         
-        raceScene = New!RaceScene(this);
-        currentScene = raceScene;
+        auto mainMenuScene = New!MainMenuScene(this);
+        scenes["MainMenu"] = mainMenuScene;
+        currentScene = mainMenuScene;
         
-        ui = New!ImGui(this, raceScene);
-        
-        eventManager.onProcessEvent = &ui.onProcessEvent;
+        imgui = New!ImGui(this);
+        eventManager.onProcessEvent = &imgui.onProcessEvent;
         
         sfxClose = Wav.create();
         sfxClose.load("data/sounds/close.wav");
@@ -74,16 +79,30 @@ class ChillwaveDriveGame: Game
         sfxSwitch.load("data/sounds/switch.wav");
     }
     
+    override void setCurrentScene(Scene scene, bool releaseCurrent = false)
+    {
+        super.setCurrentScene(scene, releaseCurrent);
+    }
+    
+    override void setCurrentScene(string name, bool releaseCurrent = false)
+    {
+        super.setCurrentScene(name, releaseCurrent);
+        
+        if (name == "MainMenu")
+        {
+            imgui.active = true;
+        }
+    }
+    
     override void onUpdate(Time t)
     {
         super.onUpdate(t);
-        ui.update(t);
-        //currentScene.focused = !ui.capturesMouse;
+        imgui.update(t);
     }
     
     override void onRender()
     {
         super.onRender();
-        ui.render();
+        imgui.render();
     }
 }
