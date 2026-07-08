@@ -204,8 +204,8 @@ class RaceScene: Scene
     float impactSoundResetTimer = 0.0f;
     bool canPlayImpactSound = true;
     
-    float musicVolume = 0.5f;
-    float sfxVolume = 0.5f;
+    //float game.musicVolume = 0.5f;
+    //float game.sfxVolume = 0.5f;
     
     int lastMouseX, lastMouseY;
     
@@ -742,12 +742,12 @@ class RaceScene: Scene
         
         auto ambientVoice = audio.play(sfxAmbient);
         audio.setLooping(ambientVoice, true);
-        audio.setVolume(ambientVoice, 2.0f * sfxVolume);
+        audio.setVolume(ambientVoice, 2.0f * game.sfxVolume);
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
         audio.set3dSourceMinMaxDistance(engine1Voice, 1.0f, 50.0f);
-        audio.setVolume(engine1Voice, sfxVolume);
+        audio.setVolume(engine1Voice, game.sfxVolume);
         
         engine2Voice = audio.play3d(sfxEngine2, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine2Voice, true);
@@ -875,7 +875,7 @@ class RaceScene: Scene
         if (key == KEY_F4)
         {
             auto shotVoice = audio.play(sfxCamera);
-            audio.setVolume(shotVoice, sfxVolume);
+            audio.setVolume(shotVoice, game.sfxVolume);
             application.takeScreenshot("screenshots/screenshot");
             overlay.background.opacity = 1.0f;
             overlay.background.fadeOut(0.25f);
@@ -889,12 +889,12 @@ class RaceScene: Scene
             eText2.hide();
             
             auto clickVoice = audio.play(game.sfxClick);
-            audio.setVolume(clickVoice, 2.0f * sfxVolume);
+            audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
         }
         else if (key == KEY_M)
         {
             auto clickVoice = audio.play(game.sfxClick);
-            audio.setVolume(clickVoice, 2.0f * sfxVolume);
+            audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
             
             if (audio.isValidVoiceHandle(musicVoice))
             {
@@ -904,7 +904,7 @@ class RaceScene: Scene
             {
                 musicVoice = audio.play(music);
                 audio.setLooping(musicVoice, true);
-                audio.setVolume(musicVoice, musicVolume);
+                audio.setVolume(musicVoice, game.musicVolume);
             }
         }
         else if (key == KEY_ESCAPE)
@@ -920,7 +920,7 @@ class RaceScene: Scene
             autopilot.active = !autopilot.active;
             car.vehicle.arcadeSteering = !car.vehicle.arcadeSteering;
             auto clickVoice = audio.play(game.sfxClick);
-            audio.setVolume(clickVoice, 2.0f * sfxVolume);
+            audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
         }
         else if (key == KEY_RETURN)
         {
@@ -928,7 +928,7 @@ class RaceScene: Scene
             {
                 startRace();
                 auto clickVoice = audio.play(game.sfxClick);
-                audio.setVolume(clickVoice, 2.0f * sfxVolume);
+                audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
             }
         }
         else if (key == KEY_J)
@@ -946,7 +946,7 @@ class RaceScene: Scene
             {
                 startRace();
                 auto clickVoice = audio.play(game.sfxClick);
-                audio.setVolume(clickVoice, 2.0f * sfxVolume);
+                audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
             }
             else
                 togglePause();
@@ -977,7 +977,7 @@ class RaceScene: Scene
             {
                 musicVoice = audio.play(music);
                 audio.setLooping(musicVoice, true);
-                audio.setVolume(musicVoice, musicVolume);
+                audio.setVolume(musicVoice, game.musicVolume);
             }
         }
     }
@@ -1007,7 +1007,7 @@ class RaceScene: Scene
         }
         
         auto pauseVoice = audio.play(game.sfxClose);
-        audio.setVolume(pauseVoice, sfxVolume);
+        audio.setVolume(pauseVoice, game.sfxVolume);
     }
     
     override void onMouseButtonDown(int button)
@@ -1084,7 +1084,7 @@ class RaceScene: Scene
             impactVolume = lerp(1.0f, 3.0f, clamp((contactSpeed - 5.0f) / 10.0f, 0.0f, 1.0f));
             canPlayImpactSound = false;
             hitVoice = audio.play3d(sfxImpact[uniform(0, $)], car.position.x, car.position.y, car.position.z);
-            audio.setVolume(hitVoice, impactVolume * sfxVolume);
+            audio.setVolume(hitVoice, impactVolume * game.sfxVolume);
             audio.setRelativePlaySpeed(hitVoice, 1.5f);
             audio.set3dSourceMinMaxDistance(hitVoice, 1.0f, 50.0f);
         }
@@ -1134,7 +1134,7 @@ class RaceScene: Scene
                 headlightsPressed = true;
                 car.toggleHeadlights();
                 auto switchVoice = audio.play(game.sfxSwitch);
-                audio.setVolume(switchVoice, sfxVolume);
+                audio.setVolume(switchVoice, game.sfxVolume);
             }
         }
         else
@@ -1182,11 +1182,11 @@ class RaceScene: Scene
         float engine2SoundSpeed = lerp(0.5f, 1.0f, rpmFactor);
         audio.setRelativePlaySpeed(engine2Voice, engineSoundSpeed);
         float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor);
-        audio.setVolume(engine2Voice, sfxVolume * engine2Volume * 2.0f);
-        audio.setVolume(engine1Voice, sfxVolume * (1.0f - engine2Volume) * 2.0f);
+        audio.setVolume(engine2Voice, game.sfxVolume * engine2Volume * 2.0f);
+        audio.setVolume(engine1Voice, game.sfxVolume * (1.0f - engine2Volume) * 2.0f);
         
         // Popping
-        audio.setVolume(poppingVoice, sfxVolume * car.vehicle.popping * 3.0f);
+        audio.setVolume(poppingVoice, game.sfxVolume * car.vehicle.popping * 3.0f);
         
         // Tire squeal sound
         float lateralSlip = car.lateralSlip;
@@ -1216,9 +1216,9 @@ class RaceScene: Scene
             else
                 gravelVolume = 0.0f;
         }
-        audio.setVolume(squealVoice, sfxVolume * squealVolume * 0.8f * squealCoef);
+        audio.setVolume(squealVoice, game.sfxVolume * squealVolume * 0.8f * squealCoef);
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
-        audio.setVolume(skidVoice, sfxVolume * 0.5f * skidVolume);
+        audio.setVolume(skidVoice, game.sfxVolume * 0.5f * skidVolume);
         audio.set3dSourcePosition(skidVoice, car.position.x, car.position.y, car.position.z);
         audio.setVolume(slipVoice, 0.5f * gravelVolume * slipSpeedFactor);
         
@@ -1233,12 +1233,12 @@ class RaceScene: Scene
             wheelsVolume *= (1.0f - squealVolume);
         }
         float wheelsSoundSpeed = lerp(0.7f, 1.2f, clamp((speedKMH - 30.0f) / 30.0f, 0.0f, 1.0f));
-        audio.setVolume(wheelsVoice, sfxVolume * wheelsVolume);
+        audio.setVolume(wheelsVoice, game.sfxVolume * wheelsVolume);
         audio.setRelativePlaySpeed(wheelsVoice, wheelsSoundSpeed);
         
         float steerVolume = cast(float)(abs(car.steeringInput - steeringInputPrev) > 0.01f) * 0.3f;
         steerVolume *= 1.0f - clamp((speedKMH - 1.0f) / 30.0f, 0.0f, 1.0f);
-        audio.setVolume(steerVoice, sfxVolume * steerVolume);
+        audio.setVolume(steerVoice, game.sfxVolume * steerVolume);
         steeringInputPrev = car.steeringInput;
         
         foreach(w; car.vehicle.wheels)
@@ -1249,7 +1249,7 @@ class RaceScene: Scene
                 if (!cast(bool)audio.isValidVoiceHandle(suspVoice))
                 {
                     suspVoice = audio.play3d(sfxSuspension[uniform(0, $)], car.position.x, car.position.y, car.position.z);
-                    audio.setVolume(suspVoice, 0.5f * sfxVolume);
+                    audio.setVolume(suspVoice, 0.5f * game.sfxVolume);
                 }
             }
         }
@@ -1285,7 +1285,7 @@ class RaceScene: Scene
         else
             impactVolume = 0.0f;
         
-        audio.setVolume(scratchVoice, scrapingVolume * sfxVolume);
+        audio.setVolume(scratchVoice, scrapingVolume * game.sfxVolume);
         audio.setRelativePlaySpeed(scratchVoice, 3.0f);
         scraping = false;
         
@@ -1354,6 +1354,9 @@ class RaceScene: Scene
         }
         
         eSky.material.emissionEnergy = environment.ambientEnergy;
+        
+        if (audio.isValidVoiceHandle(musicVoice))
+            audio.setVolume(musicVoice, game.musicVolume);
         
         // Feed camera data to 3D listener
         audio.set3dListenerPosition(camera.positionAbsolute.x, camera.positionAbsolute.y, camera.positionAbsolute.z);

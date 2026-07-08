@@ -48,6 +48,7 @@ class ChillwaveDriveGame: Game
     // TODO: make a separate Audio class
     float sfxVolume = 0.5f;
     float musicVolume = 0.5f;
+    
     Wav sfxClose;
     Wav sfxClick;
     Wav sfxPopup;

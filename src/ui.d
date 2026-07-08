@@ -303,7 +303,7 @@ class ImGui: EventListener
             if (igButton("Restart", ImVec2(100, 32)))
             {
                 auto popupVoice = scene.audio.play(scene.game.sfxPopup);
-                scene.audio.setVolume(popupVoice, scene.sfxVolume);
+                scene.audio.setVolume(popupVoice, game.sfxVolume);
                 showRestartPopup = true;
             }
             igSameLine(0.0f, -1.0f);
@@ -311,7 +311,7 @@ class ImGui: EventListener
             if (igButton("Exit", ImVec2(100, 32)))
             {
                 auto popupVoice = scene.audio.play(scene.game.sfxPopup);
-                scene.audio.setVolume(popupVoice, scene.sfxVolume);
+                scene.audio.setVolume(popupVoice, game.sfxVolume);
                 showExitPopup = true;
             }
             igDummy(ImVec2(0, 4));
@@ -334,6 +334,9 @@ class ImGui: EventListener
                 igDummy(ImVec2(0, 4));
                 igCheckbox("Enable gamepad rumble", &scene.rumbleEnabled);
                 igDummy(ImVec2(0, 4));
+                igSliderFloat("SFX", &game.sfxVolume, 0.0f, 1.0f, "%.3f");
+                igDummy(ImVec2(0, 4));
+                igSliderFloat("Music", &game.musicVolume, 0.0f, 1.0f, "%.3f");
             }
             
             igEnd();
