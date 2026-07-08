@@ -65,7 +65,7 @@ class ImGui: EventListener
         ImGuiWindowFlags.AlwaysAutoResize;
     
     String[3] mainMenuItems = [
-        "Start game",
+        "Single race",
         "Settings",
         "Exit"
     ];
