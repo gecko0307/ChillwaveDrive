@@ -11,7 +11,7 @@ AI-controlled cars are supported. Fairly accurate and stable path following algo
 
 The project is still in alpha stage. Car and track selection, game settings and other parts of UI are not implemented yet. Core gameplay and the racing logic are mostly done.
 
-[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-2.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/06/chillwave-drive-ai-2.jpg)
+[![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-dof-7.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-dof-7.jpg)
 
 ## Controls
 
