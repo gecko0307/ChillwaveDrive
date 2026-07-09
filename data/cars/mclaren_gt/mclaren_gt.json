@@ -21,6 +21,14 @@
             "paint": "paint",
             "headlights": "Lights_Front",
             "brakelights": "Lights_Back"
+        },
+        "headlights": {
+            "color": [1.0, 1.0, 1.0, 1.0],
+            "energy": 9.0
+        },
+        "brakelights": {
+            "color": [1.0, 0.0, 0.0, 1.0],
+            "energy": 4.0
         }
     },
     "windows": {

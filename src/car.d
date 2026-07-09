@@ -316,17 +316,9 @@ class Car: Owner
         
         headlightsMaterial = scene.addMaterial();
         headlightsMaterial.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        if (headlightsOn)
-            headlightsMaterial.emissionEnergy = headlightsEnergy;
-        else
-            headlightsMaterial.emissionEnergy = 0.0f;
         
         brakelightsMaterial = scene.addMaterial();
         brakelightsMaterial.emissionFactor = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
-        if (headlightsOn)
-            brakelightsMaterial.emissionEnergy = brakelightsEnergy;
-        else
-            brakelightsMaterial.emissionEnergy = 0.0f;
         
         eCar = scene.addEntity();
         eCar.position = startPosition;
@@ -367,6 +359,24 @@ class Car: Owner
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "paint", chassisGeometry, carPaintMaterial);
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "headlights", chassisGeometry, headlightsMaterial);
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "brakelights", chassisGeometry, brakelightsMaterial);
+            
+            if ("headlights" in chassis)
+            {
+                auto headlights = chassis["headlights"].asObject;
+                if ("color" in headlights)
+                    headlightsMaterial.emissionFactor = headlights["color"].asColor;
+                if ("energy" in headlights)
+                    headlightsEnergy = headlights["energy"].asNumber;
+            }
+            
+            if ("brakelights" in chassis)
+            {
+                auto brakelights = chassis["brakelights"].asObject;
+                if ("color" in brakelights)
+                    brakelightsMaterial.emissionFactor = brakelights["color"].asColor;
+                if ("energy" in brakelights)
+                    brakelightsEnergy = brakelights["energy"].asNumber;
+            }
             
             if ("hitboxes" in chassis)
             {
@@ -470,7 +480,17 @@ class Car: Owner
             }
         }
         
-        // Headlights (TODO: load from car asset)
+        if (headlightsOn)
+            headlightsMaterial.emissionEnergy = headlightsEnergy;
+        else
+            headlightsMaterial.emissionEnergy = 0.0f;
+        
+        if (headlightsOn)
+            brakelightsMaterial.emissionEnergy = brakelightsEnergy;
+        else
+            brakelightsMaterial.emissionEnergy = 0.0f;
+        
+        // Headlight objects (TODO: load from car asset)
         light1 = scene.addLight(LightType.Spot, eCar);
         light1.volumeRadius = 10.0f;
         light1.energy = 5.0f;
