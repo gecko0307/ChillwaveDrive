@@ -1148,6 +1148,13 @@ class RaceScene: Scene
         car2.update(t);
         car3.update(t);
         
+        if (car.finishedLap)
+        {
+            // TODO: show notification
+            auto signalVoice = audio.play(game.sfxPopup);
+            audio.setVolume(signalVoice, game.sfxVolume);
+        }
+        
         physicsWorld.update(t.delta);
         
         const float velocityThreshold = 2.0f;

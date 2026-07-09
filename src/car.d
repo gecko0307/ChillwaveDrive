@@ -299,6 +299,9 @@ class Car: Owner
     ///
     uint racePosition = 0;
     
+    ///
+    bool finishedLap = false;
+    
     this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, int chassisGroupId, Owner owner)
     {
         super(owner);
@@ -604,10 +607,15 @@ class Car: Owner
             lapTime += t.delta;
         }
         
+        finishedLap = false;
         size_t prevSegment = trackSegmentIndex;
         trackSegmentIndex = vehicle.track.getNearestSegmentIndex(trackSegmentIndex, vehicle.position);
-        if (trackSegmentIndex == 0 && prevSegment == vehicle.track.waypoints.length - 2)
+        if (trackSegmentIndex == 0 && prevSegment >= vehicle.track.waypoints.length - 2)
         {
+            trackSegmentIndex = 0;
+            prevSegment = 0;
+            finishedLap = true;
+            
             if (!finished)
             {
                 laps++;
