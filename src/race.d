@@ -408,7 +408,7 @@ class RaceScene: Scene
         
         // Cars
         loadCarConfig("data/cars/mclaren_gt/mclaren_gt.json", &mclaren);
-        loadCarConfig("data/cars/aston_martin_one77/aston_martin_one77.json", &astonMartin);
+        //loadCarConfig("data/cars/aston_martin_one77/aston_martin_one77.json", &astonMartin);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
