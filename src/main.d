@@ -46,6 +46,7 @@ void main(string[] args)
     NewtonSupport newtonSupport = loadNewton();
     debug
     {
+        import std.conv;
         import loader = bindbc.loader.sharedlib;
         foreach(info; loader.errors)
         {
