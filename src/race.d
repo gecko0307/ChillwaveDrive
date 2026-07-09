@@ -57,6 +57,7 @@ import dagon.graphics.shapes;
 import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.particles;
+import dagon.graphics.csm;
 import dagon.graphics.texproc;
 import dagon.resource.scene;
 import dagon.resource.texture;
@@ -398,7 +399,7 @@ class RaceScene: Scene
     {
         aFontDroidSans14 = addFontAsset("data/font/DroidSans.ttf", 14);
         
-        aEnvmap = addTextureAsset("data/envmaps/shudu_lake_4k.hdr");
+        aEnvmap = addTextureAsset("data/envmaps/minedump_flats_4k.hdr");
         
         aRain = addTextureAsset("data/particles/rain.png");
         
@@ -528,15 +529,21 @@ class RaceScene: Scene
         version(Windows) physicsWorld.loadPlugins(".");
         
         sun = addLight(LightType.Sun);
-        //sun.color = Color4f(1.0f, 0.95f, 0.9f, 1.0f);
-        sun.color = Color4f(1.0f, 0.9f, 0.8f, 1.0f);
+        sun.color = Color4f(1.0f, 0.5f, 0.05f, 1.0f);
+        //sun.color = Color4f(1.0f, 0.5f, 0.1f, 1.0f);
         sun.shadowEnabled = true;
-        sun.energy = 0.0f;
-        sun.turn(-35.0f); //0.0f
-        sun.pitch(-15.0f); //-30.0f
+        CascadedShadowMap shadowMap = cast(CascadedShadowMap)sun.shadowMap;
+        shadowMap.projectionSize[0] = 20.0f;
+        shadowMap.projectionSize[1] = 60.0f;
+        shadowMap.projectionSize[2] = 100.0f;
+        shadowMap.zStart = -100.0f;
+        shadowMap.zEnd = 100.0f;
+        sun.energy = 1.0f; //0.0f;
+        sun.turn(-35.0f); //-35.0f
+        sun.pitch(-10.0f); //-15.0f
         sun.scatteringEnabled = true;
-        sun.scattering = 0.3f;
-        sun.mediumDensity = 0.3f;
+        sun.scattering = 0.2f;
+        sun.mediumDensity = 0.02f;
         sun.scatteringUseShadow = false;
         sun.scatteringMaxRandomStepOffset = 0.5f;
         environment.sun = sun;
@@ -546,7 +553,7 @@ class RaceScene: Scene
         
         environment.ambientMap = prefilteredCubemap;
         environment.ambientBRDF = game.deferredRenderer.brdf;
-        environment.ambientEnergy = 0.05f;
+        environment.ambientEnergy = 0.06f; //0.05f
         
         // Track
         aTrack.markTransparentEntities();
@@ -555,6 +562,7 @@ class RaceScene: Scene
         {
             useEntity(node.entity);
             node.entity.dynamic = false;
+            //node.entity.castShadow = false;
         }
         
         auto eTrack = addEntity();
@@ -566,7 +574,10 @@ class RaceScene: Scene
         GroundMaterial gm;
         foreach(i, mat; aTrack.materials)
         {
-            mat.useCulling = false;
+            //mat.useCulling = false;
+            mat.roughnessMetallicTexture = null;
+            mat.roughnessFactor = 0.8f;
+            mat.metallicFactor = 0.8f;
             if (i == 1) // grass
             {
                 gm.grip = 0.9f;
@@ -618,7 +629,7 @@ class RaceScene: Scene
         car.isPlayer = true;
         car.name = String("Player");
         car.vehicle.track = track;
-        car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
+        car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.7f, 0.0f, 1.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 2000.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 2000.0f);
         car.vehicle.arcadeSteering = true;
@@ -721,6 +732,7 @@ class RaceScene: Scene
         eRain.material.useCulling = false;
         eRain.material.depthWrite = false;
         eRain.gbufferMask = 0.0f;
+        eRain.visible = false;
         
         camera = addCamera();
         camera.fov = 42.0f;
@@ -994,6 +1006,8 @@ class RaceScene: Scene
             paused = true;
             audio.setPauseAll(true);
             game.imgui.reset();
+            
+            game.postProcessingRenderer.depthOfFieldEnabled = true;
         }
         else
         {
@@ -1006,6 +1020,8 @@ class RaceScene: Scene
             paused = false;
             audio.setPauseAll(false);
             viewResetTime = 0.0f;
+            
+            game.postProcessingRenderer.depthOfFieldEnabled = false;
         }
         
         auto pauseVoice = audio.play(game.sfxClose);
@@ -1311,54 +1327,58 @@ class RaceScene: Scene
         if (makingDust && car.vehicle.wheels[3].onGround) emitterRight.emitting = true;
         else emitterRight.emitting = false;
         
-        Vector3f camPos = camera.positionAbsolute;
-        rain.spawnPosition = Vector3f(
-            camPos.x,
-            camPos.y + 2.0f,
-            camPos.z
-        );
-        rain.update(t);
-        
-        if (skyCleanupMode == 0)
+        sun.position = car.position;
+        if (eRain.visible)
         {
-            if (sun.energy < 0.4f)
-                sun.energy += t.delta * 0.2f;
-            else
-                sun.energy = 0.4f;
+            Vector3f camPos = camera.positionAbsolute;
+            rain.spawnPosition = Vector3f(
+                camPos.x,
+                camPos.y + 2.0f,
+                camPos.z
+            );
+            rain.update(t);
             
-            if (environment.ambientEnergy < 0.1f)
-                environment.ambientEnergy += t.delta * 0.05f;
-            else
-                environment.ambientEnergy = 0.1f;
-            
-            if (skyCleanupTimer < nextCleanupDuration)
-                skyCleanupTimer += t.delta;
-            else
+            if (skyCleanupMode == 0)
             {
-                skyCleanupMode = 1;
-                skyCleanupTimer = 0.0f;
-                nextCleanupDuration = uniform(30.0f, 60.0f);
+                if (sun.energy < 0.4f)
+                    sun.energy += t.delta * 0.2f;
+                else
+                    sun.energy = 0.4f;
+                
+                if (environment.ambientEnergy < 0.1f)
+                    environment.ambientEnergy += t.delta * 0.05f;
+                else
+                    environment.ambientEnergy = 0.1f;
+                
+                if (skyCleanupTimer < nextCleanupDuration)
+                    skyCleanupTimer += t.delta;
+                else
+                {
+                    skyCleanupMode = 1;
+                    skyCleanupTimer = 0.0f;
+                    nextCleanupDuration = uniform(30.0f, 60.0f);
+                }
             }
-        }
-        else if (skyCleanupMode == 1)
-        {
-            if (sun.energy > 0.0f)
-                sun.energy -= t.delta * 0.2f;
-            else
-                sun.energy = 0.0f;
-            
-            if (environment.ambientEnergy > 0.06f)
-                environment.ambientEnergy -= t.delta * 0.05f;
-            else
-                environment.ambientEnergy = 0.06f;
-            
-            if (skyCleanupTimer < nextCleanupDuration)
-                skyCleanupTimer += t.delta;
-            else
+            else if (skyCleanupMode == 1)
             {
-                skyCleanupMode = 0;
-                skyCleanupTimer = 0.0f;
-                nextCleanupDuration = uniform(5.0f, 15.0f);
+                if (sun.energy > 0.0f)
+                    sun.energy -= t.delta * 0.2f;
+                else
+                    sun.energy = 0.0f;
+                
+                if (environment.ambientEnergy > 0.06f)
+                    environment.ambientEnergy -= t.delta * 0.05f;
+                else
+                    environment.ambientEnergy = 0.06f;
+                
+                if (skyCleanupTimer < nextCleanupDuration)
+                    skyCleanupTimer += t.delta;
+                else
+                {
+                    skyCleanupMode = 0;
+                    skyCleanupTimer = 0.0f;
+                    nextCleanupDuration = uniform(5.0f, 15.0f);
+                }
             }
         }
         

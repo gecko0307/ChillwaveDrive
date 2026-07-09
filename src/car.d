@@ -249,7 +249,7 @@ class Car: Owner
     Material carPaintMaterial;
     
     ///
-    bool headlightsOn = false;
+    bool headlightsOn = true;
     
     ///
     float headlightsEnergy = 9.0f;
@@ -498,7 +498,7 @@ class Car: Owner
                 }
                 eWheel.drawable = dg;
                 eWheel.position = pWheel.localWheelPosition;
-                eWheel.blurMask = 1.0f;
+                eWheel.blurMask = 0.8f;
                 eWheel.blurMaxVelocity = 0.02f;
                 eWheels.append(eWheel);
             }
