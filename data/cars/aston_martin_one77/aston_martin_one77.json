@@ -24,7 +24,23 @@
         },
         "headlights": {
             "color": [1.0, 1.0, 1.0, 1.0],
-            "energy": 8.0
+            "energy": 8.0,
+            "lightObjects": [
+                {
+                    "position": [-0.6, 0.0, 2.5],
+                    "radius": 10.0,
+                    "cutoff": 45.0,
+                    "energy": 5.0,
+                    "rotation": [0.0, 180.0, 0.0]
+                },
+                {
+                    "position": [0.6, 0.0, 2.5],
+                    "radius": 10.0,
+                    "cutoff": 45.0,
+                    "energy": 5.0,
+                    "rotation": [0.0, 180.0, 0.0]
+                }
+            ]
         },
         "brakelights": {
             "color": [1.0, 0.0, 0.0, 1.0],

@@ -264,10 +264,7 @@ class Car: Owner
     Material brakelightsMaterial;
     
     ///
-    Light light1;
-    
-    ///
-    Light light2;
+    Array!Light headlightObjects;
     
     ///
     float brakeHysteresisTimer = 0.0f;
@@ -367,6 +364,33 @@ class Car: Owner
                     headlightsMaterial.emissionFactor = headlights["color"].asColor;
                 if ("energy" in headlights)
                     headlightsEnergy = headlights["energy"].asNumber;
+                if ("lightObjects" in headlights)
+                {
+                    auto lights = headlights["lightObjects"].asArray;
+                    if (lights.length > 0)
+                    {
+                        foreach(i, li; lights)
+                        {
+                            auto lightSettings = li.asObject;
+                            auto light = scene.addLight(LightType.Spot, eCar);
+                            if ("position" in lightSettings)
+                                light.position = lightSettings["position"].asVector;
+                            if ("radius" in lightSettings)
+                                light.volumeRadius = lightSettings["radius"].asNumber;
+                            if ("cutoff" in lightSettings)
+                                light.spotOuterCutoff = lightSettings["cutoff"].asNumber;
+                            if ("energy" in lightSettings)
+                                light.energy = lightSettings["energy"].asNumber;
+                            if ("rotation" in lightSettings)
+                            {
+                                auto r = lightSettings["rotation"].asVector;
+                                light.rotate(r.x, r.y, r.z);
+                            }
+                            
+                            headlightObjects.append(light);
+                        }
+                    }
+                }
             }
             
             if ("brakelights" in chassis)
@@ -490,29 +514,15 @@ class Car: Owner
         else
             brakelightsMaterial.emissionEnergy = 0.0f;
         
-        // Headlight objects (TODO: load from car asset)
-        light1 = scene.addLight(LightType.Spot, eCar);
-        light1.volumeRadius = 10.0f;
-        light1.energy = 5.0f;
-        light1.spotOuterCutoff = 45.0f;
-        light1.position = Vector3f(-0.6f, 0.0f, 2.5f);
-        light1.turn(180);
-        
-        light2 = scene.addLight(LightType.Spot, eCar);
-        light2.volumeRadius = 10.0f;
-        light2.energy = 5.0f;
-        light2.spotOuterCutoff = 45.0f;
-        light2.position = Vector3f(0.6f, 0.0f, 2.5f);
-        light2.turn(180);
-        
-        light1.shining = headlightsOn;
-        light2.shining = headlightsOn;
+        foreach(light; headlightObjects)
+            light.shining = headlightsOn;
     }
     
     ~this()
     {
         eWheels.free();
         name.free();
+        headlightObjects.free();
     }
     
     void restart()
@@ -528,6 +538,7 @@ class Car: Owner
         lapTime = 0.0;
         bestLapTime = 0.0;
         racePosition = 0;
+        finishedLap = false;
     }
     
     bool makeChassisMaterialUnique(GLTFAsset carModel, JSONAsset carConfig, string matType, GLTFGeometryInstance geomInstance, Material replaceWith)
@@ -577,8 +588,14 @@ class Car: Owner
     void toggleHeadlights()
     {
         headlightsOn = !headlightsOn;
+        /*
         light1.shining = headlightsOn;
         light2.shining = headlightsOn;
+        */
+        
+        foreach(light; headlightObjects)
+            light.shining = headlightsOn;
+        
         if (headlightsMaterial)
         {
             if (headlightsOn)

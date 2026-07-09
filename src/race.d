@@ -614,7 +614,7 @@ class RaceScene: Scene
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
         astonMartin.shadowTexture = aCarShadow.texture;
-        car = New!Car(this, physicsWorld, &astonMartin, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
+        car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
         car.vehicle.track = track;
