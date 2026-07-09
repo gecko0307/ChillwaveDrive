@@ -9,8 +9,7 @@ class MainMenuScene: Scene
 {
     ChillwaveDriveGame game;
     Camera camera;
-    //TextureAsset aBg;
-    //Entity bg;
+    Entity bg;
 
     this(ChillwaveDriveGame game)
     {
@@ -20,7 +19,6 @@ class MainMenuScene: Scene
 
     override void beforeLoad()
     {
-        //aBg = addTextureAsset("assets/ui/bg_planet.jpg");
     }
     
     override void onLoad(Time t, float progress)
@@ -33,17 +31,15 @@ class MainMenuScene: Scene
         
         auto hudShader = New!HUDShader(assetManager);
         
-        /*
         bg = addEntityHUD();
         bg.drawable = New!ShapeQuad(assetManager);
         resizeBg(eventManager.windowWidth, eventManager.windowHeight);
         auto bgMaterial = addMaterial();
         bgMaterial.shader = hudShader;
-        bgMaterial.baseColorTexture = aBg.texture;
+        bgMaterial.baseColorTexture = game.splash.texture;
         bgMaterial.depthWrite = false;
         bgMaterial.useCulling = false;
         bg.material = bgMaterial;
-        */
         
         onReset();
     }
@@ -61,7 +57,6 @@ class MainMenuScene: Scene
     {
     }
     
-    /*
     override void onResize(int width, int height)
     {
         if (bg)
@@ -80,7 +75,6 @@ class MainMenuScene: Scene
         // Centering
         bg.position = Vector3f(cast(float)width * 0.5 - bg.scaling.x * 0.5, cast(float)height * 0.5 - bg.scaling.y * 0.5, 0.0f);
     }
-    */
     
     override void onKeyDown(int key) { }
     override void onKeyUp(int key) { }

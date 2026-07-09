@@ -249,13 +249,13 @@ class Car: Owner
     Material carPaintMaterial;
     
     ///
-    bool headlightsOn = true;
+    bool headlightsOn = false;
     
     ///
-    float headlightsEnergy = 10.0f;
+    float headlightsEnergy = 9.0f;
     
     ///
-    float brakelightsEnergy = 5.0f;
+    float brakelightsEnergy = 4.0f;
     
     ///
     Material headlightsMaterial;

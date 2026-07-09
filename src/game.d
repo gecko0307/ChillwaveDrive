@@ -31,7 +31,9 @@ import dlib.core.memory;
 
 import dagon.core.time;
 import dagon.game.game;
+import dagon.resource.asset;
 import dagon.resource.scene;
+import dagon.resource.texture;
 import dagon.ext.imgui;
 
 import soloud;
@@ -45,6 +47,9 @@ class ChillwaveDriveGame: Game
     Soloud audio;
     ImGui imgui;
     
+    AssetManager assetManager;
+    TextureAsset splash;
+    
     // TODO: make a separate Audio class
     float sfxVolume = 0.5f;
     float musicVolume = 0.5f;
@@ -57,8 +62,14 @@ class ChillwaveDriveGame: Game
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
+        
+        assetManager = New!AssetManager(eventManager, vfs, this);
+        assetManager.application = this;
+        
         audio = Soloud.create();
         audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
+        
+        splash = loadTexture("data/ui/splash_screen.jpg");
         
         auto mainMenuScene = New!MainMenuScene(this);
         scenes["MainMenu"] = mainMenuScene;
@@ -78,6 +89,15 @@ class ChillwaveDriveGame: Game
         
         sfxSwitch = Wav.create();
         sfxSwitch.load("data/sounds/switch.wav");
+    }
+    
+    TextureAsset loadTexture(string filename)
+    {
+        auto asset = New!TextureAsset(assetManager);
+        asset.threadSafePartLoaded = assetManager.loadAssetThreadSafePart(asset, filename);
+        if (asset.threadSafePartLoaded)
+            asset.threadUnsafePartLoaded = asset.loadThreadUnsafePart();
+        return asset;
     }
     
     override void setCurrentScene(Scene scene, bool releaseCurrent = false)

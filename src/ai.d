@@ -122,7 +122,7 @@ class Autopilot: Owner
         {
             isIdle = true;
             // TODO: better parking mode
-            car.vehicle.manualSteer(0.05f);
+            car.vehicle.manualSteer(0.02f);
         }
         
         if (isIdle)

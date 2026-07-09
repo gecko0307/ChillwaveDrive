@@ -127,6 +127,7 @@ class RaceScene: Scene
     TextureAsset aRain;
     
     CarAsset mclaren;
+    CarAsset astonMartin;
     
     Car car;
     Car car2;
@@ -341,10 +342,10 @@ class RaceScene: Scene
         this.game = game;
         this.audio = game.audio;
         
-        auto splashTextureAsset = addTextureAsset("data/ui/splash_screen.jpg", true);
+        //auto splashTextureAsset = addTextureAsset("data/ui/splash_screen.jpg", true);
         
         loadingScreen = New!LoadingScreen(game, this);
-        loadingScreen.backgroundTexture = splashTextureAsset.texture;
+        loadingScreen.backgroundTexture = game.splash.texture;
         loadingScreen.progressbarCentered = false;
         
         game.hudRenderer.passHUD.clear = false;
@@ -406,7 +407,7 @@ class RaceScene: Scene
         
         // Cars
         loadCarConfig("data/cars/mclaren_gt/mclaren_gt.json", &mclaren);
-        //loadCarConfig("data/cars/aston_martin_one77/aston_martin_one77.json", &astonMartin);
+        loadCarConfig("data/cars/aston_martin_one77/aston_martin_one77.json", &astonMartin);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
@@ -612,6 +613,7 @@ class RaceScene: Scene
         
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
+        astonMartin.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
@@ -1312,15 +1314,15 @@ class RaceScene: Scene
         
         if (skyCleanupMode == 0)
         {
-            if (sun.energy < 0.5f)
+            if (sun.energy < 0.4f)
                 sun.energy += t.delta * 0.2f;
             else
-                sun.energy = 0.5f;
+                sun.energy = 0.4f;
             
-            if (environment.ambientEnergy < 0.11f)
+            if (environment.ambientEnergy < 0.1f)
                 environment.ambientEnergy += t.delta * 0.05f;
             else
-                environment.ambientEnergy = 0.11f;
+                environment.ambientEnergy = 0.1f;
             
             if (skyCleanupTimer < nextCleanupDuration)
                 skyCleanupTimer += t.delta;
@@ -1338,10 +1340,10 @@ class RaceScene: Scene
             else
                 sun.energy = 0.0f;
             
-            if (environment.ambientEnergy > 0.08f)
+            if (environment.ambientEnergy > 0.06f)
                 environment.ambientEnergy -= t.delta * 0.05f;
             else
-                environment.ambientEnergy = 0.08f;
+                environment.ambientEnergy = 0.06f;
             
             if (skyCleanupTimer < nextCleanupDuration)
                 skyCleanupTimer += t.delta;
