@@ -32,6 +32,10 @@ Xbox controller is recommended. Steering wheels are not supported yet.
 
 In the pause mode it is possible to customize car's appearance using the "Car settings" window.
 
+## Download
+
+Builds are no longer uploaded to GitHub releases. You can download the game on GameJolt page: [https://gamejolt.com/games/chillwave-drive/1030266](https://gamejolt.com/games/chillwave-drive/1030266). Look for "Chillwave Drive Rolling Alpha" package.
+
 ## TODO List
 
 - [x] Vehicle physics
