@@ -128,7 +128,7 @@ class RaceScene: Scene
     TextureAsset aRain;
     
     CarAsset mclaren;
-    CarAsset astonMartin;
+    CarAsset accobra;
     
     Car car;
     Car car2;
@@ -336,6 +336,8 @@ class RaceScene: Scene
     float nextCleanupDuration = 10.0f;
     
     bool rumbleEnabled = true;
+    
+    bool hidePauseUIForScreenshots = true;
 
     this(ChillwaveDriveGame game)
     {
@@ -408,7 +410,7 @@ class RaceScene: Scene
         
         // Cars
         loadCarConfig("data/cars/mclaren_gt/mclaren_gt.json", &mclaren);
-        //loadCarConfig("data/cars/aston_martin_one77/aston_martin_one77.json", &astonMartin);
+        loadCarConfig("data/cars/ac_cobra/ac_cobra.json", &accobra);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
@@ -529,7 +531,7 @@ class RaceScene: Scene
         version(Windows) physicsWorld.loadPlugins(".");
         
         sun = addLight(LightType.Sun);
-        sun.color = Color4f(1.0f, 0.5f, 0.05f, 1.0f);
+        sun.color = Color4f(1.0f, 0.4f, 0.05f, 1.0f);
         //sun.color = Color4f(1.0f, 0.5f, 0.1f, 1.0f);
         sun.shadowEnabled = true;
         CascadedShadowMap shadowMap = cast(CascadedShadowMap)sun.shadowMap;
@@ -624,7 +626,7 @@ class RaceScene: Scene
         
         // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
-        astonMartin.shadowTexture = aCarShadow.texture;
+        accobra.shadowTexture = aCarShadow.texture;
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
@@ -890,7 +892,11 @@ class RaceScene: Scene
         {
             auto shotVoice = audio.play(sfxCamera);
             audio.setVolume(shotVoice, game.sfxVolume);
+            bool uiActive = game.imgui.active;
+            if (hidePauseUIForScreenshots)
+                game.imgui.active = false;
             application.takeScreenshot("screenshots/screenshot");
+            game.imgui.active = uiActive;
             overlay.background.opacity = 1.0f;
             overlay.background.fadeOut(0.25f);
         }

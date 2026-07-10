@@ -182,6 +182,8 @@ class GLTFGeometryInstance: Owner, Drawable
                 primitive.material.bind(&newState);
             else if (geom.material)
                 geom.material.bind(&newState);
+            else
+                state.material.bind(&newState);
 
             newState.shader.bindParameters(&newState);
 
@@ -193,7 +195,8 @@ class GLTFGeometryInstance: Owner, Drawable
                 primitive.material.unbind(&newState);
             else if (geom.material)
                 geom.material.unbind(&newState);
-
+            else
+                state.material.unbind(&newState);
         }
     }
 }
@@ -244,6 +247,9 @@ class Car: Owner
     
     ///
     GLTFGeometryInstance chassisGeometry;
+    
+    ///
+    bool chassisPaintable = true;
     
     ///
     Material carPaintMaterial;
@@ -322,6 +328,8 @@ class Car: Owner
         eCar.turn(startTurnAngle);
         eCar.blurMask = 0.0f;
         
+        auto root = asset.aCar.doc.root;
+        
         if (asset.shadowTexture)
         {
             auto eCarShadow = scene.addEntity(eCar);
@@ -340,11 +348,9 @@ class Car: Owner
             eCarShadow.material.outputPBR = true;
             eCarShadow.material.outputNormal = false;
             eCarShadow.material.outputEmission = false;
-            eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f);
+            eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f); // TODO: read from car config
             eCarShadow.dynamic = true;
         }
-        
-        auto root = asset.aCar.doc.root;
         
         if ("chassis" in root.asObject)
         {
@@ -353,7 +359,11 @@ class Car: Owner
             chassisGeometry = New!GLTFGeometryInstance(asset.aChassis, this);
             eCar.drawable = chassisGeometry;
             
-            makeChassisMaterialUnique(asset.aChassis, asset.aCar, "paint", chassisGeometry, carPaintMaterial);
+            if ("paintable" in chassis)
+                chassisPaintable = chassis["paintable"].asBoolean;
+            
+            if (chassisPaintable)
+                makeChassisMaterialUnique(asset.aChassis, asset.aCar, "paint", chassisGeometry, carPaintMaterial);
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "headlights", chassisGeometry, headlightsMaterial);
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "brakelights", chassisGeometry, brakelightsMaterial);
             
@@ -500,6 +510,7 @@ class Car: Owner
                 eWheel.position = pWheel.localWheelPosition;
                 eWheel.blurMask = 0.8f;
                 eWheel.blurMaxVelocity = 0.02f;
+                eWheel.blurOnlyRotation = true;
                 eWheels.append(eWheel);
             }
         }
@@ -563,6 +574,7 @@ class Car: Owner
                 if (matName.length)
                 {
                     auto m = carModel.material(matName);
+                    replaceWith.copyFrom(m);
                     foreach(ref primitive; geomInstance.instancedPrimitives.data)
                     {
                         if (primitive.geometry.material is m)

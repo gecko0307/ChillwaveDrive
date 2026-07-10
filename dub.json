@@ -7,10 +7,10 @@
     ],
     
     "dependencies": {
-        "dagon": "~>1.2.3",
-        "dagon:exformats": "~>1.2.3",
-        "dagon:newton": "~>1.2.3",
-        "dagon:imgui": "~>1.2.3",
+        "dagon": "~>1.3.0",
+        "dagon:exformats": "~>1.3.0",
+        "dagon:newton": "~>1.3.0",
+        "dagon:imgui": "~>1.3.0",
         "bindbc-soloud": "0.2.1",
         "bindbc-loader": "1.1.4"
     },
