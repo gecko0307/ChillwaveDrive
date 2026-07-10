@@ -336,6 +336,8 @@ class ImGui: EventListener
                 igDummy(ImVec2(0, 4));
                 igCheckbox("Hide UI for screenshots", &scene.hidePauseUIForScreenshots);
                 igDummy(ImVec2(0, 4));
+                igCheckbox("Ultra quality screenshots", &scene.highQualityScreenshots);
+                igDummy(ImVec2(0, 4));
                 igSliderFloat("SFX", &game.sfxVolume, 0.0f, 1.0f, "%.3f");
                 igDummy(ImVec2(0, 4));
                 igSliderFloat("Music", &game.musicVolume, 0.0f, 1.0f, "%.3f");

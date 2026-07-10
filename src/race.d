@@ -336,6 +336,7 @@ class RaceScene: Scene
     
     bool rumbleEnabled = true;
     
+    bool highQualityScreenshots = false;
     bool hidePauseUIForScreenshots = true;
 
     this(ChillwaveDriveGame game)
@@ -883,20 +884,35 @@ class RaceScene: Scene
         eText2.show();
     }
     
+    void updateRenderers(Time t)
+    {
+        game.renderer.update(t);
+        game.postProcessingRenderer.update(t);
+        game.presentRenderer.update(t);
+        game.hudRenderer.update(t);
+        game.postProcessingRenderer.inputBuffer = game.renderer.outputBuffer;
+    }
+    
     override void onKeyDown(int key)
     {
         // Global keys
         if (key == KEY_F4)
         {
-            auto shotVoice = audio.play(sfxCamera);
-            audio.setVolume(shotVoice, game.sfxVolume);
             bool uiActive = game.imgui.active;
+            game.sampleRatio = 2;
+            game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
             if (hidePauseUIForScreenshots)
                 game.imgui.active = false;
+            // TODO: make Game.updateRenderers method
+            updateRenderers(Time(0.0, 0.0));
             application.takeScreenshot("screenshots/screenshot");
+            game.sampleRatio = 1;
+            game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
             game.imgui.active = uiActive;
             overlay.background.opacity = 1.0f;
             overlay.background.fadeOut(0.25f);
+            auto shotVoice = audio.play(sfxCamera);
+            audio.setVolume(shotVoice, game.sfxVolume);
         }
         else if (key == KEY_F5)
         {
