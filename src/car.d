@@ -330,9 +330,10 @@ class Car: Owner
         
         auto root = asset.aCar.doc.root;
         
+        Entity eCarShadow;
         if (asset.shadowTexture)
         {
-            auto eCarShadow = scene.addEntity(eCar);
+            eCarShadow = scene.addEntity(eCar);
             eCarShadow.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), scene.assetManager);
             eCarShadow.decal = true;
             eCarShadow.castShadow = false;
@@ -358,6 +359,16 @@ class Car: Owner
             
             chassisGeometry = New!GLTFGeometryInstance(asset.aChassis, this);
             eCar.drawable = chassisGeometry;
+            
+            if (eCarShadow)
+            {
+                if ("shadow" in chassis)
+                {
+                    auto shadowSettings = chassis["shadow"].asObject;
+                    if ("scale" in shadowSettings)
+                        eCarShadow.scaling = shadowSettings["scale"].asVector;
+                }
+            }
             
             if ("paintable" in chassis)
                 chassisPaintable = chassis["paintable"].asBoolean;

@@ -22,6 +22,7 @@
             "headlights": "lights.001",
             "brakelights": "lights"
         },
+        "paintable": true,
         "headlights": {
             "color": [1.0, 1.0, 1.0, 1.0],
             "energy": 8.0,
@@ -45,6 +46,9 @@
         "brakelights": {
             "color": [1.0, 0.0, 0.0, 1.0],
             "energy": 5.0
+        },
+        "shadow": {
+            "scale": [1.4, 2.0, 3.0]
         }
     },
     "windows": {

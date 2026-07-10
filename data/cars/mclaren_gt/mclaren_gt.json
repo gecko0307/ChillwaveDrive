@@ -9,7 +9,7 @@
         "model": "data/cars/mclaren_gt/mclaren_gt.gltf",
         "hitboxes": [
             {
-                "size": [2.2, 0.7, 4.7],
+                "size": [2.0, 0.7, 4.5],
                 "position": [0.0, 0.21, 0.0]
             },
             {
@@ -22,6 +22,7 @@
             "headlights": "Lights_Front",
             "brakelights": "Lights_Back"
         },
+        "paintable": true,
         "headlights": {
             "color": [1.0, 1.0, 1.0, 1.0],
             "energy": 9.0,

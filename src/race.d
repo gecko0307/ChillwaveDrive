@@ -128,7 +128,6 @@ class RaceScene: Scene
     TextureAsset aRain;
     
     CarAsset mclaren;
-    CarAsset accobra;
     
     Car car;
     Car car2;
@@ -410,7 +409,6 @@ class RaceScene: Scene
         
         // Cars
         loadCarConfig("data/cars/mclaren_gt/mclaren_gt.json", &mclaren);
-        loadCarConfig("data/cars/ac_cobra/ac_cobra.json", &accobra);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
@@ -624,9 +622,9 @@ class RaceScene: Scene
         carChassisGroupId = physicsWorld.createGroupId();
         NewtonMaterialSetCollisionCallback(physicsWorld.newtonWorld, carChassisGroupId, physicsWorld.defaultGroupId, null, &carContactsProcess);
         
-        // User-controlled car
         mclaren.shadowTexture = aCarShadow.texture;
-        accobra.shadowTexture = aCarShadow.texture;
+        
+        // User-controlled car
         car = New!Car(this, physicsWorld, &mclaren, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
