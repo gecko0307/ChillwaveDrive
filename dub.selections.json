@@ -8,7 +8,7 @@
 		"bindbc-opengl": "1.1.1",
 		"bindbc-sdl": "1.5.2",
 		"bindbc-soloud": "0.2.1",
-		"dagon": "1.2.2",
+		"dagon": "1.2.3",
 		"dlib": "1.4.1"
 	}
 }
