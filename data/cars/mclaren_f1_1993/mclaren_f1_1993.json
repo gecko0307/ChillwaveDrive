@@ -9,12 +9,12 @@
         "model": "data/cars/mclaren_f1_1993/chassis/mclaren_f1_1993_chassis.gltf",
         "hitboxes": [
             {
-                "size": [1.9, 0.7, 4.3],
-                "position": [0.0, 0.21, 0.0]
+                "size": [2.0, 0.6, 4.25],
+                "position": [0.0, 0.14, 0.0]
             },
             {
-                "size": [1.2, 0.3, 1.2],
-                "position": [0.0, 0.7, 0.16]
+                "size": [1.6, 0.4, 2.55],
+                "position": [0.0, 0.644, 0.75]
             }
         ],
         "materials": {
@@ -100,7 +100,7 @@
             "torqueSplit": 0.5,
             "camberAngle": 0,
             "suspension": {
-                "position": [-0.83, 0.42, -1.55],
+                "position": [-0.83, 0.42, -1.57],
                 "maxLength": 0.47,
                 "stiffness": 60000,
                 "damping": 9000
@@ -118,7 +118,7 @@
             "torqueSplit": 0.5,
             "camberAngle": 0,
             "suspension": {
-                "position": [0.83, 0.42, -1.55],
+                "position": [0.83, 0.42, -1.57],
                 "maxLength": 0.47,
                 "stiffness": 60000,
                 "damping": 9000

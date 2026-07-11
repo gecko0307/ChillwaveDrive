@@ -630,7 +630,7 @@ class RaceScene: Scene
         mclaren_f1.shadowTexture = aCarShadow.texture;
         
         // User-controlled car
-        car = New!Car(this, physicsWorld, &mclaren_f1, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
+        car = New!Car(this, physicsWorld, &mclaren_gt, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
         car.vehicle.track = track;
@@ -649,7 +649,7 @@ class RaceScene: Scene
         participants[0] = car;
         
         // Opponent cars
-        car2 = New!Car(this, physicsWorld, &mclaren_f1, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
+        car2 = New!Car(this, physicsWorld, &mclaren_gt, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car2.name = String("AI 1");
         car2.vehicle.track = track;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
@@ -664,7 +664,7 @@ class RaceScene: Scene
         autopilot2.steeringForce = 20.0f;
         participants[1] = car2;
         
-        car3 = New!Car(this, physicsWorld, &mclaren_f1, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
+        car3 = New!Car(this, physicsWorld, &mclaren_gt, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car3.name = String("AI 2");
         car3.vehicle.track = track;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
