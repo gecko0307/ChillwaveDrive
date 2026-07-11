@@ -46,7 +46,7 @@
         },
         "taillights": {
             "color": [1.0, 0.0, 0.0, 1.0],
-            "energy": 2.0
+            "energy": 3.0
         },
         "brakelights": {
             "color": [1.0, 0.0, 0.0, 1.0],
