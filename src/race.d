@@ -336,7 +336,7 @@ class RaceScene: Scene
     
     bool rumbleEnabled = true;
     
-    bool highQualityScreenshots = false;
+    bool highQualityScreenshots = true;
     bool hidePauseUIForScreenshots = true;
 
     this(ChillwaveDriveGame game)
@@ -899,15 +899,21 @@ class RaceScene: Scene
         if (key == KEY_F4)
         {
             bool uiActive = game.imgui.active;
-            game.sampleRatio = 2;
-            game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
+            if (highQualityScreenshots)
+            {
+                game.sampleRatio = 2;
+                game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
+            }
             if (hidePauseUIForScreenshots)
                 game.imgui.active = false;
             // TODO: make Game.updateRenderers method
             updateRenderers(Time(0.0, 0.0));
             application.takeScreenshot("screenshots/screenshot");
-            game.sampleRatio = 1;
-            game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
+            if (highQualityScreenshots)
+            {
+                game.sampleRatio = 1;
+                game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
+            }
             game.imgui.active = uiActive;
             overlay.background.opacity = 1.0f;
             overlay.background.fadeOut(0.25f);
