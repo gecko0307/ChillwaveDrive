@@ -258,13 +258,22 @@ class Car: Owner
     bool headlightsOn = true;
     
     ///
+    bool breaklightsOn = false;
+    
+    ///
     float headlightsEnergy = 9.0f;
+    
+    ///
+    float taillightsEnergy = 4.0f;
     
     ///
     float brakelightsEnergy = 4.0f;
     
     ///
     Material headlightsMaterial;
+    
+    ///
+    Material taillightsMaterial;
     
     ///
     Material brakelightsMaterial;
@@ -319,6 +328,9 @@ class Car: Owner
         
         headlightsMaterial = scene.addMaterial();
         headlightsMaterial.emissionFactor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        
+        taillightsMaterial = scene.addMaterial();
+        taillightsMaterial.emissionFactor = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
         
         brakelightsMaterial = scene.addMaterial();
         brakelightsMaterial.emissionFactor = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
@@ -376,7 +388,29 @@ class Car: Owner
             if (chassisPaintable)
                 makeChassisMaterialUnique(asset.aChassis, asset.aCar, "paint", chassisGeometry, carPaintMaterial);
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "headlights", chassisGeometry, headlightsMaterial);
-            makeChassisMaterialUnique(asset.aChassis, asset.aCar, "brakelights", chassisGeometry, brakelightsMaterial);
+            
+            bool combinedRearLights = false;
+            if ("materials" in chassis)
+            {
+                auto materials = chassis["materials"].asObject;
+                if ("taillights" in materials && "brakelights" in materials)
+                {
+                    string taillightsMatName = materials["taillights"].asString;
+                    string brakelightsMatName = materials["brakelights"].asString;
+                    combinedRearLights = (taillightsMatName == brakelightsMatName);
+                }
+            }
+            
+            if (combinedRearLights)
+            {
+                makeChassisMaterialUnique(asset.aChassis, asset.aCar, "taillights", chassisGeometry, taillightsMaterial);
+                brakelightsMaterial = taillightsMaterial;
+            }
+            else
+            {
+                makeChassisMaterialUnique(asset.aChassis, asset.aCar, "taillights", chassisGeometry, taillightsMaterial);
+                makeChassisMaterialUnique(asset.aChassis, asset.aCar, "brakelights", chassisGeometry, brakelightsMaterial);
+            }
             
             if ("headlights" in chassis)
             {
@@ -412,6 +446,15 @@ class Car: Owner
                         }
                     }
                 }
+            }
+            
+            if ("taillights" in chassis)
+            {
+                auto taillights = chassis["taillights"].asObject;
+                if ("color" in taillights)
+                    taillightsMaterial.emissionFactor = taillights["color"].asColor;
+                if ("energy" in taillights)
+                    taillightsEnergy = taillights["energy"].asNumber;
             }
             
             if ("brakelights" in chassis)
@@ -526,16 +569,6 @@ class Car: Owner
             }
         }
         
-        if (headlightsOn)
-            headlightsMaterial.emissionEnergy = headlightsEnergy;
-        else
-            headlightsMaterial.emissionEnergy = 0.0f;
-        
-        if (headlightsOn)
-            brakelightsMaterial.emissionEnergy = brakelightsEnergy;
-        else
-            brakelightsMaterial.emissionEnergy = 0.0f;
-        
         foreach(light; headlightObjects)
             light.shining = headlightsOn;
     }
@@ -611,21 +644,9 @@ class Car: Owner
     void toggleHeadlights()
     {
         headlightsOn = !headlightsOn;
-        /*
-        light1.shining = headlightsOn;
-        light2.shining = headlightsOn;
-        */
         
         foreach(light; headlightObjects)
             light.shining = headlightsOn;
-        
-        if (headlightsMaterial)
-        {
-            if (headlightsOn)
-                headlightsMaterial.emissionEnergy = headlightsEnergy;
-            else
-                headlightsMaterial.emissionEnergy = 0.0f;
-        }
     }
     
     void update(Time t)
@@ -639,26 +660,45 @@ class Car: Owner
         
         vehicle.update(t);
         
-        if (brakelightsMaterial)
+        if (vehicle.brake)
+            brakeHysteresis = true;
+        
+        breaklightsOn = vehicle.brake || brakeHysteresis;
+        
+        if (brakeHysteresis)
         {
-            if (vehicle.brake)
-                brakeHysteresis = true;
-            
-            if (vehicle.brake || brakeHysteresis || headlightsOn)
-                brakelightsMaterial.emissionEnergy = brakelightsEnergy;
+            if (brakeHysteresisTimer < 0.5f)
+                brakeHysteresisTimer += t.delta;
             else
-                brakelightsMaterial.emissionEnergy = 0.0f;
-            
-            if (brakeHysteresis)
             {
-                if (brakeHysteresisTimer < 0.5f)
-                    brakeHysteresisTimer += t.delta;
-                else
-                {
-                    brakeHysteresisTimer = 0.0f;
-                    brakeHysteresis = false;
-                }
+                brakeHysteresisTimer = 0.0f;
+                brakeHysteresis = false;
             }
+        }
+        
+        // Update lights
+        headlightsMaterial.emissionEnergy = 0.0f;
+        if (headlightsOn)
+            headlightsMaterial.emissionEnergy = headlightsEnergy;
+        
+        if (taillightsMaterial is brakelightsMaterial)
+        {
+            if (breaklightsOn)
+                taillightsMaterial.emissionEnergy = brakelightsEnergy;
+            else if (headlightsOn)
+                taillightsMaterial.emissionEnergy = taillightsEnergy;
+            else
+                taillightsMaterial.emissionEnergy = 0.0f;
+        }
+        else
+        {
+            brakelightsMaterial.emissionEnergy = 0.0f;
+            if (breaklightsOn)
+                brakelightsMaterial.emissionEnergy = brakelightsEnergy;
+            
+            taillightsMaterial.emissionEnergy = 0.0f;
+            if (headlightsOn)
+                taillightsMaterial.emissionEnergy = taillightsEnergy;
         }
         
         if (raceStarted && !finished)
