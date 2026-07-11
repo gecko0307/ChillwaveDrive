@@ -20,7 +20,7 @@
         "materials": {
             "paint": "McLaren_F1_1993_By_Alex_Ka",
             "headlights": "headlight_1",
-            "rearlights": "rear_lamp",
+            "taillights": "rear_lamp",
             "brakelights": "brakelight"
         },
         "paintable": true,
