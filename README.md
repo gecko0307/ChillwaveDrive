@@ -47,8 +47,3 @@ Builds are no longer uploaded to GitHub releases. You can download the game on G
 - [ ] Car selection UI
 - [ ] Track selection UI
 - [ ] Custom cars
-
-## Credits
-
-- [McLaren GT by carmodifier](https://sketchfab.com/3d-models/2020-mclaren-gt-9e436ba9d4924b719552f1889a5a6d87), available under CC BY-NC
-- Music: ["Stellar Escape" by Prigida](https://uppbeat.io/track/prigida/stellar-escape) (from Uppbeat).
