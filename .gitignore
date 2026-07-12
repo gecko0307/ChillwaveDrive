@@ -27,6 +27,7 @@ docs/
 .vs
 
 # Dagon files
+dagon/
 gamecontrollerdb.txt
 data/__internal
 

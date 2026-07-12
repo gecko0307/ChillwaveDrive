@@ -7,10 +7,10 @@
     ],
     
     "dependencies": {
-        "dagon": { "path": "E:/dlang/dagon/dagon" },
-        "dagon:exformats": { "path": "E:/dlang/dagon/dagon" },
-        "dagon:newton": { "path": "E:/dlang/dagon/dagon" },
-        "dagon:imgui": { "path": "E:/dlang/dagon/dagon" },
+        "dagon": { "path": "dagon" },
+        "dagon:exformats": { "path": "dagon" },
+        "dagon:newton": { "path": "dagon" },
+        "dagon:imgui": { "path": "dagon" },
         "bindbc-soloud": "0.2.1",
         "bindbc-loader": "1.1.4"
     },

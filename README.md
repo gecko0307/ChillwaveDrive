@@ -36,6 +36,10 @@ In the pause mode it is possible to customize car's appearance using the "Car se
 
 Builds are no longer uploaded to GitHub releases. You can download the game on GameJolt page: [https://gamejolt.com/games/chillwave-drive/1030266](https://gamejolt.com/games/chillwave-drive/1030266). Look for "Chillwave Drive Rolling Alpha" package.
 
+## Build from source
+
+Chillwave Drive usually depends on the most recent features of Dagon, so it uses the engine as a local dependency instead of a numbered release. Download a source tarball of Dagon and copy the files to `dagon` directory, then run `dub build  --build=release-nobounds`.
+
 ## TODO List
 
 - [x] Vehicle physics
