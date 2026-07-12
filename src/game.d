@@ -49,6 +49,7 @@ class ChillwaveDriveGame: Game
     
     AssetManager assetManager;
     TextureAsset splash;
+    TextureAsset mainMenuBackground;
     
     // TODO: make a separate Audio class
     float sfxVolume = 0.5f;
@@ -59,9 +60,14 @@ class ChillwaveDriveGame: Game
     Wav sfxPopup;
     Wav sfxSwitch;
     
+    string defaultCar = "data/cars/gt/gt.json";
+    
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
+        
+        if (args.length > 1)
+            defaultCar = args[1];
         
         assetManager = New!AssetManager(eventManager, vfs, this);
         assetManager.application = this;
@@ -69,7 +75,8 @@ class ChillwaveDriveGame: Game
         audio = Soloud.create();
         audio.init(Soloud.CLIP_ROUNDOFF | Soloud.LEFT_HANDED_3D);
         
-        splash = loadTexture("data/ui/splash_screen.jpg");
+        splash = loadTexture("data/ui/splash_screen.webp");
+        mainMenuBackground = loadTexture("data/ui/main_menu_background.webp");
         
         auto mainMenuScene = New!MainMenuScene(this);
         scenes["MainMenu"] = mainMenuScene;

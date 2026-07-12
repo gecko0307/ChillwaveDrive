@@ -409,7 +409,7 @@ class RaceScene: Scene
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
         
         // Cars
-        loadCarConfig("data/cars/gt/gt.json", &carAsset);
+        loadCarConfig(game.defaultCar, &carAsset);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         

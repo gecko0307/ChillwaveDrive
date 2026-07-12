@@ -36,7 +36,7 @@ class MainMenuScene: Scene
         resizeBg(eventManager.windowWidth, eventManager.windowHeight);
         auto bgMaterial = addMaterial();
         bgMaterial.shader = hudShader;
-        bgMaterial.baseColorTexture = game.splash.texture;
+        bgMaterial.baseColorTexture = game.mainMenuBackground.texture;
         bgMaterial.depthWrite = false;
         bgMaterial.useCulling = false;
         bg.material = bgMaterial;
