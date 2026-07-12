@@ -1,27 +1,27 @@
 {
-    "name": "mclaren_f1_1993",
-    "mass": 1140,
+    "name": "gt",
+    "mass": 1530,
     "inertia": [1.0, 4.0, 1.0],
     "centerOfMass": [0.0, 0.0, 0.0],
     "maxSteeringAngle": 45,
-    "maxTorque": 651,
+    "maxTorque": 630,
     "chassis": {
-        "model": "data/cars/mclaren_f1_1993/chassis/mclaren_f1_1993_chassis.gltf",
+        "model": "data/cars/gt/gt.gltf",
         "hitboxes": [
             {
-                "size": [2.0, 0.6, 4.25],
-                "position": [0.0, 0.14, 0.0]
+                "size": [2.0, 0.5, 4.5],
+                "position": [0.0, 0.21, 0.0]
             },
             {
-                "size": [1.6, 0.4, 2.55],
-                "position": [0.0, 0.644, 0.75]
+                "size": [1.2, 0.3, 1.2],
+                "position": [0.0, 0.7, 0.16]
             }
         ],
         "materials": {
-            "paint": "McLaren_F1_1993_By_Alex_Ka",
-            "headlights": "headlight_1",
-            "taillights": "rear_lamp",
-            "brakelights": "brakelight"
+            "paint": "paint",
+            "headlights": "Lights_Front",
+            "brakelights": "Lights_Back",
+            "taillights": "Lights_Back"
         },
         "paintable": true,
         "headlights": {
@@ -29,20 +29,24 @@
             "energy": 9.0,
             "lightObjects": [
                 {
-                    "position": [-0.6, 0.0, 2.0],
+                    "position": [-0.6, 0.0, 2.5],
                     "radius": 10.0,
                     "cutoff": 45.0,
                     "energy": 5.0,
                     "rotation": [0.0, 180.0, 0.0]
                 },
                 {
-                    "position": [0.6, 0.0, 2.0],
+                    "position": [0.6, 0.0, 2.5],
                     "radius": 10.0,
                     "cutoff": 45.0,
                     "energy": 5.0,
                     "rotation": [0.0, 180.0, 0.0]
                 }
             ]
+        },
+        "taillights": {
+            "color": [1.0, 0.0, 0.0, 1.0],
+            "energy": 3.0
         },
         "brakelights": {
             "color": [1.0, 0.0, 0.0, 1.0],
@@ -53,20 +57,20 @@
         }
     },
     "windows": {
-        "model": "data/cars/mclaren_f1_1993/windows/mclaren_f1_1993_windows.gltf"
+        "model": "data/cars/gt/gt_windows.gltf"
     },
     "wheels": [
         {
-            "model": "data/cars/mclaren_f1_1993/wheels/mclaren_f1_1993_wheel_front.gltf",
-            "radius": 0.347,
+            "model": "data/cars/gt/gt_wheel.gltf",
+            "radius": 0.324,
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": 0,
+            "camberAngle": -2,
             "suspension": {
-                "position": [-0.83, 0.33, 1.15],
-                "maxLength": 0.45,
-                "stiffness": 55000,
+                "position": [-0.85, 0.38, 1.25],
+                "maxLength": 0.48,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {
@@ -75,16 +79,16 @@
             }
         },
         {
-            "model": "data/cars/mclaren_f1_1993/wheels/mclaren_f1_1993_wheel_front.gltf",
-            "radius": 0.347,
+            "model": "data/cars/gt/gt_wheel.gltf",
+            "radius": 0.324,
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.0,
-            "camberAngle": 0,
+            "camberAngle": -2,
             "suspension": {
-                "position": [0.83, 0.33, 1.15],
-                "maxLength": 0.45,
-                "stiffness": 55000,
+                "position": [0.85, 0.38, 1.25],
+                "maxLength": 0.48,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {
@@ -93,16 +97,16 @@
             }
         },
         {
-            "model": "data/cars/mclaren_f1_1993/wheels/mclaren_f1_1993_wheel_rear.gltf",
-            "radius": 0.379,
+            "model": "data/cars/gt/gt_wheel.gltf",
+            "radius": 0.324,
             "facing": -1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
             "camberAngle": 0,
             "suspension": {
-                "position": [-0.83, 0.42, -1.57],
+                "position": [-0.85, 0.45, -1.42],
                 "maxLength": 0.48,
-                "stiffness": 54000,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {
@@ -111,16 +115,16 @@
             }
         },
         {
-            "model": "data/cars/mclaren_f1_1993/wheels/mclaren_f1_1993_wheel_rear.gltf",
-            "radius": 0.379,
+            "model": "data/cars/gt/gt_wheel.gltf",
+            "radius": 0.324,
             "facing": 1,
             "loadSplit": 0.25,
             "torqueSplit": 0.5,
             "camberAngle": 0,
             "suspension": {
-                "position": [0.83, 0.42, -1.57],
+                "position": [0.85, 0.45, -1.42],
                 "maxLength": 0.48,
-                "stiffness": 54000,
+                "stiffness": 60000,
                 "damping": 9000
             },
             "tyre": {

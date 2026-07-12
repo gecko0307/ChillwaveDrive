@@ -127,8 +127,7 @@ class RaceScene: Scene
     
     TextureAsset aRain;
     
-    CarAsset mclaren_gt;
-    CarAsset mclaren_f1;
+    CarAsset carAsset;
     
     Car car;
     Car car2;
@@ -357,8 +356,7 @@ class RaceScene: Scene
     
     ~this()
     {
-        mclaren_gt.free();
-        mclaren_f1.free();
+        carAsset.free();
         if (participants.length)
             Delete(participants);
     }
@@ -411,8 +409,7 @@ class RaceScene: Scene
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
         
         // Cars
-        loadCarConfig("data/cars/mclaren_f1_1993/mclaren_f1_1993.json", &mclaren_f1);
-        loadCarConfig("data/cars/mclaren_gt/mclaren_gt.json", &mclaren_gt);
+        loadCarConfig("data/cars/gt/gt.json", &carAsset);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
@@ -626,11 +623,10 @@ class RaceScene: Scene
         carChassisGroupId = physicsWorld.createGroupId();
         NewtonMaterialSetCollisionCallback(physicsWorld.newtonWorld, carChassisGroupId, physicsWorld.defaultGroupId, null, &carContactsProcess);
         
-        mclaren_gt.shadowTexture = aCarShadow.texture;
-        mclaren_f1.shadowTexture = aCarShadow.texture;
+        carAsset.shadowTexture = aCarShadow.texture;
         
         // User-controlled car
-        car = New!Car(this, physicsWorld, &mclaren_f1, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
+        car = New!Car(this, physicsWorld, &carAsset, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.isPlayer = true;
         car.name = String("Player");
         car.vehicle.track = track;
@@ -649,7 +645,7 @@ class RaceScene: Scene
         participants[0] = car;
         
         // Opponent cars
-        car2 = New!Car(this, physicsWorld, &mclaren_f1, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
+        car2 = New!Car(this, physicsWorld, &carAsset, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car2.name = String("AI 1");
         car2.vehicle.track = track;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
@@ -664,7 +660,7 @@ class RaceScene: Scene
         autopilot2.steeringForce = 20.0f;
         participants[1] = car2;
         
-        car3 = New!Car(this, physicsWorld, &mclaren_f1, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
+        car3 = New!Car(this, physicsWorld, &carAsset, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car3.name = String("AI 2");
         car3.vehicle.track = track;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
@@ -1504,6 +1500,20 @@ class RaceScene: Scene
     
     override void onPauseUpdate(Time t)
     {
+        // Headlights on/off
+        if (inputManager.getButton("headlights"))
+        {
+            if (!headlightsPressed)
+            {
+                headlightsPressed = true;
+                car.toggleHeadlights();
+                auto switchVoice = audio.play(game.sfxSwitch);
+                audio.setVolume(switchVoice, game.sfxVolume);
+            }
+        }
+        else
+            headlightsPressed = false;
+        
         updateHUD(t);
         
         ui.update(t);

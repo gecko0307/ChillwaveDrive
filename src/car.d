@@ -647,6 +647,30 @@ class Car: Owner
         
         foreach(light; headlightObjects)
             light.shining = headlightsOn;
+        
+        headlightsMaterial.emissionEnergy = 0.0f;
+        if (headlightsOn)
+            headlightsMaterial.emissionEnergy = headlightsEnergy;
+        
+        if (taillightsMaterial is brakelightsMaterial)
+        {
+            if (breaklightsOn)
+                taillightsMaterial.emissionEnergy = brakelightsEnergy;
+            else if (headlightsOn)
+                taillightsMaterial.emissionEnergy = taillightsEnergy;
+            else
+                taillightsMaterial.emissionEnergy = 0.0f;
+        }
+        else
+        {
+            brakelightsMaterial.emissionEnergy = 0.0f;
+            if (breaklightsOn)
+                brakelightsMaterial.emissionEnergy = brakelightsEnergy;
+            
+            taillightsMaterial.emissionEnergy = 0.0f;
+            if (headlightsOn)
+                taillightsMaterial.emissionEnergy = taillightsEnergy;
+        }
     }
     
     void update(Time t)
