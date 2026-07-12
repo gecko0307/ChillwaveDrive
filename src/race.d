@@ -338,6 +338,8 @@ class RaceScene: Scene
     
     bool highQualityScreenshots = true;
     bool hidePauseUIForScreenshots = true;
+    
+    bool musicEnabled = true;
 
     this(ChillwaveDriveGame game)
     {
@@ -870,8 +872,11 @@ class RaceScene: Scene
     
     void restartRace()
     {
-        if (audio.isValidVoiceHandle(musicVoice))
-            audio.stop(musicVoice);
+        if (musicEnabled)
+        {
+            if (audio.isValidVoiceHandle(musicVoice))
+                audio.stop(musicVoice);
+        }
         car.restart();
         car2.restart();
         car3.restart();
@@ -939,12 +944,14 @@ class RaceScene: Scene
             if (audio.isValidVoiceHandle(musicVoice))
             {
                 audio.stop(musicVoice);
+                musicEnabled = false;
             }
             else
             {
                 musicVoice = audio.play(music);
                 audio.setLooping(musicVoice, true);
                 audio.setVolume(musicVoice, game.musicVolume);
+                musicEnabled = true;
             }
         }
         else if (key == KEY_ESCAPE)
@@ -1013,11 +1020,14 @@ class RaceScene: Scene
             car2.raceStarted = true;
             car3.raceStarted = true;
             
-            if (!audio.isValidVoiceHandle(musicVoice))
+            if (musicEnabled)
             {
-                musicVoice = audio.play(music);
-                audio.setLooping(musicVoice, true);
-                audio.setVolume(musicVoice, game.musicVolume);
+                if (!audio.isValidVoiceHandle(musicVoice))
+                {
+                    musicVoice = audio.play(music);
+                    audio.setLooping(musicVoice, true);
+                    audio.setVolume(musicVoice, game.musicVolume);
+                }
             }
         }
     }

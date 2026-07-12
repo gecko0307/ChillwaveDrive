@@ -554,6 +554,9 @@ class Car: Owner
                 pWheel.suspension.stiffness = suspensionStiffness;
                 pWheel.suspension.damping = suspensionDamping;
                 
+                if ("maxVisualAngularVelocity" in wheel.asObject)
+                    pWheel.maxVisualAngularVelocity = wheel.asObject["maxVisualAngularVelocity"].asNumber;
+                
                 Entity eWheel = scene.addEntity(eCar);
                 auto dg = New!DrawableGroup(scene.assetManager);
                 foreach(mesh; aWheel.meshes.data)

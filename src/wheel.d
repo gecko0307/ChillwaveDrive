@@ -105,6 +105,8 @@ class Wheel: Owner, NewtonRaycaster
     float visualSuspensionLength;
     float visualSuspensionChangeSpeed = 10.0f;
     
+    float maxVisualAngularVelocity = 9.0f * PI;
+    
     float forcePoint = 0.0f;
     
     long groundMaterialIndex = -1;
@@ -345,7 +347,7 @@ class Wheel: Owner, NewtonRaycaster
             angularAcceleration -= physicalSlipSign * (frictionTorque * invInertia);
         }
         
-        roll += clamp(angularVelocity, -9.0f * PI, 9.0f * PI) * dt;
+        roll += clamp(angularVelocity, -maxVisualAngularVelocity, maxVisualAngularVelocity) * dt;
         roll = fmod(roll, 2.0f * PI);
         
         visualSuspensionLength += (suspension.length - visualSuspensionLength) * dt * visualSuspensionChangeSpeed;

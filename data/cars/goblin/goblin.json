@@ -1,0 +1,137 @@
+{
+    "name": "Goblin",
+    "mass": 1530,
+    "inertia": [1.0, 5.0, 1.0],
+    "centerOfMass": [0.0, -0.2, 0.0],
+    "maxSteeringAngle": 45,
+    "maxTorque": 650,
+    "chassis": {
+        "model": "data/cars/goblin/goblin_chassis.gltf",
+        "hitboxes": [
+            {
+                "size": [2.25, 0.67, 4.65],
+                "position": [0.0, 0.12, 0.0]
+            },
+            {
+                "size": [1.55, 0.4, 2.75],
+                "position": [0.0, 0.64, 0.4]
+            }
+        ],
+        "materials": {
+            "paint": "car_paint"
+        },
+        "paintable": true,
+        "headlights": {
+            "color": [1.0, 1.0, 1.0, 1.0],
+            "energy": 9.0,
+            "lightObjects": [
+                {
+                    "position": [-0.6, 0.0, 2.5],
+                    "radius": 10.0,
+                    "cutoff": 45.0,
+                    "energy": 5.0,
+                    "rotation": [0.0, 180.0, 0.0]
+                },
+                {
+                    "position": [0.6, 0.0, 2.5],
+                    "radius": 10.0,
+                    "cutoff": 45.0,
+                    "energy": 5.0,
+                    "rotation": [0.0, 180.0, 0.0]
+                }
+            ]
+        },
+        "taillights": {
+            "color": [1.0, 0.0, 0.0, 1.0],
+            "energy": 3.0
+        },
+        "brakelights": {
+            "color": [1.0, 0.0, 0.0, 1.0],
+            "energy": 7.0
+        },
+        "shadow": {
+            "scale": [1.4, 2.0, 3.0]
+        }
+    },
+    "windows": {
+        "model": "data/cars/goblin/goblin_windows.gltf"
+    },
+    "wheels": [
+        {
+            "model": "data/cars/goblin/goblin_wheel.gltf",
+            "radius": 0.356,
+            "facing": -1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.0,
+            "camberAngle": -2,
+            "suspension": {
+                "position": [-0.86, 0.35, 1.30],
+                "maxLength": 0.42,
+                "stiffness": 80000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.8,
+                "longitudinalFriction": 1.0
+            },
+            "maxVisualAngularVelocity": 25.132
+        },
+        {
+            "model": "data/cars/goblin/goblin_wheel.gltf",
+            "radius": 0.356,
+            "facing": 1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.0,
+            "camberAngle": -2,
+            "suspension": {
+                "position": [0.86, 0.35, 1.30],
+                "maxLength": 0.42,
+                "stiffness": 80000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.8,
+                "longitudinalFriction": 1.0
+            },
+            "maxVisualAngularVelocity": 25.132
+        },
+        {
+            "model": "data/cars/goblin/goblin_rear_wheel.gltf",
+            "radius": 0.38,
+            "facing": -1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.5,
+            "camberAngle": 0,
+            "suspension": {
+                "position": [-0.95, 0.35, -1.44],
+                "maxLength": 0.40,
+                "stiffness": 80000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.3,
+                "longitudinalFriction": 1.0
+            },
+            "maxVisualAngularVelocity": 25.132
+        },
+        {
+            "model": "data/cars/goblin/goblin_rear_wheel.gltf",
+            "radius": 0.38,
+            "facing": 1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.5,
+            "camberAngle": 0,
+            "suspension": {
+                "position": [0.95, 0.35, -1.44],
+                "maxLength": 0.40,
+                "stiffness": 80000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.3,
+                "longitudinalFriction": 1.0
+            },
+            "maxVisualAngularVelocity": 25.132
+        }
+    ]
+}
