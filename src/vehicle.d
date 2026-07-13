@@ -78,6 +78,7 @@ class Vehicle: EntityComponent
     float unsprungMass;
     
     // Engine
+    // TODO: read from car config
     float maxTorque = 500.0f;
     float rpmIdle = 800.0f;
     float rpmPeakTorquePoint = 5500.0f;
@@ -90,10 +91,12 @@ class Vehicle: EntityComponent
     float popping = 0.0f;
     
     // Clutch
+    // TODO: read from car config
     float clutchCurve = 3.0f;
     float clutch = 0.0f; // 0.0f..1.0f
     
     // Drivetrain
+    // TODO: read from car config
     float[] gears = [3.23f, 2.19f, 1.71f, 1.39f, 1.16f, 0.93f];
     float reverseGear = -3.0f;
     float[] upshiftRPM = [5500, 5500, 5500, 5500, 5500, 5500];
