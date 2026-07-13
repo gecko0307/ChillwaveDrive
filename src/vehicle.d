@@ -148,7 +148,7 @@ class Vehicle: EntityComponent
         NewtonBodySetMatrix(chassisBody.newtonBody, chassisBody.transformation.arrayof.ptr);
         
         NewtonMaterialSetDefaultFriction(world.newtonWorld, 0, materialID, 0.2f, 0.2f);
-        NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.2f);
+        NewtonMaterialSetDefaultElasticity(world.newtonWorld, 0, materialID, 0.5f);
         
         prevTransformation = Matrix4x4f.identity;
         
