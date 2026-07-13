@@ -133,4 +133,13 @@ class ChillwaveDriveGame: Game
         super.onRender();
         imgui.render();
     }
+    
+    void updateRenderers(Time t)
+    {
+        renderer.update(t);
+        postProcessingRenderer.update(t);
+        presentRenderer.update(t);
+        hudRenderer.update(t);
+        postProcessingRenderer.inputBuffer = renderer.outputBuffer;
+    }
 }

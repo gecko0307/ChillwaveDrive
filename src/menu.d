@@ -76,7 +76,15 @@ class MainMenuScene: Scene
         bg.position = Vector3f(cast(float)width * 0.5 - bg.scaling.x * 0.5, cast(float)height * 0.5 - bg.scaling.y * 0.5, 0.0f);
     }
     
-    override void onKeyDown(int key) { }
+    override void onKeyDown(int key)
+    {
+        if (key == KEY_F4)
+        {
+            game.updateRenderers(Time(0.0, 0.0));
+            game.takeScreenshot("screenshots/screenshot");
+        }
+    }
+    
     override void onKeyUp(int key) { }
     override void onMouseButtonDown(int button) { }
     override void onMouseButtonUp(int button) { }

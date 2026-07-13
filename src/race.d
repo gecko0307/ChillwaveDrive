@@ -911,9 +911,8 @@ class RaceScene: Scene
             }
             if (hidePauseUIForScreenshots)
                 game.imgui.active = false;
-            // TODO: make Game.updateRenderers method
-            updateRenderers(Time(0.0, 0.0));
-            application.takeScreenshot("screenshots/screenshot");
+            game.updateRenderers(Time(0.0, 0.0));
+            game.takeScreenshot("screenshots/screenshot");
             if (highQualityScreenshots)
             {
                 game.sampleRatio = 1;
