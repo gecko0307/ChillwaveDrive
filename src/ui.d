@@ -167,7 +167,7 @@ class ImGui: EventListener
     {
         igPushStyleColor(ImGuiCol.FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         igPushStyleColor(ImGuiCol.Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.8f));
+        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.25f, 0.25f, 0.25f, 0.8f));
         
         igSetNextWindowSize(ImVec2(250, eventManager.windowHeight));
         igSetNextWindowPos(ImVec2(0, 0));
@@ -285,6 +285,8 @@ class ImGui: EventListener
     bool drawPauseUI(RaceScene scene)
     {
         float leftPanelWidth = 350.0f;
+        
+        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.10f, 0.10f, 0.10f, 0.75f));
         
         igSetNextWindowPos(ImVec2(16, 43), ImGuiCond.Always, ImVec2(0.0f, 0.0f));
         igSetNextWindowSize(ImVec2(leftPanelWidth, io.DisplaySize.y - 60), ImGuiCond.Always);
@@ -468,6 +470,8 @@ class ImGui: EventListener
             }
             igEndPopup();
         }
+        
+        igPopStyleColor(1);
         
         return true;
     }
