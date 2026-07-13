@@ -361,7 +361,7 @@ class Car: Owner
             eCarShadow.material.outputPBR = true;
             eCarShadow.material.outputNormal = false;
             eCarShadow.material.outputEmission = false;
-            eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f); // TODO: read from car config
+            eCarShadow.scaling = Vector3f(1.4f, 2.0f, 3.0f);
             eCarShadow.dynamic = true;
         }
         
