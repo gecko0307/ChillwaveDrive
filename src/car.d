@@ -379,6 +379,8 @@ class Car: Owner
                     auto shadowSettings = chassis["shadow"].asObject;
                     if ("scale" in shadowSettings)
                         eCarShadow.scaling = shadowSettings["scale"].asVector;
+                    if ("position" in shadowSettings)
+                        eCarShadow.position = shadowSettings["position"].asVector;
                 }
             }
             
