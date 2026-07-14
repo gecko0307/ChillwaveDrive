@@ -1366,8 +1366,8 @@ class RaceScene: Scene
         emitterRight.airFrictionDamping = 0.985f;
         emitterLeft.initialDirection = car.vehicle.longitudinalAxis;
         emitterRight.initialDirection = emitterLeft.initialDirection;
-        emitterLeft.minInitialSpeed = carSpeed * 0.4f;
-        emitterLeft.maxInitialSpeed = carSpeed * 0.7f;
+        emitterLeft.minInitialSpeed = carSpeed * 0.2f;
+        emitterLeft.maxInitialSpeed = carSpeed * 0.5f;
         emitterRight.minInitialSpeed = emitterLeft.minInitialSpeed;
         emitterRight.maxInitialSpeed = emitterLeft.maxInitialSpeed;
         bool makingDust =

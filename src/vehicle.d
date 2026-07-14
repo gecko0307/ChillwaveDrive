@@ -129,7 +129,7 @@ class Vehicle: EntityComponent
     Track track;
     
     // Aerodynamics
-    float airDrag = 0.004f;
+    float airDrag = 0.001f; //0.004f;
     
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
@@ -490,7 +490,7 @@ class Vehicle: EntityComponent
                 chassisBody.velocity = vel * 0.95f;
         }
         else
-            chassisBody.linearDamping = 0.01f;
+            chassisBody.linearDamping = 0.001f;
         
         chassisBody.update(t.delta);
 
