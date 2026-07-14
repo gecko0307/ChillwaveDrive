@@ -251,7 +251,7 @@ class ImGui: EventListener
     {
         igPushStyleColor(ImGuiCol.FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         igPushStyleColor(ImGuiCol.Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.25f, 0.25f, 0.25f, 0.8f));
+        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.5f));
         
         igSetNextWindowSize(ImVec2(250, eventManager.windowHeight));
         igSetNextWindowPos(ImVec2(0, 0));

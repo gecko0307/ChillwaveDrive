@@ -696,12 +696,12 @@ class RaceScene: Scene
         mParticlesDust.useShadows = true;
 
         auto eParticlesRight = addEntity(car.eCar);
-        emitterRight = New!Emitter(eParticlesRight, particleSystem, 30);
+        emitterRight = New!Emitter(eParticlesRight, particleSystem, 40);
         eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.5f);
         emitterRight.minLifetime = 1.0f;
         emitterRight.maxLifetime = 3.0f;
-        emitterRight.minSize = 0.5f;
-        emitterRight.maxSize = 1.0f;
+        emitterRight.minSize = 0.8f;
+        emitterRight.maxSize = 1.6f;
         emitterRight.minInitialSpeed = 0.2f;
         emitterRight.maxInitialSpeed = 0.2f;
         emitterRight.scaleStep = Vector2f(2, 2);
@@ -711,12 +711,12 @@ class RaceScene: Scene
         eParticlesRight.visible = true;
 
         auto eParticlesLeft = addEntity(car.eCar);
-        emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 30);
+        emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 40);
         eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.5f);
         emitterLeft.minLifetime = 1.0f;
         emitterLeft.maxLifetime = 3.0f;
-        emitterLeft.minSize = 0.5f;
-        emitterLeft.maxSize = 1.0f;
+        emitterLeft.minSize = 0.8f;
+        emitterLeft.maxSize = 1.6f;
         emitterLeft.minInitialSpeed = 0.2f;
         emitterLeft.maxInitialSpeed = 0.2f;
         emitterLeft.scaleStep = Vector2f(2, 2);
@@ -1234,6 +1234,7 @@ class RaceScene: Scene
             car.vehicle.chassisBody.setTransformation(newCarTransform);
         }
         
+        float carSpeed = car.vehicle.speed;
         speedKMH = car.speedKMH();
         
         // Engine sound
@@ -1359,6 +1360,16 @@ class RaceScene: Scene
             updateGamepadRumble(car, speedKMH, lateralSlip, longitudinalSlip, isOnGravel, rpmFactor, t.delta);
         
         // Dust particles
+        emitterLeft.initialDirectionRandomFactor = 0.1f;
+        emitterRight.initialDirectionRandomFactor = 0.1f;
+        emitterLeft.airFrictionDamping = 0.985f;
+        emitterRight.airFrictionDamping = 0.985f;
+        emitterLeft.initialDirection = car.vehicle.longitudinalAxis;
+        emitterRight.initialDirection = emitterLeft.initialDirection;
+        emitterLeft.minInitialSpeed = carSpeed * 0.7f;
+        emitterLeft.maxInitialSpeed = carSpeed * 1.0f;
+        emitterRight.minInitialSpeed = emitterLeft.minInitialSpeed;
+        emitterRight.maxInitialSpeed = emitterLeft.maxInitialSpeed;
         bool makingDust =
             lateralSlip > 0.0f || car.brake ||
             (isOnGravel && !car.vehicle.stopped);

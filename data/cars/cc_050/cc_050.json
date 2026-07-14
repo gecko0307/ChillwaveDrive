@@ -1,0 +1,133 @@
+{
+    "name": "CC 050",
+    "mass": 1550,
+    "inertia": [1.0, 6.0, 1.0],
+    "centerOfMass": [0.0, 0.0, 0.0],
+    "maxSteeringAngle": 40,
+    "maxTorque": 800,
+    "chassis": {
+        "model": "data/cars/cc_050/concept_car_chassis.gltf",
+        "hitboxes": [
+            {
+                "size": [2.2, 0.75, 4.3],
+                "position": [0.0, 0.1, 0.005]
+            },
+            {
+                "size": [2.0, 0.3, 2.7],
+                "position": [0.0, 0.63, 0.78]
+            }
+        ],
+        "materials": {
+            "paint": "body",
+            "headlights": "lights",
+            "taillights": "taillights",
+            "brakelights": "taillights"
+        },
+        "paintable": true,
+        "headlights": {
+            "color": [1.0, 1.0, 1.0, 1.0],
+            "energy": 6.0,
+            "lightObjects": [
+                {
+                    "position": [-0.6, 0.0, 2.0],
+                    "radius": 10.0,
+                    "cutoff": 45.0,
+                    "energy": 5.0,
+                    "rotation": [0.0, 180.0, 0.0]
+                },
+                {
+                    "position": [0.6, 0.0, 2.0],
+                    "radius": 10.0,
+                    "cutoff": 45.0,
+                    "energy": 5.0,
+                    "rotation": [0.0, 180.0, 0.0]
+                }
+            ]
+        },
+        "taillights": {
+            "color": [1.0, 0.0, 0.0, 1.0],
+            "energy": 3.0
+        },
+        "brakelights": {
+            "color": [1.0, 0.0, 0.0, 1.0],
+            "energy": 7.0
+        },
+        "shadow": {
+            "scale": [1.7, 2.0, 3.0]
+        }
+    },
+    "wheels": [
+        {
+            "model": "data/cars/cc_050/concept_car_wheel.gltf",
+            "radius": 0.382,
+            "facing": -1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.0,
+            "camberAngle": -1,
+            "suspension": {
+                "position": [-1.03, 0.35, 1.30],
+                "maxLength": 0.42,
+                "stiffness": 75000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.8,
+                "longitudinalFriction": 1.0
+            }
+        },
+        {
+            "model": "data/cars/cc_050/concept_car_wheel.gltf",
+            "radius": 0.382,
+            "facing": 1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.0,
+            "camberAngle": -1,
+            "suspension": {
+                "position": [1.03, 0.35, 1.30],
+                "maxLength": 0.42,
+                "stiffness": 75000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.8,
+                "longitudinalFriction": 1.0
+            }
+        },
+        {
+            "model": "data/cars/cc_050/concept_car_wheel.gltf",
+            "radius": 0.382,
+            "facing": -1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.5,
+            "camberAngle": 0,
+            "suspension": {
+                "position": [-1.03, 0.35, -1.58],
+                "maxLength": 0.40,
+                "stiffness": 75000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.4,
+                "longitudinalFriction": 1.0
+            }
+        },
+        {
+            "model": "data/cars/cc_050/concept_car_wheel.gltf",
+            "radius": 0.382,
+            "facing": 1,
+            "loadSplit": 0.25,
+            "torqueSplit": 0.5,
+            "camberAngle": 0,
+            "suspension": {
+                "position": [1.03, 0.35, -1.58],
+                "maxLength": 0.40,
+                "stiffness": 75000,
+                "damping": 9000
+            },
+            "tyre": {
+                "lateralFriction": 1.4,
+                "longitudinalFriction": 1.0
+            }
+        }
+    ]
+}
