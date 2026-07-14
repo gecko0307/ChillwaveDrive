@@ -353,8 +353,6 @@ class RaceScene: Scene
         
         debugInfoStr = String(game.translation.get("Race_DebugInfo"));
         
-        //auto splashTextureAsset = addTextureAsset("data/ui/splash_screen.jpg", true);
-        
         loadingScreen = New!LoadingScreen(game, this);
         loadingScreen.backgroundTexture = game.splash.texture;
         loadingScreen.progressbarCentered = false;

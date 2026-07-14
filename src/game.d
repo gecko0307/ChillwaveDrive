@@ -60,7 +60,7 @@ class ChillwaveDriveGame: Game
     Wav sfxPopup;
     Wav sfxSwitch;
     
-    string defaultCar = "data/cars/gt/gt.json";
+    string defaultCar = "data/cars/cc_050/cc_050.json";
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
