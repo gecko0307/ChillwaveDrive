@@ -514,7 +514,7 @@ class RaceScene: Scene
         sfxAmbient.load("data/sounds/rain.mp3");
         
         music = WavStream.create();
-        music.load("data/music/Machine Code 2.mp3");
+        music.load("data/music/Alone on the Highway.mp3");
     }
     
     override void onLoad(Time t, float progress)
