@@ -9,8 +9,8 @@
         "model": "data/cars/cc_050/concept_car_chassis.gltf",
         "hitboxes": [
             {
-                "size": [2.2, 0.75, 4.3],
-                "position": [0.0, 0.1, 0.005]
+                "size": [2.2, 0.73, 4.3],
+                "position": [0.0, 0.12, 0.005]
             },
             {
                 "size": [2.0, 0.3, 2.7],

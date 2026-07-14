@@ -214,6 +214,8 @@ class RaceScene: Scene
     float suspensionStiffness = 100.0f;
     float suspensionDamping = 10.0f;
     
+    Entity gameText;
+    
     Entity eText;
     Entity eText2;
     
@@ -546,9 +548,9 @@ class RaceScene: Scene
         shadowMap.projectionSize[2] = 100.0f;
         shadowMap.zStart = -100.0f;
         shadowMap.zEnd = 100.0f;
-        sun.energy = 1.0f; //0.0f;
-        sun.turn(-35.0f); //-35.0f
-        sun.pitch(-10.0f); //-15.0f
+        sun.energy = 1.0f;
+        sun.turn(-35.0f);
+        sun.pitch(-10.0f);
         sun.scatteringEnabled = true;
         sun.scattering = 0.2f;
         sun.mediumDensity = 0.02f;
@@ -810,7 +812,9 @@ class RaceScene: Scene
         
         audio.update3dAudio();
         
-        eText = addEntityHUD();
+        gameText = addEntityHUD();
+        
+        eText = addEntityHUD(gameText);
         eText.position = Vector3f(16.0f, 30.0f, 0.0f);
         eText.visible = false;
         
@@ -827,7 +831,7 @@ class RaceScene: Scene
         eTextFg.drawable = text;
         eTextFg.visible = false;
         
-        eText2 = addEntityHUD();
+        eText2 = addEntityHUD(gameText);
         eText2.position = Vector3f(16.0f, 30.0f, 0.0f);
         
         string startHintStr = game.translation.get("Race_StartHint");
@@ -915,7 +919,10 @@ class RaceScene: Scene
                 game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
             }
             if (hidePauseUIForScreenshots)
+            {
                 game.imgui.active = false;
+                //gameText.hide();
+            }
             game.updateRenderers(Time(0.0, 0.0));
             game.takeScreenshot("screenshots/screenshot");
             if (highQualityScreenshots)
@@ -924,6 +931,7 @@ class RaceScene: Scene
                 game.resizeRenderers(0, 0, game.drawableWidth, game.drawableHeight);
             }
             game.imgui.active = uiActive;
+            //gameText.show();
             overlay.background.opacity = 1.0f;
             overlay.background.fadeOut(0.25f);
             auto shotVoice = audio.play(sfxCamera);
