@@ -561,7 +561,7 @@ class RaceScene: Scene
         
         environment.ambientMap = prefilteredCubemap;
         environment.ambientBRDF = game.deferredRenderer.brdf;
-        environment.ambientEnergy = 0.06f; //0.05f
+        environment.ambientEnergy = 0.06f;
         
         // Track
         aTrack.markTransparentEntities();
@@ -1360,14 +1360,14 @@ class RaceScene: Scene
             updateGamepadRumble(car, speedKMH, lateralSlip, longitudinalSlip, isOnGravel, rpmFactor, t.delta);
         
         // Dust particles
-        emitterLeft.initialDirectionRandomFactor = 0.1f;
-        emitterRight.initialDirectionRandomFactor = 0.1f;
+        emitterLeft.initialDirectionRandomFactor = 0.05f;
+        emitterRight.initialDirectionRandomFactor = 0.05f;
         emitterLeft.airFrictionDamping = 0.985f;
         emitterRight.airFrictionDamping = 0.985f;
         emitterLeft.initialDirection = car.vehicle.longitudinalAxis;
         emitterRight.initialDirection = emitterLeft.initialDirection;
-        emitterLeft.minInitialSpeed = carSpeed * 0.7f;
-        emitterLeft.maxInitialSpeed = carSpeed * 1.0f;
+        emitterLeft.minInitialSpeed = carSpeed * 0.4f;
+        emitterLeft.maxInitialSpeed = carSpeed * 0.7f;
         emitterRight.minInitialSpeed = emitterLeft.minInitialSpeed;
         emitterRight.maxInitialSpeed = emitterLeft.maxInitialSpeed;
         bool makingDust =
