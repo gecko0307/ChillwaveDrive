@@ -340,12 +340,16 @@ class RaceScene: Scene
     bool hidePauseUIForScreenshots = true;
     
     bool musicEnabled = true;
+    
+    String debugInfoStr;
 
     this(ChillwaveDriveGame game)
     {
         super(game);
         this.game = game;
         this.audio = game.audio;
+        
+        debugInfoStr = String(game.translation.get("Race_DebugInfo"));
         
         //auto splashTextureAsset = addTextureAsset("data/ui/splash_screen.jpg", true);
         
@@ -361,6 +365,7 @@ class RaceScene: Scene
         carAsset.free();
         if (participants.length)
             Delete(participants);
+        debugInfoStr.free();
     }
     
     void loadCarConfig(string filename, CarAsset* carAsset)
@@ -825,15 +830,15 @@ class RaceScene: Scene
         eText2 = addEntityHUD();
         eText2.position = Vector3f(16.0f, 30.0f, 0.0f);
         
-        string hintStr = "Press Enter/Start to start the race. Press Escape to customize your car";
+        string startHintStr = game.translation.get("Race_StartHint");
         
-        auto text2Shadow = New!TextLine(aFontDroidSans14.font, hintStr, assetManager);
+        auto text2Shadow = New!TextLine(aFontDroidSans14.font, startHintStr, assetManager);
         text2Shadow.color = Color4f(0.0f, 0.0f, 0.0f, 0.5f);
         auto eText2Shadow = addEntityHUD(eText2);
         eText2Shadow.drawable = text2Shadow;
         eText2Shadow.position = Vector3f(1.0f, 1.0f, 0.0f);
         
-        auto text2 = New!TextLine(aFontDroidSans14.font, hintStr, assetManager);
+        auto text2 = New!TextLine(aFontDroidSans14.font, startHintStr, assetManager);
         text2.color = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
         auto eText2Fg = addEntityHUD(eText2);
         eText2Fg.drawable = text2;
@@ -1560,8 +1565,7 @@ class RaceScene: Scene
         uint bestMin = cast(uint)(car.bestLapTime / 60.0);
         uint bestSec = cast(uint)(car.bestLapTime) % 60;
         uint bestMsec = cast(uint)((car.bestLapTime - cast(uint)car.bestLapTime) * 1000.0);
-        //uint n = sprintf(txt.ptr, "Speed: %u km/h | gear: %u | RPM: %u | thr: %f | clt: %f", speedInt, car.gear + 1, cast(uint)car.rpm, car.throttle, car.clutch);
-        uint n = sprintf(txt.ptr, "Lap: %u | Pos: %u | Lap time: %02u:%02u.%03u | Best time: %02u:%02u.%03u | Speed: %u km/h",
+        uint n = sprintf(txt.ptr, debugInfoStr.ptr,
             min2(track.numLaps, car.laps + 1),
             car.racePosition,
             lapMin, lapSec, lapMsec,

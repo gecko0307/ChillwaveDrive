@@ -34,7 +34,6 @@ import dlib.text.str;
 
 import dagon.core.logger;
 import dagon.core.bindings;
-import dagon.core.locale;
 import dagon.game.game;
 import dagon.core.event;
 import dagon.core.time;
@@ -89,6 +88,8 @@ class ImGui: EventListener
     String pauseExitConfirmation;
     String pauseYes;
     String pauseNo;
+    String pauseRestartConfirmationHeader;
+    String pauseRestartConfirmation;
     
     bool[3] mainMenuItemsHovered;
     
@@ -129,6 +130,8 @@ class ImGui: EventListener
         pauseExitConfirmation = String(game.translation.get("Pause_ExitConfirmation"));
         pauseYes = String(game.translation.get("Pause_Yes"));
         pauseNo = String(game.translation.get("Pause_No"));
+        pauseRestartConfirmationHeader = String(game.translation.get("Pause_RestartConfirmationHeader"));
+        pauseRestartConfirmation = String(game.translation.get("Pause_RestartConfirmation"));
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
@@ -180,6 +183,8 @@ class ImGui: EventListener
         pauseExitConfirmation.free();
         pauseYes.free();
         pauseNo.free();
+        pauseRestartConfirmationHeader.free();
+        pauseRestartConfirmation.free();
     }
     
     void onProcessEvent(SDL_Event* event)
@@ -506,7 +511,7 @@ class ImGui: EventListener
         if (showRestartPopup)
         {
             igSetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond.Always, ImVec2(0.5f, 0.5f));
-            igOpenPopup("Restart Confirmation");
+            igOpenPopup(pauseRestartConfirmationHeader.ptr);
             showRestartPopup = false;
         }
         
@@ -535,12 +540,14 @@ class ImGui: EventListener
             igEndPopup();
         }
         
-        if (igBeginPopupModal("Restart Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
+        if (igBeginPopupModal(pauseRestartConfirmationHeader.ptr, null, ImGuiWindowFlags.AlwaysAutoResize))
         {
-            igText("Are you sure you want to restart?");
+            igPushTextWrapPos(igGetCursorPosX() + 200.0f);
+            igText(pauseRestartConfirmation.ptr);
+            igPopTextWrapPos();
             igSeparator();
             
-            bool yesClicked = igButton("Yes", ImVec2(120, 0));
+            bool yesClicked = igButton(pauseYes.ptr, ImVec2(120, 0));
             if (yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();
@@ -548,7 +555,7 @@ class ImGui: EventListener
             }
             igSameLine(0.0f, -1.0f);
             
-            bool noClicked = igButton("No", ImVec2(120, 0));
+            bool noClicked = igButton(pauseNo.ptr, ImVec2(120, 0));
             if (noClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();

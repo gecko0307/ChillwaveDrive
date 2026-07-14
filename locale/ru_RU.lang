@@ -6,6 +6,9 @@ MainMenu_ExitConfirmation: "Вы уверены, что хотите выйти 
 MainMenu_Yes: "Да";
 MainMenu_No: "Нет";
 
+Race_StartHint: "Нажмите Enter/Start, чтобы начать гонку. Нажмите Escape, чтобы настроить автомобиль или игру";
+Race_DebugInfo: "Круг: %u | Позиция: %u | Время круга: %02u:%02u.%03u | Лучший круг: %02u:%02u.%03u | Скорость: %u км/ч";
+
 Pause_PauseMenu: "Меню паузы";
 Pause_Resume: "Продолжить";
 Pause_Restart: "Перезапуск";
@@ -22,5 +25,7 @@ Pause_SoundEffectsVolume: "Зв. эффекты";
 Pause_MusicVolume: "Музыка";
 Pause_ExitConfirmationHeader: "Подтверждение выхода";
 Pause_ExitConfirmation: "Вы уверены, что хотите отменить гонку?";
+Pause_RestartConfirmationHeader: "Подтверждение перезапуска";
+Pause_RestartConfirmation: "Вы уверены, что хотите перезапустить гонку?";
 Pause_Yes: "Да";
 Pause_No: "Нет";
