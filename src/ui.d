@@ -385,6 +385,9 @@ class ImGui: EventListener
         
         if (igBegin(pausePauseMenu.ptr, null, windowFlags))
         {
+            if (igIsWindowAppearing())
+                igSetKeyboardFocusHere(0);
+            
             igDummy(ImVec2(0, 4));
             if (igButton(pauseResume.ptr, ImVec2(120, 32))) scene.togglePause();
             igSameLine(0.0f, -1.0f);
