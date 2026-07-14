@@ -1,0 +1,26 @@
+MainMenu_SingleRace: "Одиночная гонка";
+MainMenu_Settings: "Настройки";
+MainMenu_Exit: "Выход";
+MainMenu_ExitConfirmationHeader: "Подтверждение выхода";
+MainMenu_ExitConfirmation: "Вы уверены, что хотите выйти из игры?";
+MainMenu_Yes: "Да";
+MainMenu_No: "Нет";
+
+Pause_PauseMenu: "Меню паузы";
+Pause_Resume: "Продолжить";
+Pause_Restart: "Перезапуск";
+Pause_Exit: "Выход";
+Pause_CarSettings: "Настройки авто";
+Pause_Color: "Цвет";
+Pause_Roughness: "Матовость";
+Pause_Metallic: "Металлик";
+Pause_QuickOptions: "Опции";
+Pause_EnableGamepadRumble: "Вибрация геймпада";
+Pause_HideUIForScreenshots: "Скрыть интерфейс для скриншотов";
+Pause_SuperResolutionForScreenshots: "Высокая детализация скриншотов";
+Pause_SoundEffectsVolume: "Зв. эффекты";
+Pause_MusicVolume: "Музыка";
+Pause_ExitConfirmationHeader: "Подтверждение выхода";
+Pause_ExitConfirmation: "Вы уверены, что хотите отменить гонку?";
+Pause_Yes: "Да";
+Pause_No: "Нет";

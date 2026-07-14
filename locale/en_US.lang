@@ -1,0 +1,26 @@
+MainMenu_SingleRace: "Single race";
+MainMenu_Settings: "Settings";
+MainMenu_Exit: "Exit";
+MainMenu_ExitConfirmationHeader: "Exit Confirmation";
+MainMenu_ExitConfirmation: "Are you sure you want to quit?";
+MainMenu_Yes: "Yes";
+MainMenu_No: "No";
+
+Pause_PauseMenu: "Pause Menu";
+Pause_Resume: "Resume";
+Pause_Restart: "Restart";
+Pause_Exit: "Exit";
+Pause_CarSettings: "Car settings";
+Pause_Color: "Color";
+Pause_Roughness: "Roughness";
+Pause_Metallic: "Metallic";
+Pause_QuickOptions: "Quick options";
+Pause_EnableGamepadRumble: "Enable gamepad rumble";
+Pause_HideUIForScreenshots: "Hide UI for screenshots";
+Pause_SuperResolutionForScreenshots: "Super resolution for screenshots";
+Pause_SoundEffectsVolume: "Sound effects volume";
+Pause_MusicVolume: "Music volume";
+Pause_ExitConfirmationHeader: "Exit Confirmation";
+Pause_ExitConfirmation: "Are you sure you want to leave the race?";
+Pause_Yes: "Yes";
+Pause_No: "No";

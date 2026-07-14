@@ -34,6 +34,7 @@ import dlib.text.str;
 
 import dagon.core.logger;
 import dagon.core.bindings;
+import dagon.core.locale;
 import dagon.game.game;
 import dagon.core.event;
 import dagon.core.time;
@@ -64,11 +65,30 @@ class ImGui: EventListener
         ImGuiWindowFlags.NoDocking |
         ImGuiWindowFlags.AlwaysAutoResize;
     
-    String[3] mainMenuItems = [
-        "Single race",
-        "Settings",
-        "Exit"
-    ];
+    String[3] mainMenuItems;
+    String mainMenuExitConfirmationHeader;
+    String mainMenuExitConfirmation;
+    String mainMenuYes;
+    String mainMenuNo;
+    
+    String pausePauseMenu;
+    String pauseResume;
+    String pauseRestart;
+    String pauseExit;
+    String pauseCarSettings;
+    String pauseColor;
+    String pauseRoughness;
+    String pauseMetallic;
+    String pauseQuickOptions;
+    String pauseEnableGamepadRumble;
+    String pauseHideUIForScreenshots;
+    String pauseSuperResolutionForScreenshots;
+    String pauseSoundEffectsVolume;
+    String pauseMusicVolume;
+    String pauseExitConfirmationHeader;
+    String pauseExitConfirmation;
+    String pauseYes;
+    String pauseNo;
     
     bool[3] mainMenuItemsHovered;
     
@@ -79,6 +99,36 @@ class ImGui: EventListener
     {
         super(game.eventManager, game);
         this.game = game;
+        
+        mainMenuItems = [
+            String(game.translation.get("MainMenu_SingleRace")),
+            String(game.translation.get("MainMenu_Settings")),
+            String(game.translation.get("MainMenu_Exit"))
+        ];
+        
+        mainMenuExitConfirmationHeader = String(game.translation.get("MainMenu_ExitConfirmationHeader"));
+        mainMenuExitConfirmation = String(game.translation.get("MainMenu_ExitConfirmation"));
+        mainMenuYes = String(game.translation.get("MainMenu_Yes"));
+        mainMenuNo = String(game.translation.get("MainMenu_No"));
+        
+        pausePauseMenu = String(game.translation.get("Pause_PauseMenu"));
+        pauseResume = String(game.translation.get("Pause_Resume"));
+        pauseRestart = String(game.translation.get("Pause_Restart"));
+        pauseExit = String(game.translation.get("Pause_Exit"));
+        pauseCarSettings = String(game.translation.get("Pause_CarSettings"));
+        pauseColor = String(game.translation.get("Pause_Color"));
+        pauseRoughness = String(game.translation.get("Pause_Roughness"));
+        pauseMetallic = String(game.translation.get("Pause_Metallic"));
+        pauseQuickOptions = String(game.translation.get("Pause_QuickOptions"));
+        pauseEnableGamepadRumble = String(game.translation.get("Pause_EnableGamepadRumble"));
+        pauseHideUIForScreenshots = String(game.translation.get("Pause_HideUIForScreenshots"));
+        pauseSuperResolutionForScreenshots = String(game.translation.get("Pause_SuperResolutionForScreenshots"));
+        pauseSoundEffectsVolume = String(game.translation.get("Pause_SoundEffectsVolume"));
+        pauseMusicVolume = String(game.translation.get("Pause_MusicVolume"));
+        pauseExitConfirmationHeader = String(game.translation.get("Pause_ExitConfirmationHeader"));
+        pauseExitConfirmation = String(game.translation.get("Pause_ExitConfirmation"));
+        pauseYes = String(game.translation.get("Pause_Yes"));
+        pauseNo = String(game.translation.get("Pause_No"));
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
@@ -101,6 +151,35 @@ class ImGui: EventListener
         ImGuiOpenGLBackend.init("#version 400 core");
         
         mainMenuScene = cast(MainMenuScene)game.scenes["MainMenu"];
+    }
+    
+    ~this()
+    {
+        foreach(s; mainMenuItems)
+            s.free();
+        mainMenuExitConfirmationHeader.free();
+        mainMenuExitConfirmation.free();
+        mainMenuYes.free();
+        mainMenuNo.free();
+        
+        pausePauseMenu.free();
+        pauseResume.free();
+        pauseRestart.free();
+        pauseExit.free();
+        pauseCarSettings.free();
+        pauseColor.free();
+        pauseRoughness.free();
+        pauseMetallic.free();
+        pauseQuickOptions.free();
+        pauseEnableGamepadRumble.free();
+        pauseHideUIForScreenshots.free();
+        pauseSuperResolutionForScreenshots.free();
+        pauseSoundEffectsVolume.free();
+        pauseMusicVolume.free();
+        pauseExitConfirmationHeader.free();
+        pauseExitConfirmation.free();
+        pauseYes.free();
+        pauseNo.free();
     }
     
     void onProcessEvent(SDL_Event* event)
@@ -240,7 +319,7 @@ class ImGui: EventListener
         
         if (showExitPopup)
         {
-            igOpenPopup("Exit Confirmation");
+            igOpenPopup(mainMenuExitConfirmationHeader.ptr);
             showExitPopup = false; 
         }
         
@@ -250,12 +329,15 @@ class ImGui: EventListener
             ImVec2(0.5f, 0.5f)
         );
         
-        if (igBeginPopupModal("Exit Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
+        if (igBeginPopupModal(mainMenuExitConfirmationHeader.ptr, null, ImGuiWindowFlags.AlwaysAutoResize))
         {
-            igText("Are you sure you want to quit?");
+            igPushTextWrapPos(igGetCursorPosX() + 200.0f);
+            igText(mainMenuExitConfirmation.ptr);
+            igPopTextWrapPos();
+            
             igSeparator();
             
-            bool yesClicked = igButton("Yes", ImVec2(120, 0));
+            bool yesClicked = igButton(mainMenuYes.ptr, ImVec2(120, 0));
             bool yesActivated = yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter));
             
             if (yesActivated)
@@ -267,7 +349,7 @@ class ImGui: EventListener
             
             igSameLine(0.0f, -1.0f);
             
-            bool cancelClicked = igButton("Cancel", ImVec2(120, 0));
+            bool cancelClicked = igButton(mainMenuNo.ptr, ImVec2(120, 0));
             bool cancelActivated = cancelClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter));
             
             if (cancelActivated)
@@ -284,7 +366,7 @@ class ImGui: EventListener
     
     bool drawPauseUI(RaceScene scene)
     {
-        float leftPanelWidth = 350.0f;
+        float leftPanelWidth = 400.0f;
         
         igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.10f, 0.10f, 0.10f, 0.75f));
         
@@ -296,13 +378,13 @@ class ImGui: EventListener
                                      | ImGuiWindowFlags.NoMove 
                                      | ImGuiWindowFlags.NoSavedSettings;
         
-        if (igBegin("Pause Menu", null, windowFlags))
+        if (igBegin(pausePauseMenu.ptr, null, windowFlags))
         {
             igDummy(ImVec2(0, 4));
-            if (igButton("Resume", ImVec2(100, 32))) scene.togglePause();
+            if (igButton(pauseResume.ptr, ImVec2(120, 32))) scene.togglePause();
             igSameLine(0.0f, -1.0f);
             
-            if (igButton("Restart", ImVec2(100, 32)))
+            if (igButton(pauseRestart.ptr, ImVec2(120, 32)))
             {
                 auto popupVoice = scene.audio.play(scene.game.sfxPopup);
                 scene.audio.setVolume(popupVoice, game.sfxVolume);
@@ -310,7 +392,7 @@ class ImGui: EventListener
             }
             igSameLine(0.0f, -1.0f);
             
-            if (igButton("Exit", ImVec2(100, 32)))
+            if (igButton(pauseExit.ptr, ImVec2(120, 32)))
             {
                 auto popupVoice = scene.audio.play(scene.game.sfxPopup);
                 scene.audio.setVolume(popupVoice, game.sfxVolume);
@@ -318,31 +400,31 @@ class ImGui: EventListener
             }
             igDummy(ImVec2(0, 4));
             
-            if (igCollapsingHeader("Car settings", ImGuiTreeNodeFlags.DefaultOpen))
+            if (igCollapsingHeader(pauseCarSettings.ptr, ImGuiTreeNodeFlags.DefaultOpen))
             {
                 igDummy(ImVec2(0, 4));
                 auto mat = scene.car.carPaintMaterial;
                 if (mat)
                 {
-                    igColorEdit4("Color", &mat.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
-                    igSliderFloat("Roughness", &mat.roughnessFactor, 0.0f, 1.0f, "%.3f");
-                    igSliderFloat("Metallic", &mat.metallicFactor, 0.0f, 1.0f, "%.3f");
+                    igColorEdit4(pauseColor.ptr, &mat.baseColorFactor.arrayof, ImGuiColorEditFlags.Float);
+                    igSliderFloat(pauseRoughness.ptr, &mat.roughnessFactor, 0.0f, 1.0f, "%.3f");
+                    igSliderFloat(pauseMetallic.ptr, &mat.metallicFactor, 0.0f, 1.0f, "%.3f");
                 }
                 igDummy(ImVec2(0, 4));
             }
             
-            if (igCollapsingHeader("Quick options", ImGuiTreeNodeFlags.DefaultOpen))
+            if (igCollapsingHeader(pauseQuickOptions.ptr, ImGuiTreeNodeFlags.DefaultOpen))
             {
                 igDummy(ImVec2(0, 4));
-                igCheckbox("Enable gamepad rumble", &scene.rumbleEnabled);
+                igCheckbox(pauseEnableGamepadRumble.ptr, &scene.rumbleEnabled);
                 igDummy(ImVec2(0, 4));
-                igCheckbox("Hide UI for screenshots", &scene.hidePauseUIForScreenshots);
+                igCheckbox(pauseHideUIForScreenshots.ptr, &scene.hidePauseUIForScreenshots);
                 igDummy(ImVec2(0, 4));
-                igCheckbox("Super resolution for screenshots", &scene.highQualityScreenshots);
+                igCheckbox(pauseSuperResolutionForScreenshots.ptr, &scene.highQualityScreenshots);
                 igDummy(ImVec2(0, 4));
-                igSliderFloat("SFX", &game.sfxVolume, 0.0f, 1.0f, "%.3f");
+                igSliderFloat(pauseSoundEffectsVolume.ptr, &game.sfxVolume, 0.0f, 1.0f, "%.3f");
                 igDummy(ImVec2(0, 4));
-                igSliderFloat("Music", &game.musicVolume, 0.0f, 1.0f, "%.3f");
+                igSliderFloat(pauseMusicVolume.ptr, &game.musicVolume, 0.0f, 1.0f, "%.3f");
             }
             
             igEnd();
@@ -417,7 +499,7 @@ class ImGui: EventListener
         if (showExitPopup)
         {
             igSetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond.Always, ImVec2(0.5f, 0.5f));
-            igOpenPopup("Exit Confirmation");
+            igOpenPopup(pauseExitConfirmationHeader.ptr);
             showExitPopup = false; 
         }
         
@@ -428,12 +510,15 @@ class ImGui: EventListener
             showRestartPopup = false;
         }
         
-        if (igBeginPopupModal("Exit Confirmation", null, ImGuiWindowFlags.AlwaysAutoResize))
+        if (igBeginPopupModal(pauseExitConfirmationHeader.ptr, null, ImGuiWindowFlags.AlwaysAutoResize))
         {
-            igText("Are you sure you want to quit?");
+            igPushTextWrapPos(igGetCursorPosX() + 200.0f);
+            igText(pauseExitConfirmation.ptr);
+            igPopTextWrapPos();
+            
             igSeparator();
             
-            bool yesClicked = igButton("Yes", ImVec2(120, 0));
+            bool yesClicked = igButton(pauseYes.ptr, ImVec2(120, 0));
             if (yesClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();
@@ -442,8 +527,8 @@ class ImGui: EventListener
             }
             igSameLine(0.0f, -1.0f);
             
-            bool cancelClicked = igButton("Cancel", ImVec2(120, 0));
-            if (cancelClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
+            bool noClicked = igButton(pauseNo.ptr, ImVec2(120, 0));
+            if (noClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();
             }
@@ -463,8 +548,8 @@ class ImGui: EventListener
             }
             igSameLine(0.0f, -1.0f);
             
-            bool cancelClicked = igButton("Cancel", ImVec2(120, 0));
-            if (cancelClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
+            bool noClicked = igButton("No", ImVec2(120, 0));
+            if (noClicked || (igIsItemFocused() && igIsKeyPressed(ImGuiKey.Enter)))
             {
                 igCloseCurrentPopup();
             }

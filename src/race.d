@@ -901,7 +901,7 @@ class RaceScene: Scene
     override void onKeyDown(int key)
     {
         // Global keys
-        if (key == KEY_F4)
+        if (key == KEY_F4 && !eventManager.keyPressed[KEY_LALT])
         {
             bool uiActive = game.imgui.active;
             if (highQualityScreenshots)
