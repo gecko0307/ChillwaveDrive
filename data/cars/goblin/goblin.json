@@ -109,7 +109,7 @@
                 "damping": 9000
             },
             "tyre": {
-                "lateralFriction": 1.35,
+                "lateralFriction": 1.37,
                 "longitudinalFriction": 1.0
             },
             "maxVisualAngularVelocity": 25.132
@@ -128,7 +128,7 @@
                 "damping": 9000
             },
             "tyre": {
-                "lateralFriction": 1.35,
+                "lateralFriction": 1.37,
                 "longitudinalFriction": 1.0
             },
             "maxVisualAngularVelocity": 25.132
