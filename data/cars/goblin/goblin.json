@@ -21,6 +21,11 @@
             "paint": "car_paint"
         },
         "paintable": true,
+        "defaultPaint": {
+            "color": [1.0, 0.5, 0.0, 1.0],
+            "roughness": 0.1,
+            "metallic": 0.0
+        },
         "headlights": {
             "color": [1.0, 1.0, 1.0, 1.0],
             "energy": 9.0,

@@ -6,6 +6,9 @@ MainMenu_ExitConfirmation: "Are you sure you want to quit?";
 MainMenu_Yes: "Yes";
 MainMenu_No: "No";
 
+CarSelection_Start: "Start";
+CarSelection_Back: "Back";
+
 Race_StartHint: "Press Enter/Start to start the race. Press Escape to customize your car";
 Race_DebugInfo: "Lap: %u | Pos: %u | Lap time: %02u:%02u.%03u | Best time: %02u:%02u.%03u | Speed: %u km/h";
 

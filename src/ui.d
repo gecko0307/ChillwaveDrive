@@ -43,11 +43,13 @@ import dagon.ext.imgui;
 import game;
 import race;
 import menu;
+import carselection;
 
 class ImGui: EventListener
 {
     ChillwaveDriveGame game;
     MainMenuScene mainMenuScene;
+    CarSelectionScene carSelectionScene;
     RaceScene raceScene;
     
     ImGuiContext* igContext;
@@ -69,6 +71,8 @@ class ImGui: EventListener
     String mainMenuExitConfirmation;
     String mainMenuYes;
     String mainMenuNo;
+    
+    String[2] carSelectionMenuItems;
     
     String pausePauseMenu;
     String pauseResume;
@@ -93,6 +97,8 @@ class ImGui: EventListener
     
     bool[3] mainMenuItemsHovered;
     
+    bool[3] carSelectionMenuItemsHovered;
+    
     bool showRestartPopup = false;
     bool showExitPopup = false;
     
@@ -111,6 +117,11 @@ class ImGui: EventListener
         mainMenuExitConfirmation = String(game.translation.get("MainMenu_ExitConfirmation"));
         mainMenuYes = String(game.translation.get("MainMenu_Yes"));
         mainMenuNo = String(game.translation.get("MainMenu_No"));
+        
+        carSelectionMenuItems = [
+            String(game.translation.get("CarSelection_Start")),
+            String(game.translation.get("CarSelection_Back")),
+        ];
         
         pausePauseMenu = String(game.translation.get("Pause_PauseMenu"));
         pauseResume = String(game.translation.get("Pause_Resume"));
@@ -138,8 +149,8 @@ class ImGui: EventListener
         io = igGetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.NoMouseCursorChange;
-        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
+        //io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+        //io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         ImWchar[] ranges = [
             0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -154,6 +165,7 @@ class ImGui: EventListener
         ImGuiOpenGLBackend.init("#version 400 core");
         
         mainMenuScene = cast(MainMenuScene)game.scenes["MainMenu"];
+        carSelectionScene = cast(CarSelectionScene)game.scenes["CarSelection"];
     }
     
     ~this()
@@ -200,11 +212,26 @@ class ImGui: EventListener
         igClearActiveID();
         ImGuiIO_ClearInputKeys(io);
         
+        io.ConfigInputTrickleEventQueue = false; 
+        
         for (int i = 0; i < 5; i++)
             io.MouseDown[i] = false;
         
         for (int i = 0; i < ImGuiKey.COUNT; i++)
             io.KeysDown[i] = false;
+        
+        for (int i = 0; i < ImGuiNavInput.COUNT; i++)
+            io.NavInputs[i] = 0.0f;
+        
+        ImGuiContext* ctx = igGetCurrentContext();
+        ctx.NavId = 0;
+        ctx.NavFocusScopeId = 0;
+        ctx.NavActivateId = 0;
+        ctx.NavActivateDownId = 0;
+        ctx.NavActivatePressedId = 0;
+        ctx.NavActivateInputId = 0;
+        ctx.NavJustMovedToId = 0;
+        ctx.ActiveIdSource = ImGuiInputSource.None;
         
         igSetWindowFocus_Str(null);
     }
@@ -235,14 +262,19 @@ class ImGui: EventListener
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
         
-        bool haveAnythingToRender = false;
-        if (game.currentScene is mainMenuScene)
-            haveAnythingToRender = drawMainMenu();
-        else if (raceScene && game.currentScene is raceScene)
-            haveAnythingToRender = drawPauseUI(raceScene);
+        auto sceneToRender = game.currentScene;
         
-        if (haveAnythingToRender)
-            igRender();
+        if (sceneToRender is null)
+        {
+        }
+        else if (sceneToRender is mainMenuScene)
+            drawMainMenu();
+        else if (sceneToRender is carSelectionScene)
+            drawCarSelectionMenu();
+        else if (raceScene && sceneToRender is raceScene)
+            drawPauseUI(raceScene);
+        
+        igRender();
     }
     
     size_t selectedMainMenuItem = 0;
@@ -282,12 +314,16 @@ class ImGui: EventListener
                         {
                             case 0:
                                 active = false;
-                                raceScene = New!RaceScene(game);
-                                game.setCurrentScene(raceScene);
-                                return false;
+                                reset();
+                                game.setCurrentScene("CarSelection");
+                                auto clickVoice = game.audio.play(game.sfxClick);
+                                game.audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
+                                break;
                             case 1:
                                 // TODO
                                 // settingsVisible = !settingsVisible;
+                                auto clickVoice = game.audio.play(game.sfxClick);
+                                game.audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
                                 break;
                             case 2:
                                 auto popupVoice = game.audio.play(game.sfxPopup);
@@ -365,6 +401,84 @@ class ImGui: EventListener
             
             igEndPopup();
         }
+        
+        return true;
+    }
+    
+    size_t selectedCarSelectionMenuItem = 0;
+    
+    bool drawCarSelectionMenu()
+    {
+        igPushStyleColor(ImGuiCol.FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        igPushStyleColor(ImGuiCol.Header, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.5f));
+        
+        igSetNextWindowSize(ImVec2(250, eventManager.windowHeight));
+        igSetNextWindowPos(ImVec2(0, 0));
+        
+        if (igBegin("CarSelectionMenu", null, menuWindowFlags))
+        {
+            if (igBeginListBox("##listbox1", ImVec2(0, 5 * igGetTextLineHeightWithSpacing())))
+            {
+                bool hoverSoundPlayed = false;
+                
+                if (igIsWindowAppearing())
+                    igSetKeyboardFocusHere(0);
+                
+                foreach(i, v; carSelectionMenuItems)
+                {
+                    bool isSelected = (selectedCarSelectionMenuItem == i);
+                    bool isClicked = igSelectable(carSelectionMenuItems[i].ptr, isSelected);
+                    
+                    if (igIsItemFocused())
+                        selectedMainMenuItem = i;
+
+                    bool isMenuFocused = igIsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+                    bool isActivated = isClicked || (isSelected && isMenuFocused && (igIsKeyPressed(ImGuiKey.Enter) || igIsKeyPressed(ImGuiKey.GamepadFaceDown)));
+                    
+                    if (isActivated)
+                    {
+                        switch(i)
+                        {
+                            case 0:
+                                active = false;
+                                auto clickVoice = game.audio.play(game.sfxClick);
+                                game.audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
+                                raceScene = New!RaceScene(game, carSelectionScene.selectedCarFilename);
+                                game.setCurrentScene(raceScene);
+                                break;
+                            case 1:
+                                auto clickVoice = game.audio.play(game.sfxClick);
+                                game.audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
+                                game.setCurrentScene("MainMenu");
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    
+                    if (igIsItemHovered() || igIsItemFocused())
+                    {
+                        if (carSelectionMenuItemsHovered[i] == false && hoverSoundPlayed == false)
+                        {
+                            carSelectionMenuItemsHovered[i] = true;
+                            hoverSoundPlayed = true;
+                            // playSound("assets/sounds/keypress.wav");
+                        }
+                    }
+                    else
+                    {
+                        carSelectionMenuItemsHovered[i] = false;
+                    }
+                }
+                
+                igEndListBox();
+            }
+            
+            igEnd();
+        }
+        
+        igPopStyleColor(3);
         
         return true;
     }

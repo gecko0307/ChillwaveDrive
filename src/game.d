@@ -40,6 +40,7 @@ import soloud;
 
 import race;
 import menu;
+import carselection;
 import ui;
 
 class ChillwaveDriveGame: Game
@@ -60,14 +61,14 @@ class ChillwaveDriveGame: Game
     Wav sfxPopup;
     Wav sfxSwitch;
     
-    string defaultCar = "data/cars/cc_050/cc_050.json";
+    //string defaultCar = "data/cars/cc_050/cc_050.json";
     
     this(uint w, uint h, bool fullscreen, string title, string[] args)
     {
         super(w, h, fullscreen, title, args);
         
-        if (args.length > 1)
-            defaultCar = args[1];
+        //if (args.length > 1)
+        //    defaultCar = args[1];
         
         assetManager = New!AssetManager(eventManager, vfs, this);
         assetManager.application = this;
@@ -80,6 +81,8 @@ class ChillwaveDriveGame: Game
         
         auto mainMenuScene = New!MainMenuScene(this);
         scenes["MainMenu"] = mainMenuScene;
+        scenes["CarSelection"] = New!CarSelectionScene(this);
+        
         currentScene = mainMenuScene;
         
         imgui = New!ImGui(this);
@@ -109,14 +112,15 @@ class ChillwaveDriveGame: Game
     
     override void setCurrentScene(Scene scene, bool releaseCurrent = false)
     {
+        imgui.reset();
         super.setCurrentScene(scene, releaseCurrent);
     }
     
     override void setCurrentScene(string name, bool releaseCurrent = false)
     {
+        imgui.reset();
         super.setCurrentScene(name, releaseCurrent);
-        
-        if (name == "MainMenu")
+        if (name == "MainMenu" || name == "CarSelection")
         {
             imgui.active = true;
         }

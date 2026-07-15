@@ -314,7 +314,7 @@ class Car: Owner
     ///
     bool finishedLap = false;
     
-    this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, Vector3f position, float turnAngle, int chassisGroupId, Owner owner)
+    this(Scene scene, NewtonPhysicsWorld physicsWorld, CarAsset* asset, bool isPlayerCar, Vector3f position, float turnAngle, int chassisGroupId, Owner owner)
     {
         super(owner);
         
@@ -322,6 +322,8 @@ class Car: Owner
         startTurnAngle = turnAngle;
         this.chassisGroupId = chassisGroupId;
         name = "Unknown";
+        
+        isPlayer = isPlayerCar;
         
         carPaintMaterial = scene.addMaterial();
         carPaintMaterial.roughnessFactor = 0.01f;
@@ -390,6 +392,17 @@ class Car: Owner
             if (chassisPaintable)
                 makeChassisMaterialUnique(asset.aChassis, asset.aCar, "paint", chassisGeometry, carPaintMaterial);
             makeChassisMaterialUnique(asset.aChassis, asset.aCar, "headlights", chassisGeometry, headlightsMaterial);
+            
+            if (isPlayer && "defaultPaint" in chassis)
+            {
+                auto defaultPaint = chassis["defaultPaint"].asObject;
+                if ("color" in defaultPaint)
+                    carPaintMaterial.baseColorFactor = defaultPaint["color"].asColor;
+                if ("roughness" in defaultPaint)
+                    carPaintMaterial.roughnessFactor = defaultPaint["roughness"].asNumber;
+                if ("metallic" in defaultPaint)
+                    carPaintMaterial.metallicFactor = defaultPaint["metallic"].asNumber;
+            }
             
             bool combinedRearLights = false;
             if ("materials" in chassis)

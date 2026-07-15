@@ -6,12 +6,7 @@
             "class": "GT",
             "config": "data/cars/goblin/goblin.json",
             "preview": "data/cars/goblin/goblin_preview.webp",
-            "price": 500000,
-            "defaultPaint": {
-                "color": [1.0, 0.7, 0.0, 1.0],
-                "roughness": 0.01,
-                "metallic": 0.0
-            }
+            "price": 500000
         },
         {
             "name": "Concept Car 050",
@@ -19,12 +14,7 @@
             "class": "GT",
             "config": "data/cars/cc_050/cc_050.json",
             "preview": "data/cars/cc_050/cc_050_preview.webp",
-            "price": 750000,
-            "defaultPaint": {
-                "color": [1.0, 0.7, 0.0, 1.0],
-                "roughness": 0.1,
-                "metallic": 0.0
-            }
+            "price": 750000
         }
     ]
 }

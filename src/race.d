@@ -127,6 +127,8 @@ class RaceScene: Scene
     
     TextureAsset aRain;
     
+    string carConfigFilename;
+    
     CarAsset carAsset;
     
     Car car;
@@ -345,11 +347,13 @@ class RaceScene: Scene
     
     String debugInfoStr;
 
-    this(ChillwaveDriveGame game)
+    this(ChillwaveDriveGame game, string carFilename)
     {
         super(game);
         this.game = game;
         this.audio = game.audio;
+        
+        this.carConfigFilename = carFilename;
         
         debugInfoStr = String(game.translation.get("Race_DebugInfo"));
         
@@ -416,7 +420,7 @@ class RaceScene: Scene
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
         
         // Cars
-        loadCarConfig(game.defaultCar, &carAsset);
+        loadCarConfig(carConfigFilename, &carAsset);
         
         aCarShadow = addTextureAsset("data/misc/car_shadow.png");
         
@@ -633,11 +637,9 @@ class RaceScene: Scene
         carAsset.shadowTexture = aCarShadow.texture;
         
         // User-controlled car
-        car = New!Car(this, physicsWorld, &carAsset, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
-        car.isPlayer = true;
+        car = New!Car(this, physicsWorld, &carAsset, true, Vector3f(0.0f, 0.8f, 4.0f), 90.0f, carChassisGroupId, this);
         car.name = String("Player");
         car.vehicle.track = track;
-        car.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.7f, 0.0f, 1.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[0], car.vehicle.wheels[1], 2000.0f);
         car.vehicle.addAntiRollBar(car.vehicle.wheels[2], car.vehicle.wheels[3], 2000.0f);
         car.vehicle.arcadeSteering = true;
@@ -652,10 +654,12 @@ class RaceScene: Scene
         participants[0] = car;
         
         // Opponent cars
-        car2 = New!Car(this, physicsWorld, &carAsset, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
+        car2 = New!Car(this, physicsWorld, &carAsset, false, Vector3f(0.0f, 0.8f, -4.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car2.name = String("AI 1");
         car2.vehicle.track = track;
         car2.carPaintMaterial.baseColorFactor = Color4f(0.0f, 0.5f, 1.0f, 1.0f);
+        car2.carPaintMaterial.roughnessFactor = 0.01f;
+        car2.carPaintMaterial.metallicFactor = 0.0f;
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[0], car2.vehicle.wheels[1], 2000.0f);
         car2.vehicle.addAntiRollBar(car2.vehicle.wheels[2], car2.vehicle.wheels[3], 2000.0f);
         car2.vehicle.arcadeSteering = false;
@@ -667,10 +671,12 @@ class RaceScene: Scene
         autopilot2.steeringForce = 20.0f;
         participants[1] = car2;
         
-        car3 = New!Car(this, physicsWorld, &carAsset, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
+        car3 = New!Car(this, physicsWorld, &carAsset, false, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
         car3.name = String("AI 2");
         car3.vehicle.track = track;
         car3.carPaintMaterial.baseColorFactor = Color4f(1.0f, 0.1f, 0.1f, 1.0f);
+        car3.carPaintMaterial.roughnessFactor = 0.01f;
+        car3.carPaintMaterial.metallicFactor = 0.0f;
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[0], car3.vehicle.wheels[1], 2000.0f);
         car3.vehicle.addAntiRollBar(car3.vehicle.wheels[2], car3.vehicle.wheels[3], 2000.0f);
         car3.vehicle.arcadeSteering = false;
@@ -875,6 +881,8 @@ class RaceScene: Scene
         overlay.background.opacity = 0.0f;
         
         game.deferred.passLight.volumetricScatteringEnabled = false;
+        
+        game.postProcessingRenderer.depthOfFieldEnabled = false;
     }
     
     void restartRace()
