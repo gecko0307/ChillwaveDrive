@@ -3,6 +3,7 @@
     "brand": "Olli Teittinen",
     "class": "GT",
     "price": 500000,
+    "preview": "data/cars/goblin/goblin_preview.webp",
     "mass": 1530,
     "inertia": [1.0, 5.0, 1.0],
     "centerOfMass": [0.0, -0.2, 0.0],

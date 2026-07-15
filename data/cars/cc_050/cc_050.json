@@ -1,8 +1,9 @@
 {
-    "name": "CC 050",
+    "name": "Concept Car 050",
     "brand": "Unity Fan",
     "class": "GT",
     "price": 750000,
+    "preview": "data/cars/cc_050/cc_050_preview.webp",
     "mass": 1550,
     "inertia": [1.0, 6.0, 1.0],
     "centerOfMass": [0.0, 0.0, 0.0],
