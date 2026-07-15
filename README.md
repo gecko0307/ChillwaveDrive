@@ -9,7 +9,7 @@ The game implements its own raycast car simulator, including the famous Pacejka 
 
 AI-controlled cars are supported. Fairly accurate and stable path following algorithm is implemented, based on the Pure Pursuit method, as well as basic recovery mode.
 
-The project is still in alpha stage. Car and track selection, game settings and other parts of UI are not implemented yet. Core gameplay and the racing logic are mostly done.
+The project is still in alpha stage. Game settings and some other parts of UI are not implemented yet. Core gameplay and the racing logic are mostly ready.
 
 [![Screenshot1](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-new-cars-4.jpg)](https://blog.pixperfect.online/wp-content/uploads/2026/07/chillwave-drive-new-cars-4.jpg)
 
@@ -48,6 +48,6 @@ Chillwave Drive usually depends on the most recent features of Dagon, so it uses
 - [x] Road/ground material detection
 - [x] Race logic
 - [x] Main menu
-- [ ] Car selection UI
+- [x] Custom cars
+- [x] Car selection UI
 - [ ] Track selection UI
-- [ ] Custom cars
