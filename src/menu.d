@@ -69,6 +69,8 @@ class MainMenuScene: Scene
         bg.material = bgMaterial;
         
         onReset();
+        
+        resizeBg(game.drawableWidth, game.drawableHeight);
     }
     
     override void onReset()
@@ -88,11 +90,12 @@ class MainMenuScene: Scene
     override void onResize(int width, int height)
     {
         if (bg)
-            resizeBg(width, height);
+            resizeBg(game.drawableWidth, game.drawableHeight);
     }
     
     void resizeBg(int width, int height)
     {
+        /*
         float aspectRatio = cast(float)width / cast(float)height;
         float imageAspectRatio = 16.0f / 9.0f;
         if (aspectRatio > imageAspectRatio)
@@ -102,6 +105,11 @@ class MainMenuScene: Scene
         
         // Centering
         bg.position = Vector3f(cast(float)width * 0.5 - bg.scaling.x * 0.5, cast(float)height * 0.5 - bg.scaling.y * 0.5, 0.0f);
+        */
+        
+        float imageAspectRatio = 16.0f / 9.0f;
+        bg.scaling = Vector3f(height * imageAspectRatio, height, 1.0f);
+        bg.position = Vector3f(cast(float)width - bg.scaling.x, 0.0f, 0.0f);
     }
     
     override void onKeyDown(int key)
