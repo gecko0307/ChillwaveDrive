@@ -2,19 +2,13 @@
     "cars": [
         {
             "name": "V12 Goblin",
-            "brand": "Olli Teittinen",
-            "class": "GT",
             "config": "data/cars/goblin/goblin.json",
-            "preview": "data/cars/goblin/goblin_preview.webp",
-            "price": 500000
+            "preview": "data/cars/goblin/goblin_preview.webp"
         },
         {
             "name": "Concept Car 050",
-            "brand": "Unity Fan",
-            "class": "GT",
             "config": "data/cars/cc_050/cc_050.json",
-            "preview": "data/cars/cc_050/cc_050_preview.webp",
-            "price": 750000
+            "preview": "data/cars/cc_050/cc_050_preview.webp"
         }
     ]
 }

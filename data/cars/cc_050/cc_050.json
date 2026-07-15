@@ -1,5 +1,8 @@
 {
     "name": "CC 050",
+    "brand": "Unity Fan",
+    "class": "GT",
+    "price": 750000,
     "mass": 1550,
     "inertia": [1.0, 6.0, 1.0],
     "centerOfMass": [0.0, 0.0, 0.0],

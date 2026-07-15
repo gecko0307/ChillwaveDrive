@@ -78,6 +78,7 @@ class MainMenuScene: Scene
         game.imgui.active = true;
         
         //playMusic("assets/music/dust.mp3");
+        
     }
     
     override void onUpdate(Time t)
