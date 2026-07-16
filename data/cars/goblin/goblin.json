@@ -22,7 +22,10 @@
             }
         ],
         "materials": {
-            "paint": "car_paint"
+            "paint": "car_paint",
+            "headlights": "car_headlights",
+            "taillights": "car_taillights",
+            "brakelights": "car_taillights"
         },
         "paintable": true,
         "defaultPaint": {
