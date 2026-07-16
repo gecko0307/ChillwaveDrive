@@ -40,3 +40,6 @@ data/__internal
 
 # Screenshots
 screenshots/*
+
+# System files
+desktop.ini
