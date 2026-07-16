@@ -28,6 +28,8 @@ DEALINGS IN THE SOFTWARE.
 module carselection;
 
 import std.stdio;
+import std.algorithm;
+
 import dagon;
 import dagon.ext.imgui;
 import game;
@@ -170,8 +172,8 @@ class CarSelectionScene: Scene
         
         frame.visible = false;
         
-        carThumbHeight = cast(uint)(cast(float)height / 4.0f);
-        carThumbWidth = cast(uint)(cast(float)carThumbHeight * carThumbAspectRatio);
+        carThumbHeight = min(180, cast(uint)(cast(float)height / 4.0f));
+        carThumbWidth = min(360, cast(uint)(cast(float)carThumbHeight * carThumbAspectRatio));
         float leftOffsetX = 260.0f;
         float posX = leftOffsetX;
         float posY = 10.0f;

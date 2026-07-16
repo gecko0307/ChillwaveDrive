@@ -7,7 +7,7 @@ MainMenu_Yes: "Да";
 MainMenu_No: "Нет";
 
 CarSelection_Start: "Старт";
-CarSelection_Back: "Назад";
+CarSelection_Back: "< Назад";
 
 Race_StartHint: "Нажмите Enter/Start, чтобы начать гонку. Нажмите Escape, чтобы настроить автомобиль или игру";
 Race_DebugInfo: "Круг: %u | Позиция: %u | Время круга: %02u:%02u.%03u | Лучший круг: %02u:%02u.%03u | Скорость: %u км/ч";
