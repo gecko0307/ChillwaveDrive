@@ -37,6 +37,7 @@ import dlib.math.quaternion;
 import dlib.math.interpolation;
 import dlib.math.utils;
 
+import dagon.core.logger;
 import dagon.ext.newton;
 
 import vehicle;
@@ -263,6 +264,9 @@ class Wheel: Owner, NewtonRaycaster
             float unsprungMass = vehicle.unsprungMass / cast(float)vehicle.wheels.length;
             normalForcePrev = normalForce;
             normalForce = max2(suspensionForce + unsprungMass * 9.81f, 0.0f);
+            
+            float forceCoef = pow(clamp(dot(groundNormal, Vector3f(0.0f, 1.0f, 0.0f)), 0.0f, 1.0f), 10.0f);
+            normalForce *= forceCoef;
             
             Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float wheelSpeed = wheelVelocity.length;

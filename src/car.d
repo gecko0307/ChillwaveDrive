@@ -524,6 +524,7 @@ class Car: Owner
         vehicle.maxSteeringAngle = jsonPropFloat(root, "maxSteeringAngle", 45.0f);
         vehicle.maxTorque = jsonPropFloat(root, "maxTorque", 500.0f);
         vehicle.arcadeSteering = true;
+        vehicle.isPlayer = isPlayer;
         
         if ("wheels" in root.asObject)
         {

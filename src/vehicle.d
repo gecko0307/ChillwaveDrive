@@ -131,6 +131,8 @@ class Vehicle: EntityComponent
     // Aerodynamics
     float airDrag = 0.001f; //0.004f;
     
+    bool isPlayer;
+    
     this(NewtonPhysicsWorld world, Entity entity, NewtonCollisionShape shape, float mass, int materialID)
     {
         super(world.eventManager, entity);
