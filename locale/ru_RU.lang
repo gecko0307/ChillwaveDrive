@@ -6,6 +6,11 @@ MainMenu_ExitConfirmation: "Вы уверены, что хотите выйти 
 MainMenu_Yes: "Да";
 MainMenu_No: "Нет";
 
+Settings_WindowTitle: "Настройки";
+Settings_VideoMode: "Видеорежим";
+Settings_SoundEffectsVolume: "Громкость звуковых эффектов";
+Settings_MusicVolume: "Громкость музыки";
+
 CarSelection_Start: "Старт";
 CarSelection_Back: "< Назад";
 

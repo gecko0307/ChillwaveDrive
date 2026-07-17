@@ -6,6 +6,11 @@ MainMenu_ExitConfirmation: "Are you sure you want to quit?";
 MainMenu_Yes: "Yes";
 MainMenu_No: "No";
 
+Settings_WindowTitle: "Settings";
+Settings_VideoMode: "Video mode";
+Settings_SoundEffectsVolume: "Sound effects volume";
+Settings_MusicVolume: "Music volume";
+
 CarSelection_Start: "Start";
 CarSelection_Back: "< Back";
 

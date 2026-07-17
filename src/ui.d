@@ -72,6 +72,11 @@ class ImGui: EventListener
     String mainMenuYes;
     String mainMenuNo;
     
+    String settingsWindowTitle;
+    String settingsVideoMode;
+    String settingsSoundEffectsVolume;
+    String settingsMusicVolume;
+    
     String[2] carSelectionMenuItems;
     
     String pausePauseMenu;
@@ -102,6 +107,43 @@ class ImGui: EventListener
     bool showRestartPopup = false;
     bool showExitPopup = false;
     
+    bool settingsVisible = false;
+    
+    bool fullscreen = false;
+    
+    String[12] videoModes = [
+        "1024x768 / XGA",
+        "1280x720 / HD",
+        "1280x800 / WXGA / Steam Deck",
+        "1366x768 / HD Laptop",
+        "1600x900 / HD+",
+        "1920x1080 / Full HD",
+        "1920x1200 / WUXGA",
+        "2560x1080 / UltraWide Full HD",
+        "2560x1440 / 2k Quad HD",
+        "3440x1440 / UltraWide QHD",
+        "3840x2160 / 4k Ultra HD",
+        "7680x4320 / 8k Full Ultra HD"
+    ];
+    
+    const(char)*[videoModes.length] videoModesPointers;
+    int currentVideoMode = 1;
+    
+    uint[2][videoModes.length] resolutions = [
+        [1024, 768],
+        [1280, 720],
+        [1280, 800],
+        [1366, 768],
+        [1600, 900],
+        [1920, 1080],
+        [1920, 1200],
+        [2560, 1080],
+        [2560, 1440],
+        [3440, 1440],
+        [3840, 2160],
+        [7680, 4320]
+    ];
+    
     this(ChillwaveDriveGame game)
     {
         super(game.eventManager, game);
@@ -117,6 +159,11 @@ class ImGui: EventListener
         mainMenuExitConfirmation = String(game.translation.get("MainMenu_ExitConfirmation"));
         mainMenuYes = String(game.translation.get("MainMenu_Yes"));
         mainMenuNo = String(game.translation.get("MainMenu_No"));
+        
+        settingsWindowTitle = String(game.translation.get("Settings_WindowTitle"));
+        settingsVideoMode = String(game.translation.get("Settings_VideoMode"));
+        settingsSoundEffectsVolume = String(game.translation.get("Settings_SoundEffectsVolume"));
+        settingsMusicVolume = String(game.translation.get("Settings_MusicVolume"));
         
         carSelectionMenuItems = [
             String(game.translation.get("CarSelection_Start")),
@@ -143,6 +190,24 @@ class ImGui: EventListener
         pauseNo = String(game.translation.get("Pause_No"));
         pauseRestartConfirmationHeader = String(game.translation.get("Pause_RestartConfirmationHeader"));
         pauseRestartConfirmation = String(game.translation.get("Pause_RestartConfirmation"));
+        
+        foreach(i, v; videoModes)
+            videoModesPointers[i] = videoModes[i].ptr;
+        
+        fullscreen = game.fullscreen;
+        
+        foreach(uint i, res; resolutions)
+        {
+            if (res[0] == game.windowWidth && res[1] == game.windowHeight)
+            {
+                currentVideoMode = i;
+                break;
+            }
+        }
+        
+        //game.config.props.set(DPropType.Number, "windowWidth", game.width.to!string);
+        //game.config.props.set(DPropType.Number, "windowHeight", game.height.to!string);
+        //game.config.props.set(DPropType.Number, "fullscreen", (cast(uint)game.fullscreen).to!string);
         
         igContext = igCreateContext(null);
         igSetCurrentContext(igContext);
@@ -176,6 +241,11 @@ class ImGui: EventListener
         mainMenuExitConfirmation.free();
         mainMenuYes.free();
         mainMenuNo.free();
+        
+        settingsWindowTitle.free();
+        settingsVideoMode.free();
+        settingsSoundEffectsVolume.free();
+        settingsMusicVolume.free();
         
         pausePauseMenu.free();
         pauseResume.free();
@@ -274,6 +344,9 @@ class ImGui: EventListener
         else if (raceScene && sceneToRender is raceScene)
             drawPauseUI(raceScene);
         
+        if (settingsVisible)
+            drawSettings();
+        
         igRender();
     }
     
@@ -313,6 +386,7 @@ class ImGui: EventListener
                         switch(i)
                         {
                             case 0:
+                                settingsVisible = false;
                                 active = false;
                                 reset();
                                 game.setCurrentScene("CarSelection");
@@ -320,12 +394,12 @@ class ImGui: EventListener
                                 game.audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
                                 break;
                             case 1:
-                                // TODO
-                                // settingsVisible = !settingsVisible;
+                                settingsVisible = !settingsVisible;
                                 auto clickVoice = game.audio.play(game.sfxClick);
                                 game.audio.setVolume(clickVoice, 2.0f * game.sfxVolume);
                                 break;
                             case 2:
+                                settingsVisible = false;
                                 auto popupVoice = game.audio.play(game.sfxPopup);
                                 game.audio.setVolume(popupVoice, game.sfxVolume);
                                 showExitPopup = true;
@@ -481,6 +555,72 @@ class ImGui: EventListener
         igPopStyleColor(3);
         
         return true;
+    }
+    
+    void drawSettings()
+    {
+        float windowWidth = 800.0f;
+        float windowHeight = 480.0f;
+        igSetNextWindowSize(ImVec2(windowWidth, windowHeight));
+        igSetNextWindowPos(ImVec2(cast(float)eventManager.windowWidth * 0.5 - windowWidth * 0.5, cast(float)eventManager.windowHeight * 0.5 - windowHeight * 0.5));
+        igPushStyleColor(ImGuiCol.WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.8f));
+        
+        if (igBegin(settingsWindowTitle.ptr, &settingsVisible,
+            ImGuiWindowFlags.NoCollapse |
+            ImGuiWindowFlags.NoDocking |
+            ImGuiWindowFlags.NoResize |
+            ImGuiWindowFlags.NoSavedSettings))
+        {
+            igPushStyleColor(ImGuiCol.FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.5f));
+            
+            bool changed = false;
+            
+            if (igCombo_Str_arr(settingsVideoMode.ptr, &currentVideoMode, videoModesPointers.ptr, videoModesPointers.length))
+            {
+                //logInfo("Video mode: ", videoModes[currentVideoMode]);
+                auto windowSize = resolutions[currentVideoMode];
+                game.setWindowSize(windowSize[0], windowSize[1]);
+                game.centerWindow();
+                game.currentScene.onResize(windowSize[0], windowSize[1]);
+                //game.config.props.set(DPropType.Number, "windowWidth", windowSize[0].to!string);
+                //game.config.props.set(DPropType.Number, "windowHeight", windowSize[1].to!string);
+                changed = true;
+            }
+            
+            if (igCheckbox("Fullscreen", &fullscreen))
+            {
+                //logInfo("Fullscreen: ", fullscreen);
+                game.setFullscreen(fullscreen);
+                game.centerWindow();
+                //game.config.props.set(DPropType.Number, "fullscreen", (cast(uint)fullscreen).to!string);
+                changed = true;
+            }
+            
+            if (igSliderFloat(settingsSoundEffectsVolume.ptr, &game.sfxVolume, 0.0f, 1.0f, "%.3f"))
+            {
+                //playSound("assets/sounds/keypress.wav", true);
+                //game.config.props.set(DPropType.Number, "soundEffectsVolume", soundEffectsVolume.to!string);
+                changed = true;
+            }
+
+            if (igSliderFloat(settingsMusicVolume.ptr, &game.musicVolume, 0.0f, 1.0f, "%.3f"))
+            {
+                //game.config.props.set(DPropType.Number, "musicVolume", musicVolume.to!string);
+                changed = true;
+            }
+            
+            if (changed)
+            {
+                //TODO:
+                //writeSettingsFile();
+            }
+
+            igPopStyleColor();
+            
+            igEnd();
+        }
+        
+        igPopStyleColor(1);
     }
     
     bool drawPauseUI(RaceScene scene)
