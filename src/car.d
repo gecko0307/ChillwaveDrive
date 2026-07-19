@@ -625,7 +625,7 @@ class Car: Owner
             chassis = root.asObject["chassis"].asObject;
         else
         {
-            logWarning("\"chassis\" object not specified");
+            debug logDebug("\"chassis\" object not specified");
             return false;
         }
         
@@ -653,13 +653,13 @@ class Car: Owner
             }
             else
             {
-                logWarning("\"", matType, "\" material not specified");
+                debug logDebug("\"", matType, "\" material not specified");
                 return false;
             }
         }
         else
         {
-            logWarning("\"materials\" not specified");
+            debug logDebug("\"materials\" not specified");
             return false;
         }
         

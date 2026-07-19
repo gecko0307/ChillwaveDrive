@@ -39,6 +39,9 @@ class CarSelectionScene: Scene
     ChillwaveDriveGame game;
     Camera camera;
     
+    Entity uiRoot;
+    float pixelRatio;
+    
     TextureAsset selectionFrame;
     Entity frame;
     
@@ -102,11 +105,16 @@ class CarSelectionScene: Scene
         
         auto quad = New!ShapeQuad(assetManager);
         
+        uiRoot = addEntityHUD();
+        
+        pixelRatio = game.pixelRatio;
+        uiRoot.scaling = Vector3f(pixelRatio, pixelRatio, 1.0f);
+        
         // TODO: read cars.json instead
         carThumbs = New!(Entity[])(numCarThumbs);
         foreach(i; 0..carThumbs.length)
         {
-            auto t = addEntityHUD();
+            auto t = addEntityHUD(uiRoot);
             t.drawable = quad;
             t.material = addMaterial();
             t.material.shader = hudShader;
@@ -117,7 +125,7 @@ class CarSelectionScene: Scene
             carThumbs[i] = t;
         }
         
-        frame = addEntityHUD();
+        frame = addEntityHUD(uiRoot);
         frame.drawable = quad;
         frame.material = addMaterial();
         frame.material.shader = hudShader;
