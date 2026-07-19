@@ -3,17 +3,20 @@
         {
             "name": "V12 Goblin",
             "config": "data/cars/goblin/goblin.json",
-            "preview": "data/cars/goblin/goblin_preview.webp"
+            "preview": "data/cars/goblin/goblin_preview.webp",
+            "description": "The goal of this project was to create a unique, visually striking modern supercar with abundant detail."
         },
         {
             "name": "Concept Car 050",
             "config": "data/cars/cc_050/cc_050.json",
-            "preview": "data/cars/cc_050/cc_050_preview.webp"
+            "preview": "data/cars/cc_050/cc_050_preview.webp",
+            "description": "Concept car with AI-assisted design."
         },
         {
             "name": "Tokii Abyss GT.7 V12",
             "config": "data/cars/tokii_abyss/tokii_abyss.json",
-            "preview": "data/cars/tokii_abyss/tokii_abyss_preview.webp"
+            "preview": "data/cars/tokii_abyss/tokii_abyss_preview.webp",
+            "description": "Part of the hypercar exhibition sponsored by Nyx Motors and their ReVision project, aimed to bring out the most in automotive companies. Running a supercharged V12, Tokii Abyss can clock in a total of anywhere between 900-1500 horsepower, depending on the variant."
         }
     ]
 }
