@@ -647,7 +647,7 @@ class RaceScene: Scene
         autopilot = New!Autopilot(car, this);
         autopilot.track = track;
         autopilot.maxSpeed = 45.0f;
-        autopilot.maxLateralAcceleration = 15.0f;
+        autopilot.maxLateralAcceleration = 12.0f;
         autopilot.maxSegmentsToSearch = 10;
         autopilot.steeringForce = 20.0f;
         autopilot.active = false;
@@ -666,7 +666,7 @@ class RaceScene: Scene
         autopilot2 = New!Autopilot(car2, this);
         autopilot2.track = track;
         autopilot2.maxSpeed = 45.0f;
-        autopilot2.maxLateralAcceleration = 15.0f;
+        autopilot2.maxLateralAcceleration = 12.0f;
         autopilot2.maxSegmentsToSearch = 10;
         autopilot2.steeringForce = 20.0f;
         participants[1] = car2;
@@ -683,7 +683,7 @@ class RaceScene: Scene
         autopilot3 = New!Autopilot(car3, this);
         autopilot3.track = track;
         autopilot3.maxSpeed = 45.0f;
-        autopilot3.maxLateralAcceleration = 15.0f;
+        autopilot3.maxLateralAcceleration = 12.0f;
         autopilot3.maxSegmentsToSearch = 10;
         autopilot3.steeringForce = 20.0f;
         participants[2] = car3;

@@ -18,7 +18,7 @@
             },
             {
                 "size": [1.55, 0.4, 2.75],
-                "position": [0.0, 0.64, 0.4]
+                "position": [0.0, 0.64, -0.4]
             }
         ],
         "materials": {
@@ -105,7 +105,9 @@
                 "lateralFriction": 1.8,
                 "longitudinalFriction": 1.0
             },
-            "maxVisualAngularVelocity": 25.132
+            "maxVisualAngularVelocity": 25.132,
+            "materials": {
+            }
         },
         {
             "model": "data/cars/goblin/goblin_rear_wheel.gltf",
@@ -124,7 +126,9 @@
                 "lateralFriction": 1.37,
                 "longitudinalFriction": 1.0
             },
-            "maxVisualAngularVelocity": 25.132
+            "maxVisualAngularVelocity": 25.132,
+            "materials": {
+            }
         },
         {
             "model": "data/cars/goblin/goblin_rear_wheel.gltf",
@@ -143,7 +147,9 @@
                 "lateralFriction": 1.37,
                 "longitudinalFriction": 1.0
             },
-            "maxVisualAngularVelocity": 25.132
+            "maxVisualAngularVelocity": 25.132,
+            "materials": {
+            }
         }
     ]
 }

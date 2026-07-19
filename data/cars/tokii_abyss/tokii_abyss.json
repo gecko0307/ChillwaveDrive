@@ -8,17 +8,17 @@
     "inertia": [1.0, 4.0, 1.0],
     "centerOfMass": [0.0, 0.0, 0.0],
     "maxSteeringAngle": 42,
-    "maxTorque": 790,
+    "maxTorque": 750,
     "chassis": {
         "model": "data/cars/tokii_abyss/tokii_abyss_chassis.gltf",
         "hitboxes": [
             {
                 "size": [2.0, 0.7, 5.4],
-                "position": [0.0, 0.2, 0.141]
+                "position": [0.0, 0.2, -0.141]
             },
             {
                 "size": [1.7, 0.48, 3.5],
-                "position": [0.0, 0.726, 0.976]
+                "position": [0.0, 0.726, -0.976]
             }
         ],
         "materials": {
@@ -38,14 +38,14 @@
             "energy": 6.0,
             "lightObjects": [
                 {
-                    "position": [-0.6, 0.0, 2.0],
+                    "position": [-0.6, 0.0, 2.4],
                     "radius": 10.0,
                     "cutoff": 45.0,
                     "energy": 5.0,
                     "rotation": [0.0, 180.0, 0.0]
                 },
                 {
-                    "position": [0.6, 0.0, 2.0],
+                    "position": [0.6, 0.0, 2.4],
                     "radius": 10.0,
                     "cutoff": 45.0,
                     "energy": 5.0,
@@ -62,7 +62,7 @@
             "energy": 7.0
         },
         "shadow": {
-            "scale": [1.7, 2.0, 3.0]
+            "scale": [1.7, 2.0, 3.5]
         }
     },
     "windows": {
@@ -127,6 +127,8 @@
             "tyre": {
                 "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
+            },
+            "materials": {
             }
         },
         {
@@ -145,6 +147,8 @@
             "tyre": {
                 "lateralFriction": 1.4,
                 "longitudinalFriction": 1.0
+            },
+            "materials": {
             }
         }
     ]
