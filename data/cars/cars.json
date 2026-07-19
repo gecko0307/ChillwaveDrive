@@ -9,6 +9,11 @@
             "name": "Concept Car 050",
             "config": "data/cars/cc_050/cc_050.json",
             "preview": "data/cars/cc_050/cc_050_preview.webp"
+        },
+        {
+            "name": "Tokii Abyss GT.7 V12",
+            "config": "data/cars/tokii_abyss/tokii_abyss.json",
+            "preview": "data/cars/tokii_abyss/tokii_abyss_preview.webp"
         }
     ]
 }

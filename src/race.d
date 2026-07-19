@@ -1472,8 +1472,8 @@ class RaceScene: Scene
                 viewResetTime += 0.25f * t.delta;
             else
                 viewResetTime = 1.0f;
-            vehicleView.targetTurnAngle = lerpAngle(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
-            vehicleView.targetPitchAngle = lerpAngle(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
+            vehicleView.targetTurnAngle = racingview.lerpAngle(vehicleView.targetTurnAngle, 0.0f, viewResetTime);
+            vehicleView.targetPitchAngle = racingview.lerpAngle(vehicleView.targetPitchAngle, degtorad(15.0f), viewResetTime);
             vehicleView.targetDistance = lerp(vehicleView.targetDistance, vehicleView.minDistanceToTarget, viewResetTime);
         }
         else

@@ -574,17 +574,18 @@ class Car: Owner
                     pWheel.maxVisualAngularVelocity = wheel.asObject["maxVisualAngularVelocity"].asNumber;
                 
                 Entity eWheel = scene.addEntity(eCar);
-                auto dg = New!DrawableGroup(scene.assetManager);
-                foreach(mesh; aWheel.meshes.data)
-                {
-                    dg.add(mesh);
-                }
-                eWheel.drawable = dg;
+                
+                GLTFGeometryInstance wheelGeometry = New!GLTFGeometryInstance(aWheel, this);
+                eWheel.drawable = wheelGeometry;
+                
                 eWheel.position = pWheel.localWheelPosition;
                 eWheel.blurMask = 0.8f;
                 eWheel.blurMaxVelocity = 0.02f;
                 eWheel.blurOnlyRotation = true;
                 eWheels.append(eWheel);
+                
+                if (chassisPaintable)
+                    makeMaterialUnique(aWheel, wheel.asObject, "paint", wheelGeometry, carPaintMaterial);
             }
         }
         
@@ -628,9 +629,14 @@ class Car: Owner
             return false;
         }
         
-        if ("materials" in chassis)
+        return makeMaterialUnique(carModel, chassis, matType, geomInstance, replaceWith);
+    }
+    
+    bool makeMaterialUnique(GLTFAsset carModel, JSONObject configObject, string matType, GLTFGeometryInstance geomInstance, Material replaceWith)
+    {
+        if ("materials" in configObject)
         {
-            auto materials = chassis["materials"];
+            auto materials = configObject["materials"];
             if (matType in materials.asObject)
             {
                 string matName = jsonPropString(materials, matType, "");

@@ -44,7 +44,7 @@ class CarSelectionScene: Scene
     
     string[] carConfigs;
     
-    size_t numCarThumbs = 2;
+    size_t numCarThumbs = 3;
     float carThumbAspectRatio = 16.0f / 9.0f;
     uint carThumbWidth;
     uint carThumbHeight;
@@ -82,9 +82,11 @@ class CarSelectionScene: Scene
         // TODO: read cars.json instead
         thumbTextures[0] = addTextureAsset("data/cars/cc_050/cc_050_preview.webp");
         thumbTextures[1] = addTextureAsset("data/cars/goblin/goblin_preview.webp");
+        thumbTextures[2] = addTextureAsset("data/cars/tokii_abyss/tokii_abyss_preview.webp");
         
         carConfigs[0] = "data/cars/cc_050/cc_050.json";
         carConfigs[1] = "data/cars/goblin/goblin.json";
+        carConfigs[2] = "data/cars/tokii_abyss/tokii_abyss.json";
         selectedCarFilename = carConfigs[0];
     }
     
