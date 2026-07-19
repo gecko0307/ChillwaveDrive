@@ -2,7 +2,7 @@
     "name": "Tokii Abyss GT.7 V12",
     "brand": "Abyss",
     "class": "GT",
-    "price": 600000,
+    "price": 800000,
     "preview": "data/cars/tokii_abyss/tokii_abyss_preview.webp",
     "mass": 1500,
     "inertia": [1.0, 4.0, 1.0],
