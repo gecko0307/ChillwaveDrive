@@ -217,13 +217,14 @@ class ImGui: EventListener
         //io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
         //io.ConfigFlags |= ImGuiConfigFlags.NavEnableGamepad;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
+        io.FontGlobalScale = 1.0f / game.pixelRatio;
         ImWchar[] ranges = [
             0x0020, 0x00FF, // Basic Latin + Latin Supplement
             0x0370, 0x03FF, // Greek
             0x0400, 0x044F, // Cyrillic
             0
         ];
-        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/DroidSans.ttf", 20, null, ranges.ptr);
+        font = ImFontAtlas_AddFontFromFileTTF(io.Fonts, "data/font/DroidSans.ttf", 20 * game.pixelRatio, null, ranges.ptr);
         igStyleColorsDark(null);
         applyTheme();
         ImGui_ImplSDL2_InitForOpenGL(game.window, game.glcontext);
