@@ -118,11 +118,20 @@ class Autopilot: Owner
         if (!active || car is null || track is null)
             return;
         
+        Vector3f carPosition = car.vehicle.position;
+        Vector3f carDirection = car.vehicle.longitudinalAxis;
+        float currentSpeed = car.vehicle.speed;
+        
         if (car.finished)
         {
             isIdle = true;
-            // TODO: better parking mode
-            car.vehicle.manualSteer(0.02f);
+            car.vehicle.manualSteer(0.0f);
+            if (currentSpeed > 1.0f)
+                car.vehicle.accelerate(-1.0f, 1.0f);
+            else
+                car.vehicle.idle();
+            return;
+            // TODO: better finishing mode
         }
         
         if (isIdle)
@@ -130,10 +139,6 @@ class Autopilot: Owner
             car.vehicle.idle();
             return;
         }
-        
-        Vector3f carPosition = car.vehicle.position;
-        Vector3f carDirection = car.vehicle.longitudinalAxis;
-        float carSpeed = car.vehicle.speed;
         
         currentSegmentIndex = car.trackSegmentIndex;
         targetPoint = findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
@@ -145,9 +150,9 @@ class Autopilot: Owner
         steeringInput = steeringForce * clamp(steeringAngle, -maxSteeringAngle, maxSteeringAngle) / maxSteeringAngle;
         steeringInput = clamp(steeringInput, -1.0f, 1.0f);
         
-        float desiredThrottle = controlVehicleAcceleration(curvature, maxSpeed);
+        float desiredThrottle = controlVehicleAcceleration(curvature, currentSpeed, maxSpeed);
         
-        bool inRecovery = handleRecovery(carSpeed, desiredThrottle, t.delta);
+        bool inRecovery = handleRecovery(currentSpeed, desiredThrottle, t.delta);
 
         if (!inRecovery)
         {
@@ -155,6 +160,10 @@ class Autopilot: Owner
             
             if (desiredThrottle >= 0.0f)
                 car.vehicle.accelerate(1.0f, desiredThrottle);
+            else if (desiredThrottle < -0.25f)
+                car.vehicle.accelerate(-1.0f, 1.0f);
+            else if (desiredThrottle < -0.15f)
+                car.vehicle.accelerate(-1.0f, -desiredThrottle);
             else
                 car.vehicle.idle();
         }
@@ -322,10 +331,8 @@ class Autopilot: Owner
         return steeringAngle;
     }
     
-    float controlVehicleAcceleration(float kappa, float maxSpeed)
+    float controlVehicleAcceleration(float kappa, float currentSpeed, float maxSpeed)
     {
-        float currentSpeed = car.vehicle.speed;
-        
         float targetSpeed = maxSpeed;
         float absKappa = abs(kappa);
 
@@ -333,7 +340,8 @@ class Autopilot: Owner
         if (absKappa > 0.001f)
         {
             float safeSpeed = sqrt(maxLateralAcceleration / absKappa);
-            if (safeSpeed < targetSpeed) {
+            if (safeSpeed < targetSpeed)
+            {
                 targetSpeed = safeSpeed;
             }
         }

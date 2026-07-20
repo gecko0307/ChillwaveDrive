@@ -129,7 +129,7 @@ class Vehicle: EntityComponent
     Track track;
     
     // Aerodynamics
-    float airDrag = 0.001f; //0.004f;
+    float airDrag = 0.004f;
     
     bool isPlayer;
     
@@ -492,7 +492,7 @@ class Vehicle: EntityComponent
                 chassisBody.velocity = vel * 0.95f;
         }
         else
-            chassisBody.linearDamping = 0.001f;
+            chassisBody.linearDamping = 0.01f;
         
         chassisBody.update(t.delta);
 
@@ -511,7 +511,7 @@ class Vehicle: EntityComponent
         
         if (arcadeSteering)
         {
-            float steeringDecreaseStep = 1.8f * t.delta;
+            float steeringDecreaseStep = t.delta * 1.8f;
             if (steeringInput > steeringDecreaseStep)
                 steeringInput -= steeringDecreaseStep;
             else if (steeringInput < -steeringDecreaseStep)

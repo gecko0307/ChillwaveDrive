@@ -648,10 +648,11 @@ class RaceScene: Scene
         car.vehicle.chassisBody.contactCallback = &onCarContact;
         autopilot = New!Autopilot(car, this);
         autopilot.track = track;
-        autopilot.maxSpeed = 45.0f;
-        autopilot.maxLateralAcceleration = 10.0f;
+        autopilot.maxSpeed = 70.0f;
+        autopilot.maxLateralAcceleration = 8.0f;
         autopilot.maxSegmentsToSearch = 10;
-        autopilot.steeringForce = 20.0f;
+        autopilot.steeringForce = 12.0f;
+        autopilot.lookaheadDistance = 35.0f;
         autopilot.active = false;
         participants[0] = car;
         
@@ -667,10 +668,11 @@ class RaceScene: Scene
         car2.vehicle.arcadeSteering = false;
         autopilot2 = New!Autopilot(car2, this);
         autopilot2.track = track;
-        autopilot2.maxSpeed = 45.0f;
-        autopilot2.maxLateralAcceleration = 10.0f;
+        autopilot2.maxSpeed = 70.0f;
+        autopilot2.maxLateralAcceleration = 8.0f;
         autopilot2.maxSegmentsToSearch = 10;
-        autopilot2.steeringForce = 20.0f;
+        autopilot2.steeringForce = 12.0f;
+        autopilot2.lookaheadDistance = 35.0f;
         participants[1] = car2;
         
         car3 = New!Car(this, physicsWorld, &carAsset, false, Vector3f(15.0f, 0.8f, 0.0f), 90.0f, physicsWorld.defaultGroupId, this);
@@ -684,10 +686,11 @@ class RaceScene: Scene
         car3.vehicle.arcadeSteering = false;
         autopilot3 = New!Autopilot(car3, this);
         autopilot3.track = track;
-        autopilot3.maxSpeed = 45.0f;
-        autopilot3.maxLateralAcceleration = 10.0f;
+        autopilot3.maxSpeed = 70.0f;
+        autopilot3.maxLateralAcceleration = 8.0f;
         autopilot3.maxSegmentsToSearch = 10;
-        autopilot3.steeringForce = 20.0f;
+        autopilot3.steeringForce = 12.0f;
+        autopilot3.lookaheadDistance = 35.0f;
         participants[2] = car3;
         
         auto eParticles = addEntity();

@@ -7,7 +7,7 @@
     "mass": 1550,
     "inertia": [1.0, 5.0, 1.0],
     "centerOfMass": [0.0, 0.0, 0.0],
-    "maxSteeringAngle": 40,
+    "maxSteeringAngle": 44,
     "maxTorque": 750,
     "chassis": {
         "model": "data/cars/cc_050/concept_car_chassis.gltf",
@@ -80,7 +80,7 @@
                 "damping": 9000
             },
             "tyre": {
-                "lateralFriction": 1.8,
+                "lateralFriction": 1.7,
                 "longitudinalFriction": 1.0
             },
             "materials": {
@@ -100,7 +100,7 @@
                 "damping": 9000
             },
             "tyre": {
-                "lateralFriction": 1.8,
+                "lateralFriction": 1.7,
                 "longitudinalFriction": 1.0
             },
             "materials": {
