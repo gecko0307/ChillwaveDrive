@@ -7,7 +7,8 @@ MainMenu_Yes: "Да";
 MainMenu_No: "Нет";
 
 Settings_WindowTitle: "Настройки";
-Settings_VideoMode: "Видеорежим";
+Settings_VideoMode: "Разрешение";
+Settings_Fullscreen: "Полноэкранный режим";
 Settings_SoundEffectsVolume: "Громкость звуковых эффектов";
 Settings_MusicVolume: "Громкость музыки";
 
@@ -29,6 +30,7 @@ Pause_QuickOptions: "Опции";
 Pause_EnableGamepadRumble: "Вибрация геймпада";
 Pause_HideUIForScreenshots: "Скрыть интерфейс для скриншотов";
 Pause_SuperResolutionForScreenshots: "Скриншоты в высоком качестве";
+Pause_Volume: "Громкость:";
 Pause_SoundEffectsVolume: "Зв. эффекты";
 Pause_MusicVolume: "Музыка";
 Pause_ExitConfirmationHeader: "Подтверждение выхода";

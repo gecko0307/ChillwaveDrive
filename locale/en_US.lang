@@ -7,7 +7,8 @@ MainMenu_Yes: "Yes";
 MainMenu_No: "No";
 
 Settings_WindowTitle: "Settings";
-Settings_VideoMode: "Video mode";
+Settings_VideoMode: "Resolution";
+Settings_Fullscreen: "Fullscreen";
 Settings_SoundEffectsVolume: "Sound effects volume";
 Settings_MusicVolume: "Music volume";
 
@@ -15,7 +16,7 @@ CarSelection_Start: "Start";
 CarSelection_Back: "< Back";
 
 Race_StartHint: "Press Enter/Start to start the race. Press Escape to customize your car";
-Race_DebugInfo: "Lap: %u | Pos: %u | Lap time: %02u:%02u.%03u | Best time: %02u:%02u.%03u | Speed: %u km/h";
+Race_DebugInfo: "Lap: %u | Position: %u | Lap time: %02u:%02u.%03u | Best time: %02u:%02u.%03u | Speed: %u km/h";
 
 Pause_PauseMenu: "Pause Menu";
 Pause_Resume: "Resume";
@@ -29,8 +30,9 @@ Pause_QuickOptions: "Quick options";
 Pause_EnableGamepadRumble: "Enable gamepad rumble";
 Pause_HideUIForScreenshots: "Hide UI for screenshots";
 Pause_SuperResolutionForScreenshots: "Super resolution for screenshots";
-Pause_SoundEffectsVolume: "Sound effects volume";
-Pause_MusicVolume: "Music volume";
+Pause_Volume: "Volume:";
+Pause_SoundEffectsVolume: "Sound effects";
+Pause_MusicVolume: "Music";
 Pause_ExitConfirmationHeader: "Exit Confirmation";
 Pause_ExitConfirmation: "Are you sure you want to leave the race?";
 Pause_RestartConfirmationHeader: "Restart Confirmation";

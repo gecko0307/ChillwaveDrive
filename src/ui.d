@@ -74,6 +74,7 @@ class ImGui: EventListener
     
     String settingsWindowTitle;
     String settingsVideoMode;
+    String settingsFullscreen;
     String settingsSoundEffectsVolume;
     String settingsMusicVolume;
     
@@ -91,6 +92,7 @@ class ImGui: EventListener
     String pauseEnableGamepadRumble;
     String pauseHideUIForScreenshots;
     String pauseSuperResolutionForScreenshots;
+    String pauseVolume;
     String pauseSoundEffectsVolume;
     String pauseMusicVolume;
     String pauseExitConfirmationHeader;
@@ -109,7 +111,7 @@ class ImGui: EventListener
     
     bool settingsVisible = false;
     
-    bool fullscreen = false;
+    bool fullscreen = true;
     
     String[12] videoModes = [
         "1024x768 / XGA",
@@ -162,6 +164,7 @@ class ImGui: EventListener
         
         settingsWindowTitle = String(game.translation.get("Settings_WindowTitle"));
         settingsVideoMode = String(game.translation.get("Settings_VideoMode"));
+        settingsFullscreen = String(game.translation.get("Settings_Fullscreen"));
         settingsSoundEffectsVolume = String(game.translation.get("Settings_SoundEffectsVolume"));
         settingsMusicVolume = String(game.translation.get("Settings_MusicVolume"));
         
@@ -182,6 +185,7 @@ class ImGui: EventListener
         pauseEnableGamepadRumble = String(game.translation.get("Pause_EnableGamepadRumble"));
         pauseHideUIForScreenshots = String(game.translation.get("Pause_HideUIForScreenshots"));
         pauseSuperResolutionForScreenshots = String(game.translation.get("Pause_SuperResolutionForScreenshots"));
+        pauseVolume = String(game.translation.get("Pause_Volume"));
         pauseSoundEffectsVolume = String(game.translation.get("Pause_SoundEffectsVolume"));
         pauseMusicVolume = String(game.translation.get("Pause_MusicVolume"));
         pauseExitConfirmationHeader = String(game.translation.get("Pause_ExitConfirmationHeader"));
@@ -588,7 +592,7 @@ class ImGui: EventListener
                 changed = true;
             }
             
-            if (igCheckbox("Fullscreen", &fullscreen))
+            if (igCheckbox(settingsFullscreen.ptr, &fullscreen))
             {
                 //logInfo("Fullscreen: ", fullscreen);
                 game.setFullscreen(fullscreen);
@@ -684,6 +688,8 @@ class ImGui: EventListener
                 igCheckbox(pauseHideUIForScreenshots.ptr, &scene.hidePauseUIForScreenshots);
                 igDummy(ImVec2(0, 4));
                 igCheckbox(pauseSuperResolutionForScreenshots.ptr, &scene.highQualityScreenshots);
+                igDummy(ImVec2(0, 4));
+                igText(pauseVolume.ptr);
                 igDummy(ImVec2(0, 4));
                 igSliderFloat(pauseSoundEffectsVolume.ptr, &game.sfxVolume, 0.0f, 1.0f, "%.3f");
                 igDummy(ImVec2(0, 4));

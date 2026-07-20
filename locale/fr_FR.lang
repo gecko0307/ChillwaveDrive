@@ -1,0 +1,41 @@
+MainMenu_SingleRace: "Course unique";
+MainMenu_Settings: "Paramètres";
+MainMenu_Exit: "Quitter";
+MainMenu_ExitConfirmationHeader: "Confirmation de sortie";
+MainMenu_ExitConfirmation: "Êtes-vous sûr de vouloir quitter le jeu ?";
+MainMenu_Yes: "Oui";
+MainMenu_No: "Non";
+
+Settings_WindowTitle: "Paramètres";
+Settings_VideoMode: "Résolution";
+Settings_Fullscreen: "Plein écran";
+Settings_SoundEffectsVolume: "Volume des effets sonores";
+Settings_MusicVolume: "Volume de la musique";
+
+CarSelection_Start: "Commencer";
+CarSelection_Back: "< Retour";
+
+Race_StartHint: "Appuyez sur Entrée pour commencer la course. Appuyez sur Échap pour personnaliser votre voiture.";
+Race_DebugInfo: "Tour : %u | Position : %u | Temps au tour : %02u:%02u.%03u | Meilleur temps : %02u:%02u.%03u | Vitesse : %u km/h";
+
+Pause_PauseMenu: "Menu Pause";
+Pause_Resume: "Reprendre";
+Pause_Restart: "Recommencer";
+Pause_Exit: "Quitter";
+Pause_CarSettings: "Paramètres de la voiture";
+Pause_Color: "Couleur";
+Pause_Roughness: "Rugosité";
+Pause_Metallic: "Métallisation";
+Pause_QuickOptions: "Options rapides";
+Pause_EnableGamepadRumble: "Activer les vibrations de la manette";
+Pause_HideUIForScreenshots: "Masquer l'interface pour les captures d'écran";
+Pause_SuperResolutionForScreenshots: "Super résolution pour les captures d'écran";
+Pause_Volume: "Volume:";
+Pause_SoundEffectsVolume: "Des effets";
+Pause_MusicVolume: "De la musique";
+Pause_ExitConfirmationHeader: "Confirmation de sortie";
+Pause_ExitConfirmation: "Êtes-vous sûr de vouloir quitter la course ?";
+Pause_RestartConfirmationHeader: "Confirmation de recommencer";
+Pause_RestartConfirmation: "Êtes-vous sûr de vouloir recommencer ?";
+Pause_Yes: "Oui";
+Pause_No: "Non";
