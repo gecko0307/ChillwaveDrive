@@ -32,7 +32,7 @@ import std.conv;
 import std.meta;
 import std.math;
 import std.random;
-import std.algorithm.sorting: sort;
+//import std.algorithm.sorting: sort;
 
 import dlib.core.memory;
 import dlib.core.ownership;
@@ -707,7 +707,7 @@ class RaceScene: Scene
         mParticlesDust.useShadows = true;
 
         auto eParticlesRight = addEntity(car.eCar);
-        emitterRight = New!Emitter(eParticlesRight, particleSystem, 40);
+        emitterRight = New!Emitter(eParticlesRight, particleSystem, 20);
         eParticlesRight.position = Vector3f(-0.9f, 0.0f, -0.5f);
         emitterRight.minLifetime = 1.0f;
         emitterRight.maxLifetime = 3.0f;
@@ -722,7 +722,7 @@ class RaceScene: Scene
         eParticlesRight.visible = true;
 
         auto eParticlesLeft = addEntity(car.eCar);
-        emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 40);
+        emitterLeft = New!Emitter(eParticlesLeft, particleSystem, 20);
         eParticlesLeft.position = Vector3f(0.9f, 0.0f, -0.5f);
         emitterLeft.minLifetime = 1.0f;
         emitterLeft.maxLifetime = 3.0f;
@@ -1572,7 +1572,7 @@ class RaceScene: Scene
     
     void updateLeaderboard()
     {
-        participants.sort!((a, b) {
+        participants = participants.insertion_sort!((a, b) {
             if (a.finished && b.finished)
                 return a.raceTime < b.raceTime;
             if (a.laps != b.laps) 
@@ -1608,4 +1608,51 @@ class RaceScene: Scene
         text.setText(s);
         textShadow.setText(s);
     }
+}
+
+T[] insertion_sort(alias comparator, T)(T[] data)
+{
+    const len = data.length;
+    for (size_t i = 1; i < len; ++i)
+    {
+        T key = data[i];
+        size_t j = i;
+        while (j > 0 && comparator(key, data[j - 1]))
+        {
+            data[j] = data[j - 1];
+            --j;
+        }
+        data[j] = key;
+    }
+    return data;
+}
+
+T[] selection_sort(alias comparator, T)(T[] data)
+{
+    size_t len = data.length;
+    size_t j = 0;
+    T tmp = T.init;
+    
+    size_t i = 0;
+    while(i < len)
+    {
+        j = i;
+        size_t k = i;
+        while(k < len)
+        {
+            T a = data[j];
+            T b = data[k];
+            if (comparator(b, a))
+                j = k;
+            k += 1;
+        }
+    
+        tmp = data[i];
+        data[i] = data[j];
+        data[j] = tmp;
+    
+        i += 1;
+    }
+    
+    return data;
 }
