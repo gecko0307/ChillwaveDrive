@@ -265,8 +265,8 @@ class Wheel: Owner, NewtonRaycaster
             normalForcePrev = normalForce;
             normalForce = max2(suspensionForce + unsprungMass * 9.81f, 0.0f);
             
-            float forceCoef = pow(clamp(dot(groundNormal, Vector3f(0.0f, 1.0f, 0.0f)), 0.0f, 1.0f), 10.0f);
-            normalForce *= forceCoef;
+            //float forceCoef = pow(clamp(dot(groundNormal, Vector3f(0.0f, 1.0f, 0.0f)), 0.0f, 1.0f), 10.0f);
+            //normalForce *= forceCoef;
             
             Vector3f wheelVelocity = vehicle.chassisBody.pointVelocity(forcePosition);
             float wheelSpeed = wheelVelocity.length;
