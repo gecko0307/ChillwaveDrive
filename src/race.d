@@ -773,9 +773,9 @@ class RaceScene: Scene
         vehicleView = New!RacingViewComponent(eventManager, camera, car.eCar);
         vehicleView.active = false;
         
-        auto ambientVoice = audio.play(sfxAmbient);
-        audio.setLooping(ambientVoice, true);
-        audio.setVolume(ambientVoice, 2.0f * game.sfxVolume);
+        //auto ambientVoice = audio.play(sfxAmbient);
+        //audio.setLooping(ambientVoice, true);
+        //audio.setVolume(ambientVoice, game.sfxVolume);
         
         engine1Voice = audio.play3d(sfxEngine1, car.position.x, car.position.y, car.position.z);
         audio.setLooping(engine1Voice, true);
@@ -1308,7 +1308,7 @@ class RaceScene: Scene
         audio.set3dSourcePosition(squealVoice, car.position.x, car.position.y, car.position.z);
         audio.setVolume(skidVoice, game.sfxVolume * 0.5f * skidVolume);
         audio.set3dSourcePosition(skidVoice, car.position.x, car.position.y, car.position.z);
-        audio.setVolume(slipVoice, 0.5f * gravelVolume * slipSpeedFactor);
+        audio.setVolume(slipVoice, game.sfxVolume * 0.5f * gravelVolume * slipSpeedFactor);
         
         // Wheels sound
         float wheelsVolume = 0.0f;

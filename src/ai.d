@@ -126,7 +126,7 @@ class Autopilot: Owner
         {
             isIdle = true;
             car.vehicle.manualSteer(0.0f);
-            if (currentSpeed > 1.0f)
+            if (currentSpeed > 10.0f)
                 car.vehicle.accelerate(-1.0f, 1.0f);
             else
                 car.vehicle.idle();
