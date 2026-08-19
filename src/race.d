@@ -57,7 +57,7 @@ import dagon.graphics.camera;
 import dagon.graphics.light;
 import dagon.graphics.particles;
 import dagon.graphics.csm;
-import dagon.graphics.texproc;
+import dagon.graphics.cubemap;
 import dagon.resource.scene;
 import dagon.resource.texture;
 import dagon.resource.font;
