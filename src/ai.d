@@ -338,6 +338,9 @@ class Autopilot: Owner
         float targetSpeed = maxSpeed;
         float absKappa = abs(kappa);
         
+        if (recordedTargetSpeed > 0.0f)
+            targetSpeed = recordedTargetSpeed;
+        
         // Calculate safe cornering speed
         if (absKappa > 0.001f)
         {
@@ -347,9 +350,6 @@ class Autopilot: Owner
                 targetSpeed = safeSpeed;
             }
         }
-
-        if (recordedTargetSpeed > 0.0f)
-            targetSpeed = recordedTargetSpeed;
 
         // Minimum threshold to prevent the car from stopping completely
         if (targetSpeed < 1.0f) targetSpeed = 1.0f;

@@ -334,19 +334,19 @@ class RaceScene: Scene
     
     // Based on human driving
     float[] recordedTargetSpeed = [
-        160.0, 140.0, 120.0, 100.0, 60.0, 30.0, 10.0,
-        0.0, 0.0, 0.0, 42.9251, 49.3822, 48.9342, 34.3928, 27.5889, 26.9827,
-        31.6144, 10.0, 38.6265, 37.2146, 35.726, 30.9906, 24.1755, 20.7238,
-        23.2975, 28.3956, 32.9437, 34.6267, 36.2231, 34.8672, 30.872,
-        25.0349, 21.8609, 27.4603, 34.3265, 39.3676, 43.3227, 46.3988,
-        45.0798, 43.7464, 42.1288, 45.2702, 48.362, 47.3206, 49.09,
-        49.7223, 50.0, 49.2314, 45.252, 38.289, 38.4513, 38.6344,
-        32.3559, 29.3807, 29.4797, 33.1061, 37.4605, 40.4145, 32.293,
-        34.8478, 40.4285, 45.2725, 49.4698, 158.65, 167.487, 170.631,
-        152.855, 41.8138, 38.2386, 31.7703, 24.9923, 6.09802, 27.4544,
-        33.6356, 39.4313, 42.8795, 43.5988, 48.228, 154.443, 164.408,
-        151.439, 169.4, 178.521, 187.973, 95.1839, 99.5489, 103.037,
-        130.0, 160.0, 300.0
+        180.0, 160.0, 140.0, 120.0, 100.0, 80.0, 35.0,
+        35.0, 35.0, 35.0, 43.0, 50.0, 50.0, 40.0, 35.0, 35.0,
+        35.0, 35.0, 50.0, 45.0, 41.0, 40.0, 35.0, 35.0,
+        35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0,
+        35.0, 35.0, 35.0, 35.0, 40.0, 43.0, 46.5,
+        45.0, 44.0, 42.0, 45.0, 48.5, 47.5, 49.0,
+        50.0, 50.0, 49.0, 45.0, 40.0, 35.0, 35.0,
+        35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0,
+        35.0, 40.0, 45.0, 50.0, 158.0, 167.5, 170.0,
+        153.0, 42.0, 40.0, 35.0, 35.0, 35.0, 35.0,
+        35.0, 40.0, 43.0, 43.5, 48.0, 154.5, 164.5,
+        151.5, 170.0, 178.5, 188.0, 180.0, 180.0, 180.0,
+        200.0, 200.0, 300.0
     ];
     
     Entity eSky;
@@ -666,7 +666,7 @@ class RaceScene: Scene
         autopilot = New!Autopilot(car, this);
         autopilot.track = track;
         autopilot.maxSpeed = 80.0f;
-        autopilot.maxLateralAcceleration = 30.0f;
+        autopilot.maxLateralAcceleration = 15.0f;
         autopilot.maxSegmentsToSearch = 30;
         autopilot.steeringForce = 15.0f;
         autopilot.lookaheadDistance = 30.0f;
@@ -686,7 +686,7 @@ class RaceScene: Scene
         autopilot2 = New!Autopilot(car2, this);
         autopilot2.track = track;
         autopilot2.maxSpeed = 80.0f;
-        autopilot2.maxLateralAcceleration = 30.0f;
+        autopilot2.maxLateralAcceleration = 15.0f;
         autopilot2.maxSegmentsToSearch = 30;
         autopilot2.steeringForce = 15.0f;
         autopilot2.lookaheadDistance = 30.0f;
@@ -704,7 +704,7 @@ class RaceScene: Scene
         autopilot3 = New!Autopilot(car3, this);
         autopilot3.track = track;
         autopilot3.maxSpeed = 80.0f;
-        autopilot3.maxLateralAcceleration = 30.0f;
+        autopilot3.maxLateralAcceleration = 15.0f;
         autopilot3.maxSegmentsToSearch = 30;
         autopilot3.steeringForce = 15.0f;
         autopilot3.lookaheadDistance = 30.0f;
@@ -771,7 +771,7 @@ class RaceScene: Scene
         eRain.visible = false;
         
         camera = addCamera();
-        camera.fov = 42.0f;
+        camera.fov = 40.0f;
         game.renderer.activeCamera = camera;
         
         eSky = addEntity();

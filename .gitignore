@@ -19,6 +19,7 @@ docs/
 
 # Debug info
 *.pdb
+*.rdi
 
 # Backup files
 *~
