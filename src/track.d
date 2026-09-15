@@ -78,7 +78,7 @@ class Track: Owner
 
         for (size_t i = searchStart; i < searchEnd; ++i)
         {
-            float distSq = (carPosition.x - waypoints[i].x)^^2 + (carPosition.z - waypoints[i].z)^^2;
+            float distSq = distancesqr(carPosition.xz, waypoints[i].xz); //(carPosition.x - waypoints[i].x)^^2 + (carPosition.z - waypoints[i].z)^^2;
             if (distSq < minD)
             {
                 minD = distSq;

@@ -82,6 +82,8 @@ class Autopilot: Owner
     float curvature = 0.0f;
     float steeringInput = 0.0f;
     
+    float recordedTargetSpeed = 0.0f;
+    
     this(Car controlledCar, Owner owner)
     {
         super(owner);
@@ -335,7 +337,7 @@ class Autopilot: Owner
     {
         float targetSpeed = maxSpeed;
         float absKappa = abs(kappa);
-
+        
         // Calculate safe cornering speed
         if (absKappa > 0.001f)
         {
@@ -346,8 +348,11 @@ class Autopilot: Owner
             }
         }
 
+        if (recordedTargetSpeed > 0.0f)
+            targetSpeed = recordedTargetSpeed;
+
         // Minimum threshold to prevent the car from stopping completely
-        if (targetSpeed < 5.0f) targetSpeed = 5.0f;
+        if (targetSpeed < 1.0f) targetSpeed = 1.0f;
 
         float speedError = targetSpeed - currentSpeed;
 

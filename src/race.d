@@ -332,6 +332,23 @@ class RaceScene: Scene
     
     bool raceStarted = false;
     
+    // Based on human driving
+    float[] recordedTargetSpeed = [
+        160.0, 140.0, 120.0, 100.0, 60.0, 30.0, 10.0,
+        0.0, 0.0, 0.0, 42.9251, 49.3822, 48.9342, 34.3928, 27.5889, 26.9827,
+        31.6144, 10.0, 38.6265, 37.2146, 35.726, 30.9906, 24.1755, 20.7238,
+        23.2975, 28.3956, 32.9437, 34.6267, 36.2231, 34.8672, 30.872,
+        25.0349, 21.8609, 27.4603, 34.3265, 39.3676, 43.3227, 46.3988,
+        45.0798, 43.7464, 42.1288, 45.2702, 48.362, 47.3206, 49.09,
+        49.7223, 50.0, 49.2314, 45.252, 38.289, 38.4513, 38.6344,
+        32.3559, 29.3807, 29.4797, 33.1061, 37.4605, 40.4145, 32.293,
+        34.8478, 40.4285, 45.2725, 49.4698, 158.65, 167.487, 170.631,
+        152.855, 41.8138, 38.2386, 31.7703, 24.9923, 6.09802, 27.4544,
+        33.6356, 39.4313, 42.8795, 43.5988, 48.228, 154.443, 164.408,
+        151.439, 169.4, 178.521, 187.973, 95.1839, 99.5489, 103.037,
+        130.0, 160.0, 300.0
+    ];
+    
     Entity eSky;
     
     Rain rain;
@@ -649,9 +666,9 @@ class RaceScene: Scene
         autopilot = New!Autopilot(car, this);
         autopilot.track = track;
         autopilot.maxSpeed = 80.0f;
-        autopilot.maxLateralAcceleration = 6.0f;
+        autopilot.maxLateralAcceleration = 30.0f;
         autopilot.maxSegmentsToSearch = 30;
-        autopilot.steeringForce = 10.0f;
+        autopilot.steeringForce = 15.0f;
         autopilot.lookaheadDistance = 30.0f;
         autopilot.active = false;
         participants[0] = car;
@@ -669,9 +686,9 @@ class RaceScene: Scene
         autopilot2 = New!Autopilot(car2, this);
         autopilot2.track = track;
         autopilot2.maxSpeed = 80.0f;
-        autopilot2.maxLateralAcceleration = 6.0f;
+        autopilot2.maxLateralAcceleration = 30.0f;
         autopilot2.maxSegmentsToSearch = 30;
-        autopilot2.steeringForce = 10.0f;
+        autopilot2.steeringForce = 15.0f;
         autopilot2.lookaheadDistance = 30.0f;
         participants[1] = car2;
         
@@ -687,9 +704,9 @@ class RaceScene: Scene
         autopilot3 = New!Autopilot(car3, this);
         autopilot3.track = track;
         autopilot3.maxSpeed = 80.0f;
-        autopilot3.maxLateralAcceleration = 6.0f;
+        autopilot3.maxLateralAcceleration = 30.0f;
         autopilot3.maxSegmentsToSearch = 30;
-        autopilot3.steeringForce = 10.0f;
+        autopilot3.steeringForce = 15.0f;
         autopilot3.lookaheadDistance = 30.0f;
         participants[2] = car3;
         
@@ -1030,6 +1047,8 @@ class RaceScene: Scene
         }
     }
     
+    bool useRecordToDrive = false;
+    
     void startRace()
     {
         if (!raceStarted)
@@ -1177,9 +1196,23 @@ class RaceScene: Scene
     
     override void onUpdate(Time t)
     {
+        if (car.trackSegmentIndex + 4 < recordedTargetSpeed.length)
+            autopilot.recordedTargetSpeed = recordedTargetSpeed[car.trackSegmentIndex + 4];
+        else 
+            autopilot.recordedTargetSpeed = recordedTargetSpeed[$-1];
+        
+        if (car2.trackSegmentIndex + 4 < recordedTargetSpeed.length)
+            autopilot2.recordedTargetSpeed = recordedTargetSpeed[car2.trackSegmentIndex + 4];
+        else 
+            autopilot2.recordedTargetSpeed = recordedTargetSpeed[$-1];
+        
+        if (car3.trackSegmentIndex + 4 < recordedTargetSpeed.length)
+            autopilot3.recordedTargetSpeed = recordedTargetSpeed[car3.trackSegmentIndex + 4];
+        else 
+            autopilot3.recordedTargetSpeed = recordedTargetSpeed[$-1];
+        
         // Update AI
         autopilot.update(t);
-        //lookaheadMarker.position = autopilot.targetPoint + Vector3f(0.0f, 1.0f, 0.0f);
         autopilot2.update(t);
         autopilot3.update(t);
         
@@ -1490,7 +1523,26 @@ class RaceScene: Scene
         }
         
         eventManager.showCursor(false);
+        
+        // Record speed data
+        /*
+        if (!autopilot.active)
+        {
+            size_t i = car.trackSegmentIndex;
+            if (i == 0 || i != prevSegment)
+            {
+                if (carSpeed > 60.0f)
+                    recordedTargetSpeed[i] = carSpeed * 1.5f;
+                else if (carSpeed < 15.0f)
+                    recordedTargetSpeed[i] = carSpeed * 0.5f;
+                logInfo(i, ": ", recordedTargetSpeed[i]);
+                prevSegment = i;
+            }
+        }
+        */
     }
+    
+    size_t prevSegment = 0;
     
     void updateHUD(Time t)
     {
