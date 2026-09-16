@@ -123,6 +123,7 @@ class Vehicle: EntityComponent
     bool arcadeSteering = true;
     bool accelerating = false;
     bool brake = false;
+    bool manualBrake = false;
     float movementDirection = 0.0f;
     
     // Current track
@@ -444,7 +445,7 @@ class Vehicle: EntityComponent
         foreach(w; wheels)
         {
             w.torque = axleTorque * w.torqueSplitRatio;
-            w.brake = brake;
+            w.brake = brake || manualBrake;
             w.update(t.delta);
         }
         

@@ -28,7 +28,7 @@ Pause_Roughness: "Матовость";
 Pause_Metallic: "Металлик";
 Pause_QuickOptions: "Опции";
 Pause_EnableGamepadRumble: "Вибрация геймпада";
-Pause_HideUIForScreenshots: "Скрыть интерфейс для скриншотов";
+Pause_HideUIForScreenshots: "Скрывать интерфейс при скриншотах";
 Pause_SuperResolutionForScreenshots: "Скриншоты в высоком качестве";
 Pause_Volume: "Громкость:";
 Pause_SoundEffectsVolume: "Зв. эффекты";

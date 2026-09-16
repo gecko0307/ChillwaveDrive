@@ -127,18 +127,9 @@ class Autopilot: Owner
         if (car.finished)
         {
             isIdle = true;
-            car.vehicle.manualSteer(0.0f);
-            if (currentSpeed > 10.0f)
-                car.vehicle.accelerate(-1.0f, 1.0f);
-            else
-                car.vehicle.idle();
-            return;
-            // TODO: better finishing mode
-        }
-        
-        if (isIdle)
-        {
             car.vehicle.idle();
+            car.vehicle.manualSteer(0.0f);
+            car.vehicle.manualBrake = true;
             return;
         }
         
@@ -146,7 +137,7 @@ class Autopilot: Owner
         targetPoint = findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
         
         curvature = 0.0f;
-        float steeringAngle = calculateSteeringAngle(carPosition, carDirection, targetPoint, car.vehicle.wheelbase, curvature);
+        float steeringAngle = calculateSteeringAngle(carPosition, carDirection, targetPoint, car.vehicle.wheelbase, currentSpeed, curvature);
         
         float maxSteeringAngle = degtorad(car.vehicle.maxSteeringAngle);
         steeringInput = steeringForce * clamp(steeringAngle, -maxSteeringAngle, maxSteeringAngle) / maxSteeringAngle;
@@ -302,6 +293,7 @@ class Autopilot: Owner
         Vector3f carDirection,
         Vector3f targetPoint,
         float wheelbase,
+        float speed,
         out float curvature)
     {
         // Get the vector from the car to the target point on the XZ plane
