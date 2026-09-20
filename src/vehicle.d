@@ -336,6 +336,8 @@ class Vehicle: EntityComponent
     {
         accelerating = false;
         brake = false;
+        throttle = 0.0f;
+        movementDirection = 0.0f;
     }
     
     void steer(float input)

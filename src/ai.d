@@ -131,7 +131,10 @@ class Autopilot: Owner
         {
             car.vehicle.idle();
             car.vehicle.manualSteer(0.0f);
-            car.vehicle.manualBrake = true;
+            if (currentSpeed > 0.2f)
+                car.vehicle.manualBrake = true;
+            else
+                car.vehicle.manualBrake = false;
             return;
         }
         
