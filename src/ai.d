@@ -125,13 +125,17 @@ class Autopilot: Owner
         float currentSpeed = car.vehicle.speed;
         
         if (car.finished)
-        {
             isIdle = true;
+        
+        if (isIdle)
+        {
             car.vehicle.idle();
             car.vehicle.manualSteer(0.0f);
             car.vehicle.manualBrake = true;
             return;
         }
+        
+        car.vehicle.manualBrake = false;
         
         currentSegmentIndex = car.trackSegmentIndex;
         targetPoint = findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
