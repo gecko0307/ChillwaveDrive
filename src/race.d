@@ -551,7 +551,7 @@ class RaceScene: Scene
 
     override void afterLoad()
     {
-        environment.backgroundColor = Color4f(0.1f, 0.05f, 0.1f, 1.0f);
+        environment.backgroundColor = Color4f(0.0f, 0.05f, 0.1f, 1.0f); //Color4f(0.1f, 0.05f, 0.1f, 1.0f);
         environment.fogColor = environment.backgroundColor;
         environment.fogStart = 0.0f;
         environment.fogEnd = 1000.0f;
@@ -732,7 +732,7 @@ class RaceScene: Scene
         emitterRight.maxSize = 1.6f;
         emitterRight.minInitialSpeed = 0.2f;
         emitterRight.maxInitialSpeed = 0.2f;
-        emitterRight.scaleStep = Vector2f(2, 2);
+        emitterRight.scaleStep = Vector3f(2, 2, 2);
         emitterRight.material = mParticlesDust;
         emitterRight.emitting = false;
         eParticlesRight.castShadow = false;
@@ -747,7 +747,7 @@ class RaceScene: Scene
         emitterLeft.maxSize = 1.6f;
         emitterLeft.minInitialSpeed = 0.2f;
         emitterLeft.maxInitialSpeed = 0.2f;
-        emitterLeft.scaleStep = Vector2f(2, 2);
+        emitterLeft.scaleStep = Vector3f(2, 2, 2);
         emitterLeft.material = mParticlesDust;
         emitterLeft.emitting = false;
         eParticlesLeft.castShadow = false;

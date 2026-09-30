@@ -142,7 +142,7 @@ class Vehicle: EntityComponent
         this.chassisShape = shape;
         
         this.chassisBody = world.createDynamicBody(this.chassisShape, mass);
-        this.chassisBody.position = entity.position;
+        this.chassisBody.position = Vector4f(entity.position.xyz, 1.0f);
         this.chassisBody.rotation = entity.rotation;
         this.chassisBody.transformation =
             translationMatrix(entity.position) *
@@ -181,7 +181,8 @@ class Vehicle: EntityComponent
     {
         entity.position = position;
         entity.rotation = rotation;
-        chassisBody.position = entity.position;
+        chassisBody.position = Vector4f(entity.position.xyz, 1.0f);
+        chassisBody.position.w = 1.0f;
         chassisBody.rotation = entity.rotation;
         chassisBody.transformation =
             translationMatrix(entity.position) *
