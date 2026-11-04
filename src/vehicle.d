@@ -29,10 +29,10 @@ module vehicle;
 
 import std.stdio;
 import std.algorithm;
-import std.math;
 
 import dlib.core.memory;
 import dlib.container.array;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.transformation;
@@ -331,6 +331,7 @@ class Vehicle: EntityComponent
             
             this.throttle = throttle;
         }
+        else { accelerating = false; throttle = 0.0f; }
     }
     
     void idle()
@@ -443,6 +444,7 @@ class Vehicle: EntityComponent
         rpmPrev = rpm;
         rpm = lerp(rpmIdle, max3(rpmIdle, (rpmFree - rpmClutch) / engineInertia, rpmClutch), effectiveClutch);
         float engineTorque = engineTorqueCurve(rpm) * throttle;
+        
         float axleTorque = sign(gearRatio) * engineTorque * effectiveClutch * transmissionRatio;
         
         foreach(w; wheels)

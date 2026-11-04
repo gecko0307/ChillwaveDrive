@@ -27,8 +27,7 @@ DEALINGS IN THE SOFTWARE.
 */
 module pacejka;
 
-import std.math;
-
+import dlib.math.base;
 import dlib.math.utils;
 
 /**

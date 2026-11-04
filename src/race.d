@@ -30,11 +30,11 @@ module race;
 import std.stdio;
 import std.conv;
 import std.meta;
-import std.math;
 import std.random;
 
 import dlib.core.memory;
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;
@@ -625,6 +625,8 @@ class RaceScene: Scene
             }
             track.addMaterial(gm);
         }
+        
+        //track.computeSpeedProfile(recordedTargetSpeed, 10.0f, 0.5f, 300.0f);
         
         // Waypoints visuals
         /*
@@ -1220,9 +1222,9 @@ class RaceScene: Scene
         {
             // Car controls
             if (inputManager.getButton("forward"))
-                car.vehicle.accelerate(1.0f, 2.0f * t.delta);
+                car.vehicle.accelerate(1.0f, min2(car.throttle + 3.0f * t.delta, 1.0f)); //2.0f * t.delta);
             else if (inputManager.getButton("back"))
-                car.vehicle.accelerate(-1.0f, 2.0f * t.delta);
+                car.vehicle.accelerate(-1.0f, min2(car.throttle + 3.0f * t.delta, 1.0f)); //2.0f * t.delta);
             else if (triggerForward > 0.0f)
                 car.vehicle.accelerate(1.0f, triggerForward);
             else if (triggerBackward > 0.0f)
@@ -1301,7 +1303,7 @@ class RaceScene: Scene
         
         audio.set3dSourcePosition(engine2Voice, car.position.x, car.position.y, car.position.z);
         float engine2SoundSpeed = lerp(0.5f, 1.0f, rpmFactor);
-        audio.setRelativePlaySpeed(engine2Voice, engineSoundSpeed);
+        audio.setRelativePlaySpeed(engine2Voice, engine2SoundSpeed);
         float engine2Volume = lerp(0.25f, 1.0f, rpmFactor * rpmFactor);
         audio.setVolume(engine2Voice, game.sfxVolume * engine2Volume * 2.0f);
         audio.setVolume(engine1Voice, game.sfxVolume * (1.0f - engine2Volume) * 2.0f);
@@ -1631,6 +1633,9 @@ class RaceScene: Scene
                 return a.laps > b.laps;
             if (a.trackSegmentIndex != b.trackSegmentIndex) 
                 return a.trackSegmentIndex > b.trackSegmentIndex;
+            float da = distancesqr(a.position.xz, a.vehicle.track.waypoints[a.trackSegmentIndex + 1].xz);
+            float db = distancesqr(b.position.xz, b.vehicle.track.waypoints[b.trackSegmentIndex + 1].xz);
+            return da < db; // closer to the next waypoint = further ahead
             return false; 
         });
     }

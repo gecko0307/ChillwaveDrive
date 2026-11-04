@@ -27,9 +27,8 @@ DEALINGS IN THE SOFTWARE.
 */
 module ai;
 
-import std.math;
-
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.utils;
 
@@ -141,6 +140,8 @@ class Autopilot: Owner
         car.vehicle.manualBrake = false;
         
         currentSegmentIndex = car.trackSegmentIndex;
+        
+        //float la = clamp(6.0f + currentSpeed * 0.7f, 10.0f, lookaheadDistance);
         targetPoint = findLookaheadPoint(carPosition, lookaheadDistance, currentSegmentIndex);
         
         curvature = 0.0f;
@@ -318,7 +319,6 @@ class Autopilot: Owner
         float alpha = angleToTarget - carFacingAngle;
 
         // Normalize the alpha angle to [-PI, PI] to avoid sharp turns
-        import std.math : PI;
         while (alpha > PI)  alpha -= 2.0f * PI;
         while (alpha < -PI) alpha += 2.0f * PI;
 

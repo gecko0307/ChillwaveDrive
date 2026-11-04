@@ -27,9 +27,9 @@ DEALINGS IN THE SOFTWARE.
 */
 module racingview;
 
-import std.math;
 import std.random;
 
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.matrix;
 import dlib.math.quaternion;

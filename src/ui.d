@@ -251,6 +251,10 @@ class ImGui: EventListener
         settingsVideoMode.free();
         settingsSoundEffectsVolume.free();
         settingsMusicVolume.free();
+        settingsFullscreen.free();
+        pauseVolume.free();
+        carSelectionMenuItems[0].free();
+        carSelectionMenuItems[1].free();
         
         pausePauseMenu.free();
         pauseResume.free();

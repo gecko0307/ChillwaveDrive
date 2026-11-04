@@ -29,9 +29,9 @@ module wheel;
 
 import std.stdio;
 import std.algorithm;
-import std.math;
 
 import dlib.core.ownership;
+import dlib.math.base;
 import dlib.math.vector;
 import dlib.math.quaternion;
 import dlib.math.interpolation;
@@ -306,7 +306,11 @@ class Wheel: Owner, NewtonRaycaster
             else if (abs(torque) > 0.0f)
             {
                 // Apply torque
-                angularAcceleration = torque / radius * invInertia;
+                float rolling = longitudinalSpeed / radius;
+                if (torque * longitudinalSpeed > 0.0f && abs(angularVelocity) < abs(rolling))
+                    angularVelocity = rolling;
+                
+                angularAcceleration = torque * invInertia; //torque / radius * invInertia;
                 angularVelocity += angularAcceleration * dt;
                 float denominator = max2(absLongitudinalSpeed, 0.00001f);
                 slipRatio = (tyreSpeed - longitudinalSpeed) / denominator * 100.0f;
@@ -346,6 +350,7 @@ class Wheel: Owner, NewtonRaycaster
                 vehicle.chassisBody.addForceAtPos(forwardAxis * rrForce * -sign(longitudinalSpeed), forcePosition);
             }
             
+            // ?
             float physicalSlipSign = (tyreSpeed - longitudinalSpeed) >= 0.0f ? 1.0f : -1.0f;
             float frictionTorque = abs(longitudinalFrictionForce) * grip * radius;
             angularAcceleration -= physicalSlipSign * (frictionTorque * invInertia);

@@ -27,8 +27,11 @@ DEALINGS IN THE SOFTWARE.
 */
 module track;
 
+import dlib.core.memory;
 import dlib.core.ownership;
 import dlib.container.array;
+import dlib.math.base;
+import dlib.math.utils;
 import dlib.math.vector;
 
 struct GroundMaterial
