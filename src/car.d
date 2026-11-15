@@ -43,6 +43,7 @@ import dlib.serialization.json;
 
 import dagon.core.time;
 import dagon.core.logger;
+import dagon.core.jsonutils;
 import dagon.graphics.drawable;
 import dagon.graphics.entity;
 import dagon.graphics.material;
