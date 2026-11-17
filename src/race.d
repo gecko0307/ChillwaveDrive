@@ -364,6 +364,8 @@ class RaceScene: Scene
     
     bool musicEnabled = true;
     
+    bool racingEnabled = true;
+    
     String debugInfoStr;
 
     this(ChillwaveDriveGame game, string carFilename)
@@ -437,6 +439,7 @@ class RaceScene: Scene
         
         // Track
         aTrack = addGLTFAsset("data/track/racetrack.gltf");
+        //aTrack = addGLTFAsset("data/tracks/abandoned-factory/abandoned-factory.gltf");
         
         // Cars
         loadCarConfig(carConfigFilename, &carAsset);
@@ -609,6 +612,7 @@ class RaceScene: Scene
             mat.roughnessMetallicTexture = null;
             mat.roughnessFactor = 0.8f;
             mat.metallicFactor = 0.8f;
+
             if (i == 1) // grass
             {
                 gm.grip = 0.9f;
@@ -1214,9 +1218,12 @@ class RaceScene: Scene
             autopilot3.recordedTargetSpeed = recordedTargetSpeed[$-1];
         
         // Update AI
-        autopilot.update(t);
-        autopilot2.update(t);
-        autopilot3.update(t);
+        if (racingEnabled)
+        {
+            autopilot.update(t);
+            autopilot2.update(t);
+            autopilot3.update(t);
+        }
         
         if (raceStarted && !autopilot.active)
         {
